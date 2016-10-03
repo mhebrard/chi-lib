@@ -1,0 +1,24 @@
+{
+  "name": "Index",
+  "title": "Hierarchy",
+  "description": "Visualizations of hierarchical data.",
+  "resources": [
+    {
+      "path": "../treemap/datapackage.json",
+      "link": "#/hierarchy/treemap/"
+    },
+    {
+      "path": "../sunburst/datapackage.json",
+      "link": "#/hierarchy/sunburst/"
+    },
+    {
+      "path": "../dendrogram/datapackage.json",
+      "link": "#/hierarchy/dendrogram/"
+    },
+    {
+      "path": "../radial/datapackage.json",
+      "link": "#/hierarchy/radial/"
+    }
+  ],
+  "readme": "readme.md"
+}

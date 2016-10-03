@@ -1,0 +1,57 @@
+{
+  "name": "chi-lib",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Maxime HEBRARD",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.14.0",
+    "babel-plugin-transform-es2015-modules-umd": "^6.12.0",
+    "babel-preset-es2015": "^6.14.0"
+  },
+  "xo": {
+    "esnext": true,
+    "space": 2,
+    "envs": [
+      "node",
+      "browser"
+    ],
+    "ignores": [
+      "demo/**"
+    ],
+    "rules": {
+      "import/no-extraneous-dependencies": 0,
+      "space-before-function-paren": [
+        2,
+        "never"
+      ],
+      "no-warning-comments": 0,
+      "babel/new-cap": [
+        2,
+        {
+          "capIsNewExceptions": [
+            "Polymer"
+          ]
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "babel-cli": "^6.14.0",
+    "babel-plugin-transform-es2015-modules-umd": "^6.12.0",
+    "babel-preset-es2015": "^6.14.0",
+    "xo": "^0.16.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mhebrard/chi-lib.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mhebrard/chi-lib/issues"
+  },
+  "homepage": "https://github.com/mhebrard/chi-lib#readme",
+  "description": "A datapackage for Project-Chi that present a set a visualizations used at Laboratory for Integrated Bioinformatics, RIKEN"
+}

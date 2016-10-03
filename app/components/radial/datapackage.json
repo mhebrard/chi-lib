@@ -1,0 +1,10 @@
+{
+	"name": "Radial",
+	"title": "Radial",
+	"description": "Display a Hierarchy as a tree in a radial layout.",
+	"resources": [
+		"../../../data/flare.json"
+	],
+	"image": "thumbnail.png",
+	"readme": "README.md"
+}

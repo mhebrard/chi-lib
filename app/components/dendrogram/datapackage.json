@@ -1,0 +1,10 @@
+{
+	"name": "Dendrogram",
+	"title": "Dendrogram",
+	"description": "Vertical tree with leaves right aligned.",
+	"resources": [
+		"../../../data/flare.json"
+	],
+	"image": "thumbnail.png",
+	"readme": "README.md"
+}
