@@ -61,6 +61,14 @@ chart.consumer = function(state, action) {
       action.node.collapsed = false;
       update(state);
       break;
+    case 'hover':
+      action.node.hover = true;
+      hover(action.node);
+      break;
+    case 'hoverOut':
+      action.node.hover = false;
+      hoverOut(action.node);
+      break;
     default:
       console.log('unknown event');
   }
@@ -70,7 +78,7 @@ chart.consumer = function(state, action) {
 function init(s) {
   // console.log('view init');
   // SVG
-  const svg = d3.select('#' + s.div).append('svg')
+  const svg = d3.select(`#${s.div}`).append('svg')
     .attr('id', s.id)
     .attr('title', s.title)
     .attr('width', s.width)
@@ -82,13 +90,13 @@ function init(s) {
     .attr('x', 0)
     .attr('y', s.margin.top / 2)
     .attr('dy', '0.5ex')
-    .style('font-size', s.titleSize + 'px')
+    .style('font-size', `${s.titleSize}px`)
     .text(s.title);
 
   // data
   const tree = svg.append('g').attr('class', 'tree')
-    .attr('transform', 'translate(' + s.margin.left + ',' + s.margin.top + ')')
-    .style('font-size', s.fontSize + 'px');
+    .attr('transform', `translate(${s.margin.left}, ${s.margin.top})`)
+    .style('font-size', `${s.fontSize}px`);
   tree.append('g').attr('class', 'edges');
   tree.append('g').attr('class', 'nodes');
 }
@@ -120,21 +128,21 @@ function update(s) {
   const link = (d, curve) => {
     let path;
     if (curve) {
-      path = 'M' + d.y + ',' + d.x +
-      'C' + ((d.parent.y + d.y) / 2) + ',' + d.x +
-      ' ' + ((d.parent.y + d.y) / 2) + ',' + d.parent.x +
-      ' ' + d.parent.y + ',' + d.parent.x;
+      path = `M${d.y}, ${d.x} ` +
+      `C${(d.parent.y + d.y) / 2}, ${d.x} ` +
+      `${(d.parent.y + d.y) / 2}, ${d.parent.x} ` +
+      `${d.parent.y}, ${d.parent.x}`;
     } else {
-      path = 'M' + d.parent.y + ',' + d.parent.x +
-        'C' + d.parent.y + ',' + d.parent.x +
-        ' ' + d.parent.y + ',' + d.parent.x +
-        ' ' + d.parent.y + ',' + d.parent.x;
+      path = `M${d.parent.y}, ${d.parent.x} ` +
+        `C${d.parent.y}, ${d.parent.x} ` +
+        `${d.parent.y}, ${d.parent.x} ` +
+        `${d.parent.y}, ${d.parent.x}`;
     }
     return path;
   };
 
   // edges
-  sel = d3.select('#' + s.id).select('.edges').selectAll('.edge')
+  sel = d3.select(`#${s.id}`).select('.edges').selectAll('.edge')
     .data(root.descendants().slice(1), d => d.data.name);
   // exit
   sel.exit().transition(t1)
@@ -145,7 +153,7 @@ function update(s) {
     .attr('d', d => link(d, true));
   // add
   add = sel.enter().append('path')
-    .attr('class', 'edge')
+    .attr('class', d => `edge e${d.data.name.replace(' ', '')}`)
     .attr('d', d => link(d, false))
     .style('fill', 'none')
     .style('stroke', '#ccc')
@@ -156,25 +164,25 @@ function update(s) {
     .attr('d', d => link(d, true));
 
   // nodes
-  sel = d3.select('#' + s.id).select('.nodes').selectAll('.node')
+  sel = d3.select(`#${s.id}`).select('.nodes').selectAll('.node')
       .data(root.descendants(), d => d.data.name);
   // exit
   sel.exit().transition(t1)
-    .attr('transform', d => 'translate(' + d.parent.y + ',' + d.parent.x + ')')
+    .attr('transform', d => `translate(${d.parent.y}, ${d.parent.x})`)
     .style('opacity', 0)
     .remove();
   // update
   sel.transition(t2)
-  .attr('transform', d => 'translate(' + d.y + ',' + d.x + ')');
+  .attr('transform', d => `translate(${d.y}, ${d.x})`);
   // add
   add = sel.enter().append('g')
-    .attr('class', 'node')
+    .attr('class', d => `node n${d.data.name.replace(' ', '')}`)
     .attr('transform', d => {
       let coord = [0, s.height / 2];
       if (d.parent) {
         coord = [d.parent.y, d.parent.x];
       }
-      return 'translate(' + coord[0] + ',' + coord[1] + ')';
+      return `translate(${coord[0]}, ${coord[1]})`;
     })
     .style('opacity', 0)
     .style('cursor', 'pointer')
@@ -184,13 +192,15 @@ function update(s) {
       } else if (d.children) {
         dispatch({type: 'collapse', node: d.data});
       }
-    });
+    })
+    .on('mouseover', d => dispatch({type: 'hover', node: d.data}))
+    .on('mouseout', d => dispatch({type: 'hoverOut', node: d.data}));
   add.append('circle').style('stroke-width', '2px');
   add.append('text').attr('dy', 3);
   // update
   sel = add.merge(sel);
   sel.transition(t3)
-    .attr('transform', d => 'translate(' + d.y + ',' + d.x + ')')
+    .attr('transform', d => `translate(${d.y}, ${d.x})`)
     .style('opacity', 1);
   sel.select('circle')
     .attr('r', d => d.data.collapsed ? 5.5 : 4.5)
@@ -200,6 +210,24 @@ function update(s) {
     .attr('dx', d => d.children ? -8 : 8)
     .style('text-anchor', d => d.children ? 'end' : 'start')
     .text(d => d.data.name);
+}
+
+function hover(n) {
+  // hl node
+  const d = d3.select(`.n${n.name}`);
+  d.select('circle').style('stroke', '#9a0026');
+  d.select('text').style('font-weight', 'bold');
+  // hp ancestor path
+  d.datum().ancestors().forEach(p => d3.select(`.e${p.data.name}`).style('stroke', '#000'));
+}
+
+function hoverOut(n) {
+  // un-hl node
+  const d = d3.select(`.n${n.name}`);
+  d.select('circle').style('stroke', d => d.data.collapsed ? '#324eb3' : '#009a74');
+  d.select('text').style('font-weight', '');
+  // un-hp ancestor path
+  d.datum().ancestors().forEach(p => d3.select(`.e${p.data.name}`).style('stroke', '#ccc'));
 }
 
 // export
