@@ -24,7 +24,7 @@ function controller($log, dataService) {
     state.titleSize = 20;
     state.width = 800;
     state.height = 2800;
-
+    // state.shape = 'rake'; // comb, curve, rake
     dispatch({type: 'init'});
     update();
   }

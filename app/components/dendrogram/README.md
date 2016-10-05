@@ -1,8 +1,13 @@
 # Dendrogram
 Vertical tree with leaves right aligned.
 
-source [Cluster Dendrogram](https://gist.github.com/mbostock/4063570/51ee83942a72a289283d60dc76dda7b763f6aa45) by Mike Bostock, revision from Nov. 13th, 2012
+**sources:**
+* [Cluster Dendrogram](https://bl.ocks.org/mbostock/4063570) by Mike Bostock
+* D3.js v4.x (use d3-selection, d3-hierarchy, d3-transition)
+* Hierarchy in JSON format with size
 
-D3.js v3.x
-
-Hierarchy in JSON format with size.
+**actions:**
+* collapse: click on a node to hide its children (turn node to blue)
+* expand: click on a node to show its children (turn node to green)
+* hover: hover a node to highlight its path (turn node to red)
+* hoverOut: after hover, set the node to its initial status.

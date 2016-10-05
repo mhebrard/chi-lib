@@ -33,6 +33,7 @@ function params(s) {
   s.width = s.width || 800;
   s.height = s.height || 600;
   s.margin = s.margin || {top: 20, bottom: 10, left: 50, right: 200};
+  s.shape = s.shape || 'curve';
 
   if (!s.controller) {
     state = s;
@@ -116,6 +117,9 @@ function update(s) {
       s.width - s.margin.left - s.margin.right
     ])(root);
 
+  // edge breakpoint (distance to parent node where the break occure)
+  s.space = (s.width - s.margin.left - s.margin.right) / (2 * root.height);
+
   // update pattern
   let sel;
   let add;
@@ -125,18 +129,26 @@ function update(s) {
   const t2 = d3.transition().delay(delay).duration(delay);
   const t3 = d3.transition().delay(delay * 2).duration(delay);
   // path of edges
-  const link = (d, curve) => {
+  const link = (d, show) => {
     let path;
-    if (curve) {
-      path = `M${d.y}, ${d.x} ` +
-      `C${(d.parent.y + d.y) / 2}, ${d.x} ` +
-      `${(d.parent.y + d.y) / 2}, ${d.parent.x} ` +
-      `${d.parent.y}, ${d.parent.x}`;
+    let f = 'L';
+    if (s.shape === 'comb') {
+      path = `M${d.y}, ${d.x} ${f}${d.parent.y}, ${d.parent.x}`;
     } else {
-      path = `M${d.parent.y}, ${d.parent.x} ` +
-        `C${d.parent.y}, ${d.parent.x} ` +
+      if (s.shape === 'curve') {
+        f = 'C';
+      }
+      if (show) {
+        path = `M${d.y}, ${d.x} ` +
+        `${f}${d.parent.y + s.space}, ${d.x} ` +
+        `${d.parent.y + s.space}, ${d.parent.x} ` +
+        `${d.parent.y}, ${d.parent.x}`;
+      } else {
+        path = `M${d.parent.y}, ${d.parent.x} ` +
+        `${f}${d.parent.y}, ${d.parent.x} ` +
         `${d.parent.y}, ${d.parent.x} ` +
         `${d.parent.y}, ${d.parent.x}`;
+      }
     }
     return path;
   };
