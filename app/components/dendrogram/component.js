@@ -1,20 +1,9 @@
-import d3 from 'd3';
-import angular from 'angular';
-
 import chart from './dendrogram';
 
 controller.$inject = ['$log', 'dataService'];
 function controller($log, dataService) {
   const $ctrl = this;
-  /* v */
-  const param = {
-    width: 800,
-    height: 2800,
-    id: 'dendro',
-    title: 'Dendrogram of flare package',
-    titleSize: 20
-  };
-  /* ^ */
+  const state = {};
 
   return Object.assign($ctrl, {
     editorOptions: {
@@ -27,18 +16,28 @@ function controller($log, dataService) {
   });
 
   function draw() {
-    const container = d3.select('#charts');
-    // d3view.init(container,param) > create the SVG
-    container.call(chart.init, param);
+    // initial parameters
+    state.dispatch = dispatch;
+    state.div = 'charts';
+    state.id = 'dendro';
+    state.title = 'Dendrogram of flare package';
+    state.titleSize = 20;
+    state.width = 800;
+    state.height = 2800;
+    // state.shape = 'rake'; // comb, curve, rake
+    dispatch({type: 'init'});
     update();
   }
 
   function update() {
     // deep clone data
-    // JSON.parse(JSON.stringify($ctrl.dataPackage.resources[0].data));
-    const data = angular.copy($ctrl.dataPackage.resources[0].data);
-    // d3view.update(svg,data,param) > include data inside SVG
-    d3.select(`#${param.id}`).call(chart.update, data, param);
+    const d = JSON.parse(JSON.stringify($ctrl.dataPackage.resources[0].data));
+    dispatch({type: 'update', data: d});
+  }
+
+  function dispatch(action) {
+    console.log('dispatch', action);
+    chart.consumer(state, action);
   }
 }
 
