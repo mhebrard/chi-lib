@@ -1,24 +1,22 @@
 import {select, selectAll} from 'd3-selection';
 import {hierarchy, cluster} from 'd3-hierarchy';
 import {transition} from 'd3-transition';
-import {dispatch} from 'd3-dispatch';
 
 const d3 = {
   select, selectAll,
   hierarchy, cluster,
-  transition,
-  dispatch
+  transition
 };
 
 export default function Chart(p) {
   this.version = '0.3';
-  this.events = ['collapse', 'expand', 'hover', 'hoverOut'];
+  const chart = {};
 
   // PARAMETERS
   p = p || {};
   p.div = p.div || 'body';
   p.id = p.id || 'view';
-  p.dispatch = p.dispatch || d3.dispatch('collapse', 'expand', 'hover', 'hoverOut');
+  p.dispatch = p.dispatch || chart.consumer;
   p.data = p.data || {name: 'root', size: 1};
   p.title = p.title || `Dendrogram of ${p.id}`;
   p.titleSize = p.titleSize || 18;
@@ -28,8 +26,36 @@ export default function Chart(p) {
   p.margin = p.margin || {top: 20, bottom: 10, left: 50, right: 200};
   p.shape = p.shape || 'curve';
 
-  // CHART OBJECT
-  const chart = {};
+  // consume action: mutate data and apply changes
+  chart.consumer = function(action) {
+    switch (action.type) {
+      case 'init':
+        chart.init();
+        break;
+      case 'update':
+        p.data = action.data;
+        chart.update();
+        break;
+      case 'collapse':
+        action.node.collapsed = true;
+        chart.update();
+        break;
+      case 'expand':
+        action.node.collapsed = false;
+        chart.update();
+        break;
+      case 'hover':
+        action.node.hover = true;
+        hover(action.node);
+        break;
+      case 'hoverOut':
+        action.node.hover = false;
+        hoverOut(action.node);
+        break;
+      default:
+        // console.log('unknown event');
+    }
+  };
 
   chart.init = function() {
     // console.log('create chart:', p.id);
@@ -57,8 +83,12 @@ export default function Chart(p) {
     tree.append('g').attr('class', 'nodes');
   };
 
+  // accessor
   chart.data = function(d) {
-    p.data = d;
+    if (d) {
+      p.data = d;
+    }
+    return p.data;
   };
 
   chart.update = function() {
@@ -159,13 +189,13 @@ export default function Chart(p) {
       .style('cursor', 'pointer')
       .on('click', d => {
         if (d.data.collapsed) {
-          p.dispatch.call('expand', this, d.data);
+          p.dispatch({type: 'expand', node: d.data});
         } else if (d.children) {
-          p.dispatch.call('collapse', this, d.data);
+          p.dispatch({type: 'collapse', node: d.data});
         }
       })
-      .on('mouseover', d => p.dispatch.call('hover', this, d.data))
-      .on('mouseout', d => p.dispatch.call('hoverOut', this, d.data));
+      .on('mouseover', d => p.dispatch({type: 'hover', node: d.data}))
+      .on('mouseout', d => p.dispatch({type: 'hoverOut', node: d.data}));
     add.append('circle').style('stroke-width', '2px');
     add.append('text').attr('dy', 3);
     // update
@@ -182,33 +212,6 @@ export default function Chart(p) {
       .style('text-anchor', d => d.children ? 'end' : 'start')
       .text(d => d.data.name);
   };
-
-  // ACTIONS
-  p.dispatch.on(`collapse.${p.id}`, d => {
-    console.log(`chart ${p.id} on collapse`);
-    d.collapsed = true;
-    chart.update();
-  });
-
-  p.dispatch.on(`expand.${p.id}`, d => {
-    console.log(`chart ${p.id} on expand`);
-    d.collapsed = false;
-    chart.update();
-  });
-
-  p.dispatch.on(`hover.${p.id}`, d => {
-    console.log(`chart ${p.id} on hover`);
-    d.hover = true;
-    hover(d);
-    chart.update();
-  });
-
-  p.dispatch.on(`hoverOut.${p.id}`, d => {
-    console.log(`chart ${p.id} on hoverOut`);
-    d.hover = false;
-    hoverOut(d);
-    chart.update();
-  });
 
   // HELPERS
   function hover(n) {

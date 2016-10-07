@@ -1,7 +1,4 @@
-import {dispatch} from 'd3-dispatch';
 import Chart from './dendrogram';
-
-const dispatcher = dispatch('collapse', 'expand', 'hover', 'hoverOut');
 
 controller.$inject = ['$log', 'dataService'];
 function controller($log, dataService) {
@@ -11,7 +8,7 @@ function controller($log, dataService) {
   const paramChart = {
     div: 'charts',
     id: 'dendro',
-    dispatch: dispatcher,
+    dispatch,
     title: 'Dendrogram of flare package',
     titleSize: 20,
     width: 800,
@@ -19,13 +16,6 @@ function controller($log, dataService) {
     // shape: 'rake' // comb, curve, rake
   };
   const chart = new Chart(paramChart);
-
-  const paramTest = {
-    div: 'charts',
-    dispatch: dispatcher,
-    height: 200
-  };
-  const test = new Chart(paramTest);
 
   return Object.assign($ctrl, {
     editorOptions: {
@@ -38,16 +28,26 @@ function controller($log, dataService) {
   });
 
   function draw() {
-    test.init();
+    // init only chart
     chart.init();
+    // init all views
+    // dispatch({type: 'init'});
     update();
   }
 
   function update() {
     // deep clone data
-    const d = JSON.parse(JSON.stringify($ctrl.dataPackage.resources[0].data));
-    chart.data(d);
+    // const d = JSON.parse(JSON.stringify($ctrl.dataPackage.resources[0].data));
+    // update only chart
+    chart.data($ctrl.dataPackage.resources[0].data);
     chart.update();
+    // update all views
+    // dispatch({type: 'update', data: $ctrl.dataPackage.resources[0].data});
+  }
+
+  // dispatch all action to all views
+  function dispatch(action) {
+    chart.consumer(action);
   }
 }
 
