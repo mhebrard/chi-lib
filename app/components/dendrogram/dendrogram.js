@@ -2,21 +2,21 @@ import {select, selectAll} from 'd3-selection';
 import {hierarchy, cluster} from 'd3-hierarchy';
 import {transition} from 'd3-transition';
 
-const d3 = {
-  select, selectAll,
-  hierarchy, cluster,
-  transition
-};
+// test d3 version Map d3v4
+let d4 = {};
+if (d3.version) { // d3v3.x present as global
+  d4 = {select, selectAll, hierarchy, cluster, transition};
+} else { // d3v4 present as global
+  d4 = d3;
+}
 
 export default function Chart(p) {
-  this.version = '0.3';
-  const chart = {};
+  const chart = {version: 0.3};
 
   // PARAMETERS
   p = p || {};
   p.div = p.div || 'body';
   p.id = p.id || 'view';
-  p.dispatch = p.dispatch || chart.consumer;
   p.data = p.data || {name: 'root', size: 1};
   p.title = p.title || `Dendrogram of ${p.id}`;
   p.titleSize = p.titleSize || 18;
@@ -57,10 +57,12 @@ export default function Chart(p) {
     }
   };
 
+  // add dispatcher to parameters
+  p.dispatch = p.dispatch || chart.consumer;
+
   chart.init = function() {
-    // console.log('create chart:', p.id);
     // SVG
-    const svg = d3.select(`#${p.div}`).append('svg')
+    const svg = d4.select(`#${p.div}`).append('svg')
       .attr('id', p.id)
       .attr('title', p.title)
       .attr('width', p.width)
@@ -92,15 +94,14 @@ export default function Chart(p) {
   };
 
   chart.update = function() {
-    // console.log('chart update', p.id);
     // layout
     const filter = function(d) {
       if (d.children && !d.collapsed) {
         return d.children;
       }
     };
-    const root = d3.hierarchy(p.data, filter);
-    d3.cluster()
+    const root = d4.hierarchy(p.data, filter);
+    d4.cluster()
       .size([
         p.height - p.margin.top - p.margin.bottom,
         p.width - p.margin.left - p.margin.right
@@ -114,9 +115,9 @@ export default function Chart(p) {
     let add;
     // transitions
     const delay = 500;
-    const t1 = d3.transition().duration(delay);
-    const t2 = d3.transition().delay(delay).duration(delay);
-    const t3 = d3.transition().delay(delay * 2).duration(delay);
+    const t1 = d4.transition().duration(delay);
+    const t2 = d4.transition().delay(delay).duration(delay);
+    const t3 = d4.transition().delay(delay * 2).duration(delay);
     // path of edges
     const link = (d, show) => {
       let path;
@@ -143,7 +144,7 @@ export default function Chart(p) {
     };
 
     // edges
-    sel = d3.select(`#${p.id}`).select('.edges').selectAll('.edge')
+    sel = d4.select(`#${p.id}`).select('.edges').selectAll('.edge')
       .data(root.descendants().slice(1), d => d.data.name);
     // exit
     sel.exit().transition(t1)
@@ -165,7 +166,7 @@ export default function Chart(p) {
       .attr('d', d => link(d, true));
 
     // nodes
-    sel = d3.select(`#${p.id}`).select('.nodes').selectAll('.node')
+    sel = d4.select(`#${p.id}`).select('.nodes').selectAll('.node')
         .data(root.descendants(), d => d.data.name);
     // exit
     sel.exit().transition(t1)
@@ -216,20 +217,26 @@ export default function Chart(p) {
   // HELPERS
   function hover(n) {
     // hl node
-    const d = d3.selectAll(`.n${n.name}`);
+    const d = d4.selectAll(`.n${n.name}`);
     d.select('circle').style('stroke', '#9a0026');
     d.select('text').style('font-weight', 'bold');
     // hp ancestor path
-    d.datum().ancestors().forEach(par => d3.selectAll(`.e${par.data.name}`).style('stroke', '#000'));
+    d.datum().ancestors().forEach(par => d4.selectAll(`.e${par.data.name}`)
+      .style('stroke', '#000')
+      .style('stroke-width', '3px')
+    );
   }
 
   function hoverOut(n) {
     // un-hl node
-    const d = d3.selectAll(`.n${n.name}`);
+    const d = d4.selectAll(`.n${n.name}`);
     d.select('circle').style('stroke', d => d.data.collapsed ? '#324eb3' : '#009a74');
     d.select('text').style('font-weight', '');
     // un-hp ancestor path
-    d.datum().ancestors().forEach(par => d3.selectAll(`.e${par.data.name}`).style('stroke', '#ccc'));
+    d.datum().ancestors().forEach(par => d4.selectAll(`.e${par.data.name}`)
+      .style('stroke', '#ccc')
+      .style('stroke-width', '1.5px')
+    );
   }
 
   // RETURN

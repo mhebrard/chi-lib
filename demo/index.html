@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+</style>
+
+<body>
+<script src="https://d3js.org/d3-collection.v1.min.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+<script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+<script src="https://d3js.org/d3-ease.v1.min.js"></script>
+<script src="https://d3js.org/d3-hierarchy.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-request.v1.min.js"></script>
+<script src="https://d3js.org/d3-selection.v1.min.js"></script>
+<script src="https://d3js.org/d3-timer.v1.min.js"></script>
+<script src="https://d3js.org/d3-transition.v1.min.js"></script>
+
+<script src="./dendrogram.umd.js"></script>
+<script>
+var element = d3.select('body').append('div').attr('id','charts');
+
+// views
+var param = {
+  div: 'charts',
+  id: 'dendro',
+  title: 'Dendrogram of flare package',
+  titleSize: 20,
+  fontSize: 10,
+  width: 800,
+  height: 2500,
+  shape: 'rake'
+};
+
+var Dendrogram = dendrogram.default;
+var chart = Dendrogram(param);
+
+chart.init();
+
+d3.json("./flare.json", function(error, data) {
+  if (error) throw error;
+
+  chart.data(data);
+  chart.update();
+});
+
+</script>

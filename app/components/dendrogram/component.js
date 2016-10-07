@@ -12,7 +12,7 @@ function controller($log, dataService) {
     title: 'Dendrogram of flare package',
     titleSize: 20,
     width: 800,
-    height: 1800
+    height: 2500
     // shape: 'rake' // comb, curve, rake
   };
   const chart = new Chart(paramChart);
