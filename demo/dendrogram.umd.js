@@ -79,6 +79,25 @@
     // add dispatcher to parameters
     p.dispatch = p.dispatch || chart.consumer;
 
+    // path of edges
+    var link = function link(d, show) {
+      var path = void 0;
+      var f = 'L';
+      if (p.shape === 'comb') {
+        path = 'M' + d.y + ', ' + d.x + ' ' + f + d.parent.y + ', ' + d.parent.x;
+      } else {
+        if (p.shape === 'curve') {
+          f = 'C';
+        }
+        if (show) {
+          path = 'M' + d.y + ', ' + d.x + ' ' + ('' + f + (d.parent.y + p.space) + ', ' + d.x + ' ') + (d.parent.y + p.space + ', ' + d.parent.x + ' ') + (d.parent.y + ', ' + d.parent.x);
+        } else {
+          path = 'M' + d.parent.y + ', ' + d.parent.x + ' ' + ('' + f + d.parent.y + ', ' + d.parent.x + ' ') + (d.parent.y + ', ' + d.parent.x + ' ') + (d.parent.y + ', ' + d.parent.x);
+        }
+      }
+      return path;
+    };
+
     chart.init = function () {
       // SVG
       var svg = d4.select('#' + p.div).append('svg').attr('id', p.id).attr('title', p.title).attr('width', p.width).attr('height', p.height);
@@ -90,6 +109,7 @@
       var tree = svg.append('g').attr('class', 'tree').attr('transform', 'translate(' + p.margin.left + ', ' + p.margin.top + ')').style('font-size', p.fontSize + 'px');
       tree.append('g').attr('class', 'edges');
       tree.append('g').attr('class', 'nodes');
+      tree.append('path').attr('class', 'edge hl').style('fill', 'none').style('stroke', '#000').style('stroke-width', '1.5px');
     };
 
     // accessor
@@ -121,24 +141,6 @@
       var t1 = d4.transition().duration(delay);
       var t2 = d4.transition().delay(delay).duration(delay);
       var t3 = d4.transition().delay(delay * 2).duration(delay);
-      // path of edges
-      var link = function link(d, show) {
-        var path = void 0;
-        var f = 'L';
-        if (p.shape === 'comb') {
-          path = 'M' + d.y + ', ' + d.x + ' ' + f + d.parent.y + ', ' + d.parent.x;
-        } else {
-          if (p.shape === 'curve') {
-            f = 'C';
-          }
-          if (show) {
-            path = 'M' + d.y + ', ' + d.x + ' ' + ('' + f + (d.parent.y + p.space) + ', ' + d.x + ' ') + (d.parent.y + p.space + ', ' + d.parent.x + ' ') + (d.parent.y + ', ' + d.parent.x);
-          } else {
-            path = 'M' + d.parent.y + ', ' + d.parent.x + ' ' + ('' + f + d.parent.y + ', ' + d.parent.x + ' ') + (d.parent.y + ', ' + d.parent.x + ' ') + (d.parent.y + ', ' + d.parent.x);
-          }
-        }
-        return path;
-      };
 
       // edges
       sel = d4.select('#' + p.id).select('.edges').selectAll('.edge').data(root.descendants().slice(1), function (d) {
@@ -225,10 +227,12 @@
       var d = d4.selectAll('.n' + n.name);
       d.select('circle').style('stroke', '#9a0026');
       d.select('text').style('font-weight', 'bold');
-      // hp ancestor path
-      d.datum().ancestors().forEach(function (par) {
-        return d4.selectAll('.e' + par.data.name).style('stroke', '#000').style('stroke-width', '3px');
-      });
+      // reconstruct path to too root for hl
+      var path = d.datum().ancestors().slice(0, -1).reduce(function (t, a) {
+        t += link(a, true);
+        return t;
+      }, '');
+      d4.select('path.hl').attr('d', path);
     }
 
     function hoverOut(n) {
@@ -238,10 +242,8 @@
         return d.data.collapsed ? '#324eb3' : '#009a74';
       });
       d.select('text').style('font-weight', '');
-      // un-hp ancestor path
-      d.datum().ancestors().forEach(function (par) {
-        return d4.selectAll('.e' + par.data.name).style('stroke', '#ccc').style('stroke-width', '1.5px');
-      });
+      // delete hl path
+      d4.select('path.hl').attr('d', null);
     }
 
     // RETURN
