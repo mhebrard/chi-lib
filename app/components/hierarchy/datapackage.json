@@ -4,12 +4,16 @@
   "description": "Visualizations of hierarchical data.",
   "resources": [
     {
-      "path": "../treemap/datapackage.json",
-      "link": "#/hierarchy/treemap/"
+      "path": "../clonal/datapackage.json",
+      "link": "#/hierarchy/clonal/"
     },
     {
       "path": "../sunburst/datapackage.json",
       "link": "#/hierarchy/sunburst/"
+    },
+    {
+      "path": "../treemap/datapackage.json",
+      "link": "#/hierarchy/treemap/"
     },
     {
       "path": "../dendrogram/datapackage.json",

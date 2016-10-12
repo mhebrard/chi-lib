@@ -5,8 +5,9 @@ import treemapComponent from '../treemap/component';
 import sunburstComponent from '../sunburst/component';
 import dendrogramComponent from '../dendrogram/component';
 import radialComponent from '../radial/component';
+import clonalComponent from '../clonal/component';
 
-var folder = 'hierarchy';
+const folder = 'hierarchy';
 
 routeConfig.$inject = ['$routeProvider'];
 function routeConfig ($routeProvider) {
@@ -31,6 +32,10 @@ function routeConfig ($routeProvider) {
       template: '<radial data-package="$resolve.dataPackage"></radial>',
       datapackageUrl: 'components/radial/datapackage.json'
     })
+    .when('/'+folder+'/clonal', {
+      template: '<clonal data-package="$resolve.dataPackage"></clonal>',
+      datapackageUrl: 'components/clonal/datapackage.json'
+    })
     .otherwise({redirectTo: '/'});
 }
 
@@ -41,4 +46,5 @@ export default angular
   .component('sunburst', sunburstComponent)
   .component('dendrogram', dendrogramComponent)
   .component('radial', radialComponent)
+  .component('clonal', clonalComponent)
   .config(routeConfig);
