@@ -5,13 +5,17 @@ import {transition} from 'd3-transition';
 // test d3 version Map d3v4
 let d4 = {};
 if (d3.version) { // d3v3.x present as global
-  d4 = {select, selectAll, hierarchy, cluster, transition};
+  d4 = {
+    select, selectAll,
+    hierarchy, cluster,
+    transition
+  };
 } else { // d3v4 present as global
   d4 = d3;
 }
 
 export default function Chart(p) {
-  const chart = {version: 0.4};
+  const chart = {version: 1.0};
 
   // PARAMETERS
   p = p || {};
@@ -64,23 +68,20 @@ export default function Chart(p) {
   const link = (d, show) => {
     let path;
     let f = 'L';
-    if (p.shape === 'comb') {
-      path = `M${d.y}, ${d.x} ${f}${d.parent.y}, ${d.parent.x}`;
-    } else {
-      if (p.shape === 'curve') {
-        f = 'C';
-      }
-      if (show) {
+    if (show) {
+      if (p.shape === 'comb') {
+        path = `M${d.y}, ${d.x} ${f}${d.parent.y}, ${d.parent.x}`;
+      } else {
+        if (p.shape === 'curve') {
+          f = 'C';
+        }
         path = `M${d.y}, ${d.x} ` +
         `${f}${d.parent.y + p.space}, ${d.x} ` +
         `${d.parent.y + p.space}, ${d.parent.x} ` +
         `${d.parent.y}, ${d.parent.x}`;
-      } else {
-        path = `M${d.parent.y}, ${d.parent.x} ` +
-        `${f}${d.parent.y}, ${d.parent.x} ` +
-        `${d.parent.y}, ${d.parent.x} ` +
-        `${d.parent.y}, ${d.parent.x}`;
       }
+    } else {
+      path = `M${d.parent.y}, ${d.parent.x} L${d.parent.y}, ${d.parent.x}`;
     }
     return path;
   };
@@ -111,7 +112,8 @@ export default function Chart(p) {
     tree.append('path').attr('class', 'edge hl')
       .style('fill', 'none')
       .style('stroke', '#000')
-      .style('stroke-width', '1.5px');
+      .style('stroke-width', '1.5px')
+      .style('pointer-events', 'none');
   };
 
   // accessor
@@ -154,6 +156,7 @@ export default function Chart(p) {
     // exit
     sel.exit().transition(t1)
       .attr('d', d => link(d, false))
+      .style('opacity', 0)
       .remove();
     // update
     sel.transition(t2)
@@ -164,11 +167,13 @@ export default function Chart(p) {
       .attr('d', d => link(d, false))
       .style('fill', 'none')
       .style('stroke', '#ccc')
-      .style('stroke-width', '1.5px');
+      .style('stroke-width', '1.5px')
+      .style('opacity', 0);
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-      .attr('d', d => link(d, true));
+      .attr('d', d => link(d, true))
+      .style('opacity', 1);
 
     // nodes
     sel = d4.select(`#${p.id}`).select('.nodes').selectAll('.node')
@@ -191,12 +196,12 @@ export default function Chart(p) {
         }
         return `translate(${coord[0]}, ${coord[1]})`;
       })
-      .style('opacity', 0)
       .style('cursor', 'pointer')
+      .style('opacity', 0)
       .on('click', d => {
         if (d.data.collapsed) {
           p.dispatch({type: 'expand', node: d.data});
-        } else if (d.children) {
+        } else if (d.parent && d.children) {
           p.dispatch({type: 'collapse', node: d.data});
         }
       })
@@ -222,7 +227,7 @@ export default function Chart(p) {
   // HELPERS
   function hover(n) {
     // hl node
-    const d = d4.selectAll(`.n${n.name}`);
+    const d = d4.select(`#${p.id}`).selectAll(`.n${n.name}`);
     d.select('circle').style('stroke', '#9a0026');
     d.select('text').style('font-weight', 'bold');
     // reconstruct path to too root for hl
@@ -230,16 +235,16 @@ export default function Chart(p) {
       t += link(a, true);
       return t;
     }, '');
-    d4.select('path.hl').attr('d', path);
+    d4.select(`#${p.id}`).select('path.hl').attr('d', path);
   }
 
   function hoverOut(n) {
     // un-hl node
-    const d = d4.selectAll(`.n${n.name}`);
+    const d = d4.select(`#${p.id}`).selectAll(`.n${n.name}`);
     d.select('circle').style('stroke', d => d.data.collapsed ? '#324eb3' : '#009a74');
     d.select('text').style('font-weight', '');
     // delete hl path
-    d4.select('path.hl').attr('d', null);
+    d4.select(`#${p.id}`).select('path.hl').attr('d', null);
   }
 
   // RETURN

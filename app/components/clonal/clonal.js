@@ -21,7 +21,7 @@ if (d3.version) { // d3v3.x present as global
 }
 
 export default function Chart(p) {
-  const chart = {version: 0.1};
+  const chart = {version: 1.0};
 
   // PARAMETERS
   p = p || {};
@@ -98,8 +98,7 @@ export default function Chart(p) {
         `L${p.width - p.margin.left - p.margin.right}, ${d.x1}`;
       }
     } else {
-      path = `M${p.width - p.margin.left - p.margin.right}, ${coord[1]} ` +
-      `L${coord[0]}, ${coord[1]}`;
+      path = `M${coord[0]}, ${coord[1]} L${coord[0]}, ${coord[1]}`;
     }
     return path;
   };
@@ -172,6 +171,7 @@ export default function Chart(p) {
     // exit
     sel.exit().transition(t1)
       .attr('d', d => area(d, false))
+      .style('opacity', 0)
       .remove();
     // update
     sel.transition(t2)
@@ -182,11 +182,13 @@ export default function Chart(p) {
       .attr('d', d => area(d, false))
       .style('fill', d => color(d.data.name))
       .style('stroke', '#000')
-      .style('stroke-width', '1.5px');
+      .style('stroke-width', '1.5px')
+      .style('opacity', 0);
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-      .attr('d', d => area(d, true));
+      .attr('d', d => area(d, true))
+      .style('opacity', 1);
 
     // nodes
     sel = d4.select(`#${p.id}`).select('.nodes').selectAll('.node')
@@ -197,6 +199,7 @@ export default function Chart(p) {
         const coord = d.parent ? middle(d.parent) : middle(root);
         return `translate(${coord[0]}, ${coord[1]})`;
       })
+      .style('opacity', 0)
       .remove();
     // update
     sel.transition(t2)
@@ -212,6 +215,7 @@ export default function Chart(p) {
         return `translate(${coord[0]}, ${coord[1]})`;
       })
       .style('cursor', 'pointer')
+      .style('opacity', 0)
       .on('click', d => {
         if (d.data.collapsed) {
           p.dispatch({type: 'expand', node: d.data});
@@ -234,7 +238,8 @@ export default function Chart(p) {
       .attr('transform', d => {
         const coord = middle(d);
         return `translate(${coord[0]}, ${coord[1]})`;
-      });
+      })
+      .style('opacity', 1);
     sel.select('circle')
         .attr('r', d => d.data.collapsed ? 5.5 : 4.5)
         .style('stroke', d => d.data.collapsed ? '#324eb3' : '#000000');
