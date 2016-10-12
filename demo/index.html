@@ -12,36 +12,66 @@
 <script src="https://d3js.org/d3-hierarchy.v1.min.js"></script>
 <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
 <script src="https://d3js.org/d3-request.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <script src="https://d3js.org/d3-selection.v1.min.js"></script>
 <script src="https://d3js.org/d3-timer.v1.min.js"></script>
 <script src="https://d3js.org/d3-transition.v1.min.js"></script>
 
 <script src="./dendrogram.umd.js"></script>
+<script src="./clonal.umd.js"></script>
 <script>
-var element = d3.select('body').append('div').attr('id','charts');
+
+var container = d3.select('body').append('div').attr('id','charts')
+.style('display','flex');
+
+var v1 = container.append('div').attr('id','view1');
+var v2 = container.append('div').attr('id','view2');
 
 // views
 var param = {
-  div: 'charts',
-  id: 'dendro',
-  title: 'Dendrogram of flare package',
-  titleSize: 20,
-  fontSize: 10,
-  width: 800,
-  height: 2500,
-  shape: 'rake'
+  dendro: {
+    div: 'view1',
+    id: 'dendro',
+    title: 'Dendrogram of flare package',
+    titleSize: 20,
+    fontSize: 10,
+    width: 700,
+    height: 3000,
+    shape: 'rake',
+    dispatch
+  },
+  clonal: {
+    div: 'view2',
+    id: 'clonal',
+    title: 'Clonal evolution diagram of flare package',
+    titleSize: 20,
+    fontSize: 10,
+    width: 700,
+    height: 3000,
+    shape: 'comb',
+    dispatch
+  }
 };
 
 var Dendrogram = dendrogram.default;
-var chart = Dendrogram(param);
+var Clonal = clonal.default;
 
-chart.init();
+var c1 = Dendrogram(param.dendro);
+var c2 = Clonal(param.clonal);
 
+// dispatch all action to all views
+function dispatch(action) {
+  c1.consumer(action);
+  c2.consumer(action);
+}
+
+// init
+dispatch({type: 'init'});
+//update
 d3.json("./flare.json", function(error, data) {
   if (error) throw error;
-
-  chart.data(data);
-  chart.update();
+  dispatch({type: 'update', data: data});
 });
 
 </script>
