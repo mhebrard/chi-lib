@@ -3,7 +3,7 @@
 	"title": "Clonal Evolution",
 	"description": "Vertical tree with  quantity represented by the height of each area.",
 	"resources": [
-		"../../../data/flare.json"
+		"../../data/flare.json"
 	],
 	"image": "thumbnail.png",
 	"readme": "README.md"
