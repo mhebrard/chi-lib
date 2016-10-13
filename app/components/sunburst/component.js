@@ -31,7 +31,7 @@ function controller () {
 
 export default {
   controller,
-  templateUrl: 'components/hierarchy/sunburst/index.html',
+  templateUrl: 'components/sunburst/index.html',
   bindings: {
     dataPackage: '<package'
   }

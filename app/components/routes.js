@@ -1,6 +1,6 @@
 import angular from 'angular';
 
-import aboutHTML from 'components/about/about.md!md';
+import aboutHTML from 'components/index/README.md!md'; // 'components/about/about.md!md';
 import errorHTML from 'components/error/error.html!text';
 
 import examples from './hierarchy/routes';
