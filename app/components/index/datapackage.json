@@ -4,7 +4,28 @@
   "description": "Index of Visualizations",
   "resources": [
     {
-      "path": "../hierarchy/datapackage.json"
+      "path": "../clonal/datapackage.json",
+      "link": "#/clonal/"
+    },
+    {
+      "path": "../sunburst/datapackage.json",
+      "link": "#/sunburst/"
+    },
+    {
+      "path": "../treemap/datapackage.json",
+      "link": "#/treemap/"
+    },
+    {
+      "path": "../dendrogram/datapackage.json",
+      "link": "#/dendrogram/"
+    },
+    {
+      "path": "../radial/datapackage.json",
+      "link": "#/radial/"
+    },
+    {
+      "path": "../violin/datapackage.json",
+      "link": "#/violin/"
     }
   ]
 }
