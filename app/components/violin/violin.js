@@ -1,4 +1,4 @@
-import {ascending, histogram, max} from 'd3-array';
+import {ascending, histogram, max, quantile, mean} from 'd3-array';
 import {axisLeft, axisRight} from 'd3-axis';
 import {rgb} from 'd3-color';
 import {scaleOrdinal, scaleLinear} from 'd3-scale';
@@ -11,7 +11,7 @@ import {transition} from 'd3-transition';
 let d4 = {};
 if (d3.version) { // d3v3.x present as global
   d4 = {
-    ascending, histogram, max,
+    ascending, histogram, max, quantile, mean,
     axisLeft, axisRight,
     rgb,
     scaleOrdinal, scaleLinear,
@@ -37,7 +37,7 @@ export default function Chart(p) {
   p.fontSize = p.fontSize || 14;
   // p.width // adjust according to series number
   p.height = p.height || 600;
-  p.margin = p.margin || {top: 30, bottom: 10, left: 50, right: 50};
+  p.margin = p.margin || {top: 30, bottom: 30, left: 50, right: 50};
   p.ymin = p.ymin || null;
   p.ymax = p.ymax || null;
   p.catWidth = p.catWidth || 100;
@@ -93,6 +93,9 @@ export default function Chart(p) {
     // Scales
     v.y = d4.scaleLinear()
       .range([p.height - p.margin.bottom, p.margin.top]);
+
+    v.x = d4.scaleLinear()
+      .range([0, p.catWidth]);
 
     v.yV = d4.scaleLinear()
       .range([p.catWidth / 2, 0]);
@@ -193,7 +196,7 @@ export default function Chart(p) {
     // update axis
     v.svg.select('.yOut')
       .transition(t3)
-			.call(v.yAxisOut);
+      .call(v.yAxisOut);
     v.svg.select('.yIn')
       .transition(t3)
       .call(v.yAxisIn);
@@ -239,6 +242,8 @@ export default function Chart(p) {
     keys.forEach((k, i) => {
       const g = d4.select(`#${p.div}`).select('svg').select(`.${k}`);
       addViolin(g, v.bins[i], k);
+      addBoxPlot(g, sorted[i], 0.10);
+      addLabel(g, k);
     });
 
 /*    Object.keys(p.data).forEach((k, i) => {
@@ -304,6 +309,77 @@ export default function Chart(p) {
       sel.selectAll('.line')
         .transition(t3)
         .attr('d', line(bins));
+    }
+
+    function addBoxPlot(g, vals, boxPlotWidth) {
+      // v.y
+      /* var y = d3.scale.linear()
+      .range([param.height-param.margin.bottom, param.margin.top])
+      .domain(param.domain); */
+      // v.x
+      /*  var x = d3.scale.linear()
+      .range([0, param.catWidth]) */
+
+      const left = 0.5 - (boxPlotWidth / 2);
+      const right = 0.5 + (boxPlotWidth / 2);
+
+      const probs = [0.05, 0.25, 0.5, 0.75, 0.95];
+      for (let i = 0; i < probs.length; i++) {
+        probs[i] = v.y(d4.quantile(vals, probs[i]));
+      }
+
+      g.append('rect')
+        .attr('class', 'boxplot')
+        .attr('x', v.x(left))
+        .attr('width', v.x(right) - v.x(left))
+        .attr('y', probs[3])
+        .attr('height', -probs[3] + probs[1])
+        .style('fill', p.boxFill)
+        .style('stroke', p.boxStroke);
+
+      let iS = [0, 2, 4];
+      const iSclass = ['', 'median', ''];
+      const iSColor = [p.boxStroke, p.meanColor, p.boxStroke];
+      for (let i = 0; i < iS.length; i++) {
+        g.append('line')
+        .attr('class', 'boxplot ' + iSclass[i])
+        .attr('x1', v.x(left))
+        .attr('x2', v.x(right))
+        .attr('y1', probs[iS[i]])
+        .attr('y2', probs[iS[i]])
+        .style('fill', iSColor[i])
+        .style('stroke', iSColor[i]);
+      }
+
+      iS = [[0, 1], [3, 4]];
+      for (let i = 0; i < iS.length; i++) {
+        g.append('line')
+        .attr('class', 'boxplot')
+        .attr('x1', v.x(0.5))
+        .attr('x2', v.x(0.5))
+        .attr('y1', probs[iS[i][0]])
+        .attr('y2', probs[iS[i][1]])
+        .style('stroke', p.boxStroke);
+      }
+
+      g.append('circle')
+      .attr('class', 'boxplot mean')
+      .attr('cx', v.x(0.5))
+      .attr('cy', v.y(d4.mean(vals)))
+      .attr('r', v.x(boxPlotWidth / 5))
+      .style('fill', p.boxFill)
+      .style('stroke', p.meanColor);
+    }
+
+    function addLabel(g, label) {
+      g.append('text')
+        .attr('class', 'label')
+        .attr('x', v.x(0.5))
+        .attr('y', p.height - (p.margin.bottom / 2))
+        .attr('dy', '-0.5ex')
+        .attr('text-anchor', 'middle')
+        .style('fill', p.labelColor)
+        .text(label);
     }
   };
 
