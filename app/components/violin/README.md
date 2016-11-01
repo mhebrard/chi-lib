@@ -2,9 +2,8 @@
 Series of values represented as violin plot. The corps of the violin is the distribution of values mirroring on Y axis. A box plot is added on top of the violin.
 
 **sources**
-  * From a plot of [z-m-k](http://bl.ocks.org/z-m-k/5014368)
-  * [D3.js v4.x](https://github.com/d3/d3/blob/master/API.md) (d3-color, d3-hierarchy, d3-scale, d3-scale-chromatic, d3-selection, d3-transition)
-  * [d3 partition layout](https://github.com/d3/d3-hierarchy#partition)
+  * From a plot by [z-m-k](http://bl.ocks.org/z-m-k/5014368)
+  * [D3.js v4.x](https://github.com/d3/d3/blob/master/API.md) (d3-array, d3-axis, d3-scale, d3-scale-chromatic, d3-shape, d3-selection, d3-transition)
   * Input data is an object with one property by serie and an array of value for each property. {serie1: [val1,val2,...], serie2: [val1,val2...]}
 
 **actions:**

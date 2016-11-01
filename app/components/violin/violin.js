@@ -1,6 +1,5 @@
 import {ascending, histogram, max, quantile, mean} from 'd3-array';
 import {axisLeft, axisRight} from 'd3-axis';
-import {rgb} from 'd3-color';
 import {scaleOrdinal, scaleLinear} from 'd3-scale';
 import {schemeSet3} from 'd3-scale-chromatic';
 import {area, line, curveBasis, curveLinear, curveStepAfter} from 'd3-shape';
@@ -13,7 +12,6 @@ if (d3.version) { // d3v3.x present as global
   d4 = {
     ascending, histogram, max, quantile, mean,
     axisLeft, axisRight,
-    rgb,
     scaleOrdinal, scaleLinear,
     schemeSet3,
     area, line, curveBasis, curveLinear, curveStepAfter,
@@ -242,23 +240,9 @@ export default function Chart(p) {
     keys.forEach((k, i) => {
       const g = d4.select(`#${p.div}`).select('svg').select(`.${k}`);
       addViolin(g, v.bins[i], k);
-      addBoxPlot(g, sorted[i], 0.10);
+      addBoxPlot(g, sorted[i], k, 0.10);
       addLabel(g, k);
     });
-
-/*    Object.keys(p.data).forEach((k, i) => {
-      // sort values
-      const sorted = p.data[k].sort(d4.ascending);
-      // violin group
-      const g = d4.select(`#${p.div}`).select('svg').append('g')
-        .attr('transform', `translate(${(i * (p.catWidth + p.catSpacing)) + p.margin.left}, 0)`);
-
-      // addViolin(g, sorted, 0.25, color(k));
-      // addBoxPlot(g, sorted, .10);
-      // addLabel(g, k);
-    });
-  */
-  // };
 
     function addViolin(g, bins, k) {
       // shapes
@@ -311,15 +295,7 @@ export default function Chart(p) {
         .attr('d', line(bins));
     }
 
-    function addBoxPlot(g, vals, boxPlotWidth) {
-      // v.y
-      /* var y = d3.scale.linear()
-      .range([param.height-param.margin.bottom, param.margin.top])
-      .domain(param.domain); */
-      // v.x
-      /*  var x = d3.scale.linear()
-      .range([0, param.catWidth]) */
-
+    function addBoxPlot(g, vals, k, boxPlotWidth) {
       const left = 0.5 - (boxPlotWidth / 2);
       const right = 0.5 + (boxPlotWidth / 2);
 
@@ -328,47 +304,58 @@ export default function Chart(p) {
         probs[i] = v.y(d4.quantile(vals, probs[i]));
       }
 
-      g.append('rect')
-        .attr('class', 'boxplot')
+      const iSH = [0, 2, 4];
+      const iSV = [[0, 1], [3, 4]];
+
+      sel = g.selectAll('.boxplot').data([k]);
+      // exit // update
+      // add
+      add = sel.enter().append('g')
+        .attr('class', 'boxplot');
+      add.selectAll('.box').data([k])
+        .enter().append('rect')
+        .attr('class', 'box')
+        .style('fill', p.boxFill)
+        .style('stroke', p.boxStroke);
+      add.selectAll('.iSH').data(iSH)
+        .enter().append('line')
+        .attr('class', 'ISH')
+        .style('fill', p.boxStroke)
+        .style('stroke', p.boxStroke);
+      add.selectAll('iSV').data(iSV)
+        .enter().append('line')
+        .attr('class', 'ISV')
+        .style('stroke', p.boxStroke);
+      add.selectAll('.mean').data([k])
+        .enter().append('circle')
+        .attr('class', 'mean')
+        .style('fill', p.meanColor)
+        .style('stroke', p.boxStroke)
+        .attr('r', v.x(boxPlotWidth / 5));
+      // update
+      sel = d4.select(g.node());
+      sel.select('.box')
+        .transition(t3)
         .attr('x', v.x(left))
         .attr('width', v.x(right) - v.x(left))
         .attr('y', probs[3])
-        .attr('height', -probs[3] + probs[1])
-        .style('fill', p.boxFill)
-        .style('stroke', p.boxStroke);
-
-      let iS = [0, 2, 4];
-      const iSclass = ['', 'median', ''];
-      const iSColor = [p.boxStroke, p.meanColor, p.boxStroke];
-      for (let i = 0; i < iS.length; i++) {
-        g.append('line')
-        .attr('class', 'boxplot ' + iSclass[i])
+        .attr('height', -probs[3] + probs[1]);
+      sel.selectAll('.ISH')
+        .transition(t3)
         .attr('x1', v.x(left))
         .attr('x2', v.x(right))
-        .attr('y1', probs[iS[i]])
-        .attr('y2', probs[iS[i]])
-        .style('fill', iSColor[i])
-        .style('stroke', iSColor[i]);
-      }
-
-      iS = [[0, 1], [3, 4]];
-      for (let i = 0; i < iS.length; i++) {
-        g.append('line')
-        .attr('class', 'boxplot')
+        .attr('y1', d => probs[d])
+        .attr('y2', d => probs[d]);
+      sel.selectAll('.ISV')
+        .transition(t3)
         .attr('x1', v.x(0.5))
         .attr('x2', v.x(0.5))
-        .attr('y1', probs[iS[i][0]])
-        .attr('y2', probs[iS[i][1]])
-        .style('stroke', p.boxStroke);
-      }
-
-      g.append('circle')
-      .attr('class', 'boxplot mean')
-      .attr('cx', v.x(0.5))
-      .attr('cy', v.y(d4.mean(vals)))
-      .attr('r', v.x(boxPlotWidth / 5))
-      .style('fill', p.boxFill)
-      .style('stroke', p.meanColor);
+        .attr('y1', d => probs[d[0]])
+        .attr('y2', d => probs[d[1]]);
+      sel.selectAll('.mean')
+        .transition(t3)
+        .attr('cx', v.x(0.5))
+        .attr('cy', v.y(d4.mean(vals)));
     }
 
     function addLabel(g, label) {
