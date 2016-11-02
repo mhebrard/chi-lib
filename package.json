@@ -23,15 +23,7 @@
         2,
         "never"
       ],
-      "no-warning-comments": 0,
-      "babel/new-cap": [
-        2,
-        {
-          "capIsNewExceptions": [
-            "Polymer"
-          ]
-        }
-      ]
+      "no-warning-comments": 0
     }
   },
   "dependencies": {
