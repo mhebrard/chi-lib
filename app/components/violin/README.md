@@ -27,4 +27,4 @@ Series of values represented as violin plot. The corps of the violin is the dist
 * labelColor = '#000': labels color
 * resolution = 10: number of bins for the violin
 * interpolation 'basis': shape of the violin (basis | linear | step)
-* normalized = false: violin X scals is shared (false) or specific (true);
+* normalized = false: violin X scale is shared (false) or specific (true);
