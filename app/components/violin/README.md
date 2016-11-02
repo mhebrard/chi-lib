@@ -1,4 +1,4 @@
-# Violin
+# Violin Plot
 Series of values represented as violin plot. The corps of the violin is the distribution of values mirroring on Y axis. A box plot is added on top of the violin.
 
 **sources**

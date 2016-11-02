@@ -258,11 +258,11 @@ export default function Chart(p) {
         .y(d => v.yV(d.length));
 
       // histogram
-      sel = g.selectAll('.violin').data([k]);
+      sel = g.selectAll('.histo').data([k]);
       // exit // update
       // add
       add = sel.enter().append('g')
-        .attr('class', 'violin');
+        .attr('class', 'histo');
       let sub = add.append('g')
         .attr('class', 'plus')
         .attr('transform', `rotate(90,0,0)  translate(0,-${p.catWidth})`);
