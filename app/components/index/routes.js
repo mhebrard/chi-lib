@@ -1,50 +1,48 @@
 import angular from 'angular';
 
-import indexComponent from "./component";
 import treemapComponent from '../treemap/component';
 import sunburstComponent from '../sunburst/component';
 import dendrogramComponent from '../dendrogram/component';
 import radialComponent from '../radial/component';
 import clonalComponent from '../clonal/component';
-
-const folder = 'hierarchy';
+import violinComponent from '../violin/component';
 
 routeConfig.$inject = ['$routeProvider'];
-function routeConfig ($routeProvider) {
+function routeConfig($routeProvider) {
   $routeProvider
-    .when('/'+folder, {
-      template: '<'+folder+' data-package="$resolve.dataPackage"></'+folder+'>',
-      datapackageUrl: 'components/'+folder+'/datapackage.json'
-    })
-    .when('/'+folder+'/treemap', {
+    .when('/treemap', {
       template: '<treemap data-package="$resolve.dataPackage"></treemap>',
       datapackageUrl: 'components/treemap/datapackage.json'
     })
-    .when('/'+folder+'/sunburst', {
+    .when('/sunburst', {
       template: '<sunburst data-package="$resolve.dataPackage"></sunburst>',
       datapackageUrl: 'components/sunburst/datapackage.json'
     })
-    .when('/'+folder+'/dendrogram', {
+    .when('/dendrogram', {
       template: '<dendrogram data-package="$resolve.dataPackage"></dendrogram>',
       datapackageUrl: 'components/dendrogram/datapackage.json'
     })
-    .when('/'+folder+'/radial', {
+    .when('/radial', {
       template: '<radial data-package="$resolve.dataPackage"></radial>',
       datapackageUrl: 'components/radial/datapackage.json'
     })
-    .when('/'+folder+'/clonal', {
+    .when('/clonal', {
       template: '<clonal data-package="$resolve.dataPackage"></clonal>',
       datapackageUrl: 'components/clonal/datapackage.json'
+    })
+    .when('/violin', {
+      template: '<violin data-package="$resolve.dataPackage"></violin>',
+      datapackageUrl: 'components/violin/datapackage.json'
     })
     .otherwise({redirectTo: '/'});
 }
 
 export default angular
-  .module(folder, ['projectX.dataService'])
-  .component(folder, indexComponent)
+  .module('index', ['projectX.dataService'])
   .component('treemap', treemapComponent)
   .component('sunburst', sunburstComponent)
   .component('dendrogram', dendrogramComponent)
   .component('radial', radialComponent)
   .component('clonal', clonalComponent)
+  .component('violin', violinComponent)
   .config(routeConfig);

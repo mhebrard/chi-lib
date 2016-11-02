@@ -6,7 +6,7 @@ export default {
     }
   },
   template: {
-    title: 'Visualisation Gallery of LIB',
+    title: 'Visualization Gallery of LIB',
     webcomponents: false
   }
 };
