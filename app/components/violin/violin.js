@@ -48,7 +48,7 @@ export default function Chart(p) {
   p.labelColor = p.labelColor || '#000';
   p.resolution = p.resolution || 10;
   p.interpolation = p.interpolation || 'basis'; // basis | linear | step
-  p.normalized = p.normalized || false;
+  p.xScale = p.xScale === 'common' ? 'common' : 'each'; // each | common
 
   const color = d4.scaleOrdinal(p.color ? p.color : d4.schemeSet3);
   const v = {}; // initial variables
@@ -148,9 +148,9 @@ export default function Chart(p) {
   };
 
   chart.update = function() {
-    console.log('UPDATE');
+    // console.log('UPDATE');
     // series
-    const keys = Object.keys(p.data);
+    const keys = Object.keys(p.data).sort(d4.ascending);
     const sorted = keys.map(k => p.data[k].sort(d4.ascending));
 
     // update pattern
@@ -209,7 +209,7 @@ export default function Chart(p) {
     // Violin X scale
     v.xV.domain(v.domain);
     // Violin Y scale
-    if (!p.normalized) { // same y scale for all series
+    if (p.xScale === 'common') { // same y scale for all series
       // violin width
       v.yViolinMax = Math.max(...v.bins.map(b => {
         return Math.max(...b.map(vals => vals.length));
@@ -245,6 +245,12 @@ export default function Chart(p) {
     });
 
     function addViolin(g, bins, k) {
+      // Violin Y scale
+      if (p.xScale === 'each') { // y scale for each series
+        // violin width
+        v.yViolinMax = Math.max(...bins.map(vals => vals.length));
+        v.yV.domain([0, v.yViolinMax]);
+      }
       // shapes
       const area = d4.area()
         .curve(v.curve)
