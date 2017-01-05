@@ -31,7 +31,7 @@ function controller () {
 
 export default {
   controller,
-  templateUrl: 'components/treemap/index.html',
+  templateUrl: 'components/charts/treemap/index.html',
   bindings: {
     dataPackage: '<package'
   }

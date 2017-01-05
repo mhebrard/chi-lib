@@ -51,7 +51,7 @@ function controller($log, dataService) {
 
 export default {
   controller,
-  templateUrl: 'components/violin/violin.html',
+  templateUrl: 'components/charts/violin/violin.html',
   bindings: {
     dataPackage: '<package'
   }

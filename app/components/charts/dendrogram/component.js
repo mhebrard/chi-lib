@@ -53,7 +53,7 @@ function controller($log, dataService) {
 
 export default {
   controller,
-  templateUrl: 'components/dendrogram/dendrogram.html',
+  templateUrl: 'components/charts/dendrogram/dendrogram.html',
   bindings: {
     dataPackage: '<package'
   }

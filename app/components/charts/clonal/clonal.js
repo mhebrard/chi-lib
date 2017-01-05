@@ -5,20 +5,15 @@ import {scaleOrdinal} from 'd3-scale';
 import {schemeSet3} from 'd3-scale-chromatic';
 import {rgb} from 'd3-color';
 
-// test d3 version Map d3v4
-let d4 = {};
-// if (d3.version) { // d3v3.x present as global
-  d4 = {
-    select, selectAll,
-    hierarchy, partition,
-    transition,
-    scaleOrdinal,
-    schemeSet3,
-    rgb
-  };
-// } else { // d3v4 present as global
-//  d4 = d3;
-// }
+// Map d3v4
+const d4 = {
+  select, selectAll,
+  hierarchy, partition,
+  transition,
+  scaleOrdinal,
+  schemeSet3,
+  rgb
+};
 
 export default function Chart(p) {
   const chart = {version: 1.0};

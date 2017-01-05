@@ -31,7 +31,7 @@ function controller () {
 
 export default {
   controller,
-  templateUrl: 'components/radial/index.html',
+  templateUrl: 'components/charts/radial/index.html',
   bindings: {
     dataPackage: '<package'
   }
