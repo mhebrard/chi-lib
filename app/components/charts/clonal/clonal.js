@@ -7,7 +7,7 @@ import {rgb} from 'd3-color';
 
 // test d3 version Map d3v4
 let d4 = {};
-if (d3.version) { // d3v3.x present as global
+// if (d3.version) { // d3v3.x present as global
   d4 = {
     select, selectAll,
     hierarchy, partition,
@@ -16,9 +16,9 @@ if (d3.version) { // d3v3.x present as global
     schemeSet3,
     rgb
   };
-} else { // d3v4 present as global
-  d4 = d3;
-}
+// } else { // d3v4 present as global
+//   d4 = d3;
+// }
 
 export default function Chart(p) {
   const chart = {version: 1.0};

@@ -4,28 +4,12 @@
   "description": "Index of Visualizations",
   "resources": [
     {
-      "path": "../clonal/datapackage.json",
-      "link": "#/clonal/"
+      "path": "../charts/charts-index/datapackage.json",
+      "link": "#/charts/"
     },
     {
-      "path": "../dendrogram/datapackage.json",
-      "link": "#/dendrogram/"
-    },
-    {
-      "path": "../radial/datapackage.json",
-      "link": "#/radial/"
-    },
-    {
-      "path": "../sunburst/datapackage.json",
-      "link": "#/sunburst/"
-    },
-    {
-      "path": "../treemap/datapackage.json",
-      "link": "#/treemap/"
-    },
-    {
-      "path": "../violin/datapackage.json",
-      "link": "#/violin/"
+      "path": "../projects/projects-index/datapackage.json",
+      "link": "#/projects/"
     }
   ]
 }

@@ -1,0 +1,8 @@
+{
+  "name": "Charts Index",
+  "title": "charts-Index",
+  "description": "Index of Visualizations",
+  "resources": [
+    "../../../data/flare.json"
+  ]
+}

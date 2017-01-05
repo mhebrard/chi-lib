@@ -1,0 +1,9 @@
+{
+  "name": "projects-Index",
+  "title": "projects-Index",
+  "description": "Index of Visualizations",
+  "resources": [
+    "../../../data/flare.json"
+
+  ]
+}
