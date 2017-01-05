@@ -1,9 +1,11 @@
 {
-  "name": "projects-Index",
-  "title": "projects-Index",
-  "description": "Index of Visualizations",
+  "name": "projects",
+  "title": "Projects",
+  "description": "List of Projects",
   "resources": [
-    "../../../data/flare.json"
-
+    {
+      "path": "../phylogeny/datapackage.json",
+      "link": "#/projects/phylogeny/"
+    }
   ]
 }
