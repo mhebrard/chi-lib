@@ -1,24 +1,18 @@
 import {select, selectAll} from 'd3-selection';
-import {hierarchy, partition} from 'd3-hierarchy';
+import {hierarchy, cluster} from 'd3-hierarchy';
 import {transition} from 'd3-transition';
-import {scaleOrdinal} from 'd3-scale';
-import {schemeSet3} from 'd3-scale-chromatic';
-import {rgb} from 'd3-color';
 
 // test d3 version Map d3v4
 let d4 = {};
-// if (d3.version) { // d3v3.x present as global
+if (d3.version) { // d3v3.x present as global
   d4 = {
     select, selectAll,
-    hierarchy, partition,
-    transition,
-    scaleOrdinal,
-    schemeSet3,
-    rgb
+    hierarchy, cluster,
+    transition
   };
-// } else { // d3v4 present as global
-//  d4 = d3;
-// }
+} else { // d3v4 present as global
+  d4 = d3;
+}
 
 export default function Chart(p) {
   const chart = {version: 1.0};
@@ -28,16 +22,13 @@ export default function Chart(p) {
   p.div = p.div || 'body';
   p.id = p.id || 'view';
   p.data = p.data || {name: 'root', size: 1};
-  p.title = p.title || `Clonal Evolution of ${p.id}`;
+  p.title = p.title || `Dendrogram of ${p.id}`;
   p.titleSize = p.titleSize || 18;
   p.fontSize = p.fontSize || 14;
   p.width = p.width || 800;
   p.height = p.height || 600;
-  p.margin = p.margin || {top: 30, bottom: 10, left: 50, right: 50};
+  p.margin = p.margin || {top: 20, bottom: 10, left: 50, right: 200};
   p.shape = p.shape || 'curve';
-  p.color = p.color || null;
-
-  const color = d4.scaleOrdinal(p.color ? p.color : d4.schemeSet3);
 
   // consume action: mutate data and apply changes
   chart.consumer = function(action) {
@@ -51,12 +42,10 @@ export default function Chart(p) {
         break;
       case 'collapse':
         action.node.collapsed = true;
-        collapse(action.node);
         chart.update();
         break;
       case 'expand':
         action.node.collapsed = false;
-        expand(action.node);
         chart.update();
         break;
       case 'hover':
@@ -75,30 +64,24 @@ export default function Chart(p) {
   // add dispatcher to parameters
   p.dispatch = p.dispatch || chart.consumer;
 
-  const middle = d => [d.y0, (d.x0 + d.x1) / 2];
-
-  const area = (d, show) => {
-    const coord = middle(d);
+  // path of edges
+  const link = (d, show) => {
     let path;
     let f = 'L';
     if (show) {
       if (p.shape === 'comb') {
-        path = `M${p.width - p.margin.left - p.margin.right}, ${d.x0}` +
-        `L${d.y1}, ${d.x0}` +
-        `${f}${coord[0]}, ${coord[1]} ${d.y1}, ${d.x1}` +
-        `L${p.width - p.margin.left - p.margin.right}, ${d.x1}`;
+        path = `M${d.y}, ${d.x} ${f}${d.parent.y}, ${d.parent.x}`;
       } else {
         if (p.shape === 'curve') {
           f = 'C';
         }
-        path = `M${p.width - p.margin.left - p.margin.right}, ${d.x0} ` +
-        `L${d.y1}, ${d.x0}` +
-        `${f}${d.y0 + p.space}, ${d.x0} ${d.y0 + p.space}, ${coord[1]} ${coord[0]}, ${coord[1]}` +
-        `${f}${d.y0 + p.space}, ${coord[1]} ${d.y0 + p.space}, ${d.x1} ${d.y1}, ${d.x1}` +
-        `L${p.width - p.margin.left - p.margin.right}, ${d.x1}`;
+        path = `M${d.y}, ${d.x} ` +
+        `${f}${d.parent.y + p.space}, ${d.x} ` +
+        `${d.parent.y + p.space}, ${d.parent.x} ` +
+        `${d.parent.y}, ${d.parent.x}`;
       }
     } else {
-      path = `M${coord[0]}, ${coord[1]} L${coord[0]}, ${coord[1]}`;
+      path = `M${d.parent.y}, ${d.parent.x} L${d.parent.y}, ${d.parent.x}`;
     }
     return path;
   };
@@ -142,16 +125,18 @@ export default function Chart(p) {
   };
 
   chart.update = function() {
-    // console.log('chart.update');
     // layout
-    const root = d4.hierarchy(p.data);
-    d4.partition()
+    const filter = function(d) {
+      if (d.children && !d.collapsed) {
+        return d.children;
+      }
+    };
+    const root = d4.hierarchy(p.data, filter);
+    d4.cluster()
       .size([
         p.height - p.margin.top - p.margin.bottom,
         p.width - p.margin.left - p.margin.right
-      ])(root.sum(d => d.size));
-
-    // console.log('root', root);
+      ])(root);
 
     // edge breakpoint (distance to parent node where the break occure)
     p.space = (p.width - p.margin.left - p.margin.right) / (2 * root.height);
@@ -167,51 +152,48 @@ export default function Chart(p) {
 
     // edges
     sel = d4.select(`#${p.id}`).select('.edges').selectAll('.edge')
-      .data(root.descendants().filter(d => !d.data.hidden), d => d.data.name);
+      .data(root.descendants().slice(1), d => d.data.name);
     // exit
     sel.exit().transition(t1)
-      .attr('d', d => area(d, false))
+      .attr('d', d => link(d, false))
       .style('opacity', 0)
       .remove();
     // update
     sel.transition(t2)
-      .attr('d', d => area(d, true));
+      .attr('d', d => link(d, true));
     // add
     add = sel.enter().append('path')
       .attr('class', d => `edge e${d.data.name.replace(' ', '')}`)
-      .attr('d', d => area(d, false))
-      .style('fill', d => color(d.data.name))
-      .style('stroke', '#000')
+      .attr('d', d => link(d, false))
+      .style('fill', 'none')
+      .style('stroke', '#ccc')
       .style('stroke-width', '1.5px')
       .style('opacity', 0);
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-      .attr('d', d => area(d, true))
+      .attr('d', d => link(d, true))
       .style('opacity', 1);
 
     // nodes
     sel = d4.select(`#${p.id}`).select('.nodes').selectAll('.node')
-        .data(root.descendants().filter(d => !d.data.hidden), d => d.data.name);
+        .data(root.descendants(), d => d.data.name);
     // exit
     sel.exit().transition(t1)
-      .attr('transform', d => {
-        const coord = d.parent ? middle(d.parent) : middle(root);
-        return `translate(${coord[0]}, ${coord[1]})`;
-      })
+      .attr('transform', d => `translate(${d.parent.y}, ${d.parent.x})`)
       .style('opacity', 0)
       .remove();
     // update
     sel.transition(t2)
-    .attr('transform', d => {
-      const coord = middle(d);
-      return `translate(${coord[0]}, ${coord[1]})`;
-    });
+    .attr('transform', d => `translate(${d.y}, ${d.x})`);
     // add
     add = sel.enter().append('g')
       .attr('class', d => `node n${d.data.name.replace(' ', '')}`)
       .attr('transform', d => {
-        const coord = d.parent ? middle(d.parent) : middle(root);
+        let coord = [0, p.height / 2];
+        if (d.parent) {
+          coord = [d.parent.y, d.parent.x];
+        }
         return `translate(${coord[0]}, ${coord[1]})`;
       })
       .style('cursor', 'pointer')
@@ -219,70 +201,47 @@ export default function Chart(p) {
       .on('click', d => {
         if (d.data.collapsed) {
           p.dispatch({type: 'expand', node: d.data});
-        } else if (d.children) {
+        } else if (d.parent && d.children) {
           p.dispatch({type: 'collapse', node: d.data});
         }
       })
       .on('mouseover', d => p.dispatch({type: 'hover', node: d.data}))
       .on('mouseout', d => p.dispatch({type: 'hoverOut', node: d.data}));
-    add.append('circle')
-      .style('fill', d => color(d.data.name))
-      .style('stroke-width', '2px');
-    add.append('text')
-      .attr('dy', 3)
-      .attr('dx', -8)
-      .style('text-anchor', 'end');
+    add.append('circle').style('stroke-width', '2px');
+    add.append('text').attr('dy', 3);
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-      .attr('transform', d => {
-        const coord = middle(d);
-        return `translate(${coord[0]}, ${coord[1]})`;
-      })
+      .attr('transform', d => `translate(${d.y}, ${d.x})`)
       .style('opacity', 1);
     sel.select('circle')
-        .attr('r', d => d.data.collapsed ? 5.5 : 4.5)
-        .style('stroke', d => d.data.collapsed ? '#324eb3' : '#000000');
+      .attr('r', d => d.data.collapsed ? 5.5 : 4.5)
+      .style('fill', d => d.data.collapsed ? '#ddd' : '#fff')
+      .style('stroke', d => d.data.collapsed ? '#324eb3' : '#009a74');
     sel.select('text')
+      .attr('dx', d => d.children ? -8 : 8)
+      .style('text-anchor', d => d.children ? 'end' : 'start')
       .text(d => d.data.name);
   };
 
   // HELPERS
-  function collapse(n) {
-    const d = d4.select(`#${p.id}`).selectAll(`.n${n.name.replace(' ', '')}`);
-    d.datum().descendants().slice(1).forEach(n => {
-      n.data.collapsed = false;
-      n.data.hidden = true;
-    });
-  }
-
-  function expand(n) {
-    const d = d4.select(`#${p.id}`).selectAll(`.n${n.name.replace(' ', '')}`);
-    d.datum().descendants().slice(1).forEach(n => {
-      n.data.hidden = false;
-    });
-  }
-
   function hover(n) {
     // hl node
-    const d = d4.select(`#${p.id}`).selectAll(`.n${n.name.replace(' ', '')}`);
+    const d = d4.select(`#${p.id}`).selectAll(`.n${n.name}`);
     d.select('circle').style('stroke', '#9a0026');
     d.select('text').style('font-weight', 'bold');
-    // hl path
-    d4.select(`#${p.id}`).select('path.hl')
-      .attr('d', area(d.datum(), true))
-      .style('fill', () => {
-        const c = d4.rgb(color(n.name));
-        c.opacity = 0.9;
-        return c;
-      });
+    // reconstruct path to too root for hl
+    const path = d.datum().ancestors().slice(0, -1).reduce((t, a) => {
+      t += link(a, true);
+      return t;
+    }, '');
+    d4.select(`#${p.id}`).select('path.hl').attr('d', path);
   }
 
   function hoverOut(n) {
-    // console.log(n);
     // un-hl node
-    const d = d4.select(`#${p.id}`).selectAll(`.n${n.name.replace(' ', '')}`);
-    d.select('circle').style('stroke', d => d.data.collapsed ? '#324eb3' : '#000000');
+    const d = d4.select(`#${p.id}`).selectAll(`.n${n.name}`);
+    d.select('circle').style('stroke', d => d.data.collapsed ? '#324eb3' : '#009a74');
     d.select('text').style('font-weight', '');
     // delete hl path
     d4.select(`#${p.id}`).select('path.hl').attr('d', null);

@@ -1,0 +1,10 @@
+{
+	"name": "Treemap",
+	"title": "Treemap",
+	"description": "Display a Hierarchy as nested rectangles",
+	"resources": [
+		"../../data/flare.json"
+	],
+	"image": "thumbnail.png",
+	"readme": "README.md"
+}

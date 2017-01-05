@@ -1,0 +1,11 @@
+<package-editor options="$ctrl.editorOptions"></package-editor>
+
+<div id="charts" class="container">
+  <h2>{{$ctrl.dataPackage.title}}</h2>
+  <div marked="$ctrl.dataPackage.description"></div>
+
+  <div id="chart" class="chart"></div>
+  <div id="tip" class="tooltip"></div>
+
+  <marked ng-include="$ctrl.dataPackage.readme"></marked>
+</div>
