@@ -5,14 +5,14 @@ import clonalComponent from '../clonal/component';
 routeConfig.$inject = ['$routeProvider'];
 function routeConfig($routeProvider) {
   $routeProvider
-    .when('/clonal', {
+    .when('/charts/clonal', {
       template: '<clonal data-package="$resolve.dataPackage"></clonal>',
-      datapackageUrl: 'components/clonal/datapackage.json'
+      datapackageUrl: 'components/charts/clonal/datapackage.json'
     })
-    .otherwise({redirectTo: '/'});
+    .otherwise({redirectTo: '/charts'});
 }
 
 export default angular
-  .module('index', ['projectX.dataService'])
+  .module('charts-index', ['projectX.dataService'])
   .component('clonal', clonalComponent)
   .config(routeConfig);

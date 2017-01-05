@@ -1,18 +1,18 @@
 import angular from 'angular';
 
-import clonalComponent from '../clonal/component';
+import phylogenyComponent from '../clonal/component';
 
 routeConfig.$inject = ['$routeProvider'];
 function routeConfig($routeProvider) {
   $routeProvider
-    .when('/clonal', {
-      template: '<clonal data-package="$resolve.dataPackage"></clonal>',
-      datapackageUrl: 'components/clonal/datapackage.json'
+    .when('/phylogeny', {
+      template: '<phylogeny data-package="$resolve.dataPackage"></phylogeny>',
+      datapackageUrl: 'components/projects/phylogeny/datapackage.json'
     })
     .otherwise({redirectTo: '/'});
 }
 
 export default angular
   .module('index', ['projectX.dataService'])
-  .component('clonal', clonalComponent)
+  .component('phylogeny', phylogenyComponent)
   .config(routeConfig);
