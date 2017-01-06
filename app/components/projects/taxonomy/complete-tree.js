@@ -7,7 +7,7 @@ const ranks = ['no rank', 'superkingdom', 'kingdom', 'subkingdom', 'superphylum'
 
 export default function CompleteTree(data) {
   // root init.
-  const root = {name: 'root', children: [], data: {hits: 0, rank: 'no rank', sample: 0}, id: '1'}; // skeleton tree
+  const root = {name: 'root', id: '1', size: 0, children: [], data: {rank: 'no rank', sample: 0}}; // skeleton tree
   bkeys.push(root.id);
   bobjs.push(root);
 
@@ -45,9 +45,10 @@ function complete(n, p, s) {
   } else { // else new skeleton node
     const psk = bobjs[bkeys.indexOf(p.id)];
     nsk = {name: n.name,
+      size: 0,
       children: [],
       parent: psk,
-      data: {hits: 0, rank: n.data.rank, sample: 0},
+      data: {rank: n.data.rank, sample: 0},
       id: n.id
     };
     psk.children.push(nsk);
@@ -58,9 +59,9 @@ function complete(n, p, s) {
   // Add tag node
   if (n.data.assigned !== '0') {
     const tag = {name: n.name,
+      size: Number(n.data.assigned),
       children: [],
       data: {
-        hits: Number(n.data.assigned),
         rank: n.data.rank,
         sample: s // ,
         // percent: Number(n.data.assigned) * 100 / h[s]
