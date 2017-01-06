@@ -3,7 +3,7 @@ import angular from 'angular';
 import aboutHTML from 'components/index/README.md!md'; // 'components/about/about.md!md';
 import errorHTML from 'components/error/error.html!text';
 
-import examples from './index/routes';
+import indexRoutes from './index/routes';
 import indexComponent from './index/component';
 
 configRoutes.$inject = ['$routeProvider'];
@@ -28,6 +28,6 @@ function configRoutes($routeProvider) {
 }
 
 export default angular
-  .module('routes', [examples.name])
+  .module('routes', [indexRoutes.name])
   .component('index', indexComponent)
   .config(configRoutes);

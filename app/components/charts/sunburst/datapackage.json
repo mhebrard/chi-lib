@@ -3,7 +3,7 @@
 	"title": "Sunburst",
 	"description": "Display a Hierarchy as stacked arcs",
 	"resources": [
-		"../../data/flare.json"
+		"../../../data/flare.json"
 	],
 	"image": "thumbnail.png",
 	"readme": "README.md"

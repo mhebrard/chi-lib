@@ -3,7 +3,7 @@
 	"title": "Dendrogram",
 	"description": "Vertical tree with leaves right aligned.",
 	"resources": [
-		"../../data/flare.json"
+		"../../../data/flare.json"
 	],
 	"image": "thumbnail.png",
 	"readme": "README.md"

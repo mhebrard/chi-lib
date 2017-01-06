@@ -3,7 +3,7 @@
 	"title": "Violin Plot",
 	"description": "Series of values represented as violin plot",
 	"resources": [
-		"../../data/series.json"
+		"../../../data/series.json"
 	],
 	"image": "thumbnail.png",
 	"readme": "README.md"

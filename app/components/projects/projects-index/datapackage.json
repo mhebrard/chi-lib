@@ -1,0 +1,11 @@
+{
+  "name": "projects",
+  "title": "Projects",
+  "description": "Projects that combine charts and biological datasets",
+  "resources": [
+    {
+      "path": "../taxonomy/datapackage.json",
+      "link": "#/projects/taxonomy/"
+    }
+  ]
+}

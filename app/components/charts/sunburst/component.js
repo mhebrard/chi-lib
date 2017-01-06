@@ -31,7 +31,7 @@ function controller () {
 
 export default {
   controller,
-  templateUrl: 'components/sunburst/index.html',
+  templateUrl: 'components/charts/sunburst/index.html',
   bindings: {
     dataPackage: '<package'
   }

@@ -45,7 +45,7 @@ function controller($log, dataService) {
 
 export default {
   controller,
-  templateUrl: 'components/clonal/clonal.html',
+  templateUrl: 'components/charts/clonal/clonal.html',
   bindings: {
     dataPackage: '<package'
   }

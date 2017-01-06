@@ -1,4 +1,4 @@
-import Chart from './dendrogram';
+import Chart from './violin';
 
 controller.$inject = ['$log', 'dataService'];
 function controller($log, dataService) {
@@ -7,12 +7,18 @@ function controller($log, dataService) {
   // views
   const paramChart = {
     div: 'charts',
-    id: 'dendro',
+    id: 'violin',
     dispatch,
-    title: 'Dendrogram of flare package',
+    title: 'Charaters Stats',
     titleSize: 20,
-    width: 800,
-    height: 2500
+    // margin:{top:10, bottom:20, left:50, right:50},
+    height: 300,
+    catWidth: 100,
+    catSpacing: 10,
+    resolution: 20
+    // ymin: 0,
+    // ymax: 255
+    // interpolation: 'step'
     // shape: 'rake' // comb, curve, rake
   };
   const chart = new Chart(paramChart);
@@ -28,21 +34,13 @@ function controller($log, dataService) {
   });
 
   function draw() {
-    // init only chart
     chart.init();
-    // init all views
-    // dispatch({type: 'init'});
     update();
   }
 
   function update() {
-    // deep clone data
-    // const d = JSON.parse(JSON.stringify($ctrl.dataPackage.resources[0].data));
-    // update only chart
     chart.data($ctrl.dataPackage.resources[0].data);
     chart.update();
-    // update all views
-    // dispatch({type: 'update', data: $ctrl.dataPackage.resources[0].data});
   }
 
   // dispatch all action to all views
@@ -53,7 +51,7 @@ function controller($log, dataService) {
 
 export default {
   controller,
-  templateUrl: 'components/dendrogram/dendrogram.html',
+  templateUrl: 'components/charts/violin/violin.html',
   bindings: {
     dataPackage: '<package'
   }
