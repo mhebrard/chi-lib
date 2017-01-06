@@ -45,7 +45,7 @@ function controller($log, dataService) {
 
 export default {
   controller,
-  templateUrl: 'components/projects/phylogeny/phylogeny.html',
+  templateUrl: 'components/projects/taxonomy/taxonomy.html',
   bindings: {
     dataPackage: '<package'
   }

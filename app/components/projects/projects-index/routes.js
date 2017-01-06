@@ -1,11 +1,16 @@
 import angular from 'angular';
 
+import projectsComponent from './component';
 import taxonomyComponent from '../taxonomy/component';
 
 routeConfig.$inject = ['$routeProvider'];
 function routeConfig($routeProvider) {
   $routeProvider
-    .when('/taxonomy', {
+    .when('/projects', {
+      template: '<projects data-package="$resolve.dataPackage"></projects>',
+      datapackageUrl: 'components/projects/projects-index/datapackage.json'
+    })
+    .when('/projects/taxonomy', {
       template: '<taxonomy data-package="$resolve.dataPackage"></taxonomy>',
       datapackageUrl: 'components/projects/taxonomy/datapackage.json'
     })
@@ -13,6 +18,7 @@ function routeConfig($routeProvider) {
 }
 
 export default angular
-  .module('index', ['projectX.dataService'])
+  .module('projects-index', ['projectX.dataService'])
+  .component('projects-idx', projectsComponent)
   .component('taxonomy', taxonomyComponent)
   .config(routeConfig);
