@@ -14,7 +14,7 @@ function controller($log, dataService) {
     div: 'charts',
     id: 'treemap',
     dispatch,
-    // title: 'Clonal evolution diagram of flare package',
+    title: `Treemap of ${$ctrl.dataPackage.resources[0].name}`
     // titleSize: 20,
     // width: 700,
     // height: 5000
@@ -38,8 +38,8 @@ function controller($log, dataService) {
   }
 
   function update() {
-    treemap.data($ctrl.dataPackage.resources[0].data);
-    // treemap.update();
+    treemap.data(tree);
+    treemap.update();
   }
 
   // dispatch all action to all views

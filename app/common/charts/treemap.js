@@ -156,20 +156,19 @@ export default function Chart(p) {
     return p.data;
   };
 
-/*  chart.update = function() {
-    // console.log('chart.update');
+  chart.update = function() {
+    console.log('chart.update');
     // layout
     const root = d4.hierarchy(p.data);
-    d4.partition()
+    d4.treemap()
       .size([
-        p.height - p.margin.top - p.margin.bottom,
-        p.width - p.margin.left - p.margin.right
-      ])(root.sum(d => d.size));
+        p.width - p.margin.left - p.margin.right,
+        p.height - p.margin.top - 20 - p.margin.bottom
+      ])
+      .round(false)
+      .padding(2)(root.sum(d => d.size));
 
-    // console.log('root', root);
-
-    // edge breakpoint (distance to parent node where the break occure)
-    p.space = (p.width - p.margin.left - p.margin.right) / (2 * root.height);
+    console.log('root', root);
 
     // update pattern
     let sel;
@@ -180,32 +179,40 @@ export default function Chart(p) {
     const t2 = d4.transition().delay(delay).duration(delay);
     const t3 = d4.transition().delay(delay * 2).duration(delay);
 
-    // edges
-    sel = d4.select(`#${p.id}`).select('.edges').selectAll('.edge')
-      .data(root.descendants().filter(d => !d.data.hidden), d => d.data.name);
+    // rects
+    sel = d4.select(`#${p.id}`).select('.rects').selectAll('.rect')
+      .data(root.descendants(), d => d.data.id);
     // exit
     sel.exit().transition(t1)
-      .attr('d', d => area(d, false))
+      .attr('transform', 'translate(0,0)')
+      .attr('width', 0)
+      .attr('height', 0)
       .style('opacity', 0)
       .remove();
     // update
     sel.transition(t2)
-      .attr('d', d => area(d, true));
+      .attr('transform', d => `translate(${d.x0}, ${d.y0})`)
+      .attr('width', d => d.x1 - d.x0)
+      .attr('height', d => d.y1 - d.y0);
     // add
-    add = sel.enter().append('path')
-      .attr('class', d => `edge e${d.data.name.replace(' ', '')}`)
-      .attr('d', d => area(d, false))
+    add = sel.enter().append('rect')
+      .attr('class', d => `v${d.data.name.id + d.data.data.sample}`)
+      .attr('transform', 'translate(0,0)')
+      .attr('width', 0)
+      .attr('height', 0)
+      .style('opacity', 0)
       .style('fill', d => color(d.data.name))
       .style('stroke', '#000')
-      .style('stroke-width', '1.5px')
-      .style('opacity', 0);
+      .style('cursor', 'pointer');
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-      .attr('d', d => area(d, true))
-      .style('opacity', 1);
+    .attr('transform', d => `translate(${d.x0}, ${d.y0})`)
+    .attr('width', d => d.x1 - d.x0)
+    .attr('height', d => d.y1 - d.y0)
+    .style('opacity', 1);
 
-    // nodes
+  /*  // nodes
     sel = d4.select(`#${p.id}`).select('.nodes').selectAll('.node')
         .data(root.descendants().filter(d => !d.data.hidden), d => d.data.name);
     // exit
@@ -260,8 +267,9 @@ export default function Chart(p) {
         .style('stroke', d => d.data.collapsed ? '#324eb3' : '#000000');
     sel.select('text')
       .text(d => d.data.name);
+      */
   };
-*/
+
   // HELPERS
 /*  function collapse(n) {
     const d = d4.select(`#${p.id}`).selectAll(`.n${n.name.replace(' ', '')}`);
