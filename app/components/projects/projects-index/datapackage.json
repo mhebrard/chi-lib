@@ -1,11 +1,11 @@
 {
   "name": "projects",
   "title": "Projects",
-  "description": "List of Projects",
+  "description": "Projects that combine charts and biological datasets",
   "resources": [
     {
-      "path": "../phylogeny/datapackage.json",
-      "link": "#/projects/phylogeny/"
+      "path": "../taxonomy/datapackage.json",
+      "link": "#/projects/taxonomy/"
     }
   ]
 }

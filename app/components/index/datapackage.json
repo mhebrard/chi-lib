@@ -6,10 +6,6 @@
     {
       "path": "../charts/charts-index/datapackage.json",
       "link": "#/charts/"
-    },
-    {
-      "path": "../projects/projects-index/datapackage.json",
-      "link": "#/projects/"
     }
   ]
 }

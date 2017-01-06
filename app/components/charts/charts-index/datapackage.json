@@ -1,7 +1,7 @@
 {
   "name": "charts",
   "title": "Charts",
-  "description": "List of Charts",
+  "description": "Demo of charts using generic datasets (not related to biology)",
   "resources": [
     {
       "path": "../clonal/datapackage.json",
