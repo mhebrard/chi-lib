@@ -1,0 +1,31 @@
+{
+  "name": "charts",
+  "title": "Charts",
+  "description": "Demo of charts using generic datasets (not related to biology)",
+  "resources": [
+    {
+      "path": "../clonal/datapackage.json",
+      "link": "#/charts/clonal/"
+    },
+    {
+      "path": "../dendrogram/datapackage.json",
+      "link": "#/charts/dendrogram/"
+    },
+    {
+      "path": "../radial/datapackage.json",
+      "link": "#/charts/radial/"
+    },
+    {
+      "path": "../sunburst/datapackage.json",
+      "link": "#/charts/sunburst/"
+    },
+    {
+      "path": "../treemap/datapackage.json",
+      "link": "#/charts/treemap/"
+    },
+    {
+      "path": "../violin/datapackage.json",
+      "link": "#/charts/violin/"
+    }
+  ]
+}

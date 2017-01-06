@@ -1,28 +1,22 @@
-import Chart from './violin';
+// import Chart from './clonal';
 
 controller.$inject = ['$log', 'dataService'];
 function controller($log, dataService) {
   const $ctrl = this;
 
-  // views
+/*  // views
   const paramChart = {
     div: 'charts',
-    id: 'violin',
+    id: 'clonal',
     dispatch,
-    title: 'Charaters Stats',
+    title: 'Clonal evolution diagram of flare package',
     titleSize: 20,
-    // margin:{top:10, bottom:20, left:50, right:50},
-    height: 300,
-    catWidth: 100,
-    catSpacing: 10,
-    resolution: 20
-    // ymin: 0,
-    // ymax: 255
-    // interpolation: 'step'
+    width: 700,
+    height: 5000
     // shape: 'rake' // comb, curve, rake
   };
   const chart = new Chart(paramChart);
-
+*/
   return Object.assign($ctrl, {
     editorOptions: {
       data: $ctrl.dataPackage,
@@ -34,24 +28,24 @@ function controller($log, dataService) {
   });
 
   function draw() {
-    chart.init();
+//    chart.init();
     update();
   }
 
   function update() {
-    chart.data($ctrl.dataPackage.resources[0].data);
-    chart.update();
+//    chart.data($ctrl.dataPackage.resources[0].data);
+//    chart.update();
   }
 
   // dispatch all action to all views
   function dispatch(action) {
-    chart.consumer(action);
+//    chart.consumer(action);
   }
 }
 
 export default {
   controller,
-  templateUrl: 'components/violin/violin.html',
+  templateUrl: 'components/projects/phylogeny/phylogeny.html',
   bindings: {
     dataPackage: '<package'
   }
