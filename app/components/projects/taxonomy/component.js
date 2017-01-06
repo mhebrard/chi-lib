@@ -1,9 +1,14 @@
 // import Chart from './clonal';
+import completeTree from './complete-tree';
 
 controller.$inject = ['$log', 'dataService'];
 function controller($log, dataService) {
   const $ctrl = this;
 
+  console.log('data', $ctrl.dataPackage.resources[0].data);
+  // complete tree
+  const tree = completeTree($ctrl.dataPackage.resources[0].data);
+  console.log('tree', tree);
 /*  // views
   const paramChart = {
     div: 'charts',
