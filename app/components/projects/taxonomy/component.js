@@ -14,10 +14,8 @@ function controller($log, dataService) {
     div: 'charts',
     id: 'treemap',
     dispatch,
-    title: `Treemap of ${$ctrl.dataPackage.resources[0].name}`
+    title: `Treemap of ${$ctrl.dataPackage.resources[0].name}`,
     // titleSize: 20,
-    // width: 700,
-    // height: 5000
     // shape: 'rake' // comb, curve, rake
   };
   const treemap = new Treemap(paramTreemap);
