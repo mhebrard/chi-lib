@@ -118,8 +118,8 @@ export default function Chart(p) {
     .attr('x', 6)
     .attr('y', 4)
     .attr('dy', '.75em')
-    .style('pointer-events', 'none')
-    .text('Data loading..');
+    // .style('pointer-events', 'none')
+    .text('Root');
 
   };
 
