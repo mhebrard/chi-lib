@@ -2,17 +2,20 @@ import {select, selectAll} from 'd3-selection';
 import {hierarchy, treemap} from 'd3-hierarchy';
 import {transition} from 'd3-transition';
 import {scaleOrdinal} from 'd3-scale';
-// import {schemeSet3} from 'd3-scale-chromatic';
-// import {rgb} from 'd3-color';
+import {schemeSet3} from 'd3-scale-chromatic';
+import {line, curveLinear} from 'd3-shape';
+
+// workaround for event manager (d3sel.event)
+import * as d3sel from 'd3-selection';
 
 // Map d3v4
 const d4 = {
   select, selectAll,
   hierarchy, treemap,
   transition,
-  scaleOrdinal // ,
-//  schemeSet3,
-//  rgb
+  scaleOrdinal,
+  schemeSet3,
+  line, curveLinear
 };
 
 export default function Chart(p) {
@@ -29,8 +32,7 @@ export default function Chart(p) {
   p.width = p.width || 800;
   p.height = p.height || 600;
   p.margin = p.margin || {top: 20, bottom: 0, left: 0, right: 0};
-  // p.shape = p.shape || 'curve';
-  p.color = p.color || ['#cba841', '#8261cd', '#5ab74f', '#cc4ca8', '#a0b24f', '#d48ecf', '#557937', '#cb4c6b', '#4fb79b', '#c84a32', '#628bcd', '#db842e', '#944f83', '#926c2e', '#d7866c'];
+  p.color = p.color || d4.schemeSet3;
 
   const color = d4.scaleOrdinal(p.color);
 
@@ -71,34 +73,6 @@ export default function Chart(p) {
   // add dispatcher to parameters
   p.dispatch = p.dispatch || chart.consumer;
 
-  // const middle = d => [d.y0, (d.x0 + d.x1) / 2];
-
-/*  const area = (d, show) => {
-    const coord = middle(d);
-    let path;
-    let f = 'L';
-    if (show) {
-      if (p.shape === 'comb') {
-        path = `M${p.width - p.margin.left - p.margin.right}, ${d.x0}` +
-        `L${d.y1}, ${d.x0}` +
-        `${f}${coord[0]}, ${coord[1]} ${d.y1}, ${d.x1}` +
-        `L${p.width - p.margin.left - p.margin.right}, ${d.x1}`;
-      } else {
-        if (p.shape === 'curve') {
-          f = 'C';
-        }
-        path = `M${p.width - p.margin.left - p.margin.right}, ${d.x0} ` +
-        `L${d.y1}, ${d.x0}` +
-        `${f}${d.y0 + p.space}, ${d.x0} ${d.y0 + p.space}, ${coord[1]} ${coord[0]}, ${coord[1]}` +
-        `${f}${d.y0 + p.space}, ${coord[1]} ${d.y0 + p.space}, ${d.x1} ${d.y1}, ${d.x1}` +
-        `L${p.width - p.margin.left - p.margin.right}, ${d.x1}`;
-      }
-    } else {
-      path = `M${coord[0]}, ${coord[1]} L${coord[0]}, ${coord[1]}`;
-    }
-    return path;
-  };
-*/
   chart.init = function() {
     console.log('chart init');
     // SVG
@@ -119,17 +93,17 @@ export default function Chart(p) {
 
     // group for visual elements
     svg.append('g')
-    .attr('transform', `translate(${p.margin.left + 1}, ${p.margin.top + 20})`) // margin left, top
+    .attr('transform', `translate(${p.margin.left}, ${p.margin.top + 20})`) // margin left, top
     .classed('rects', true);
 
     // group for labels
     svg.append('g')
-    .attr('transform', `translate(${p.margin.left + 1}, ${p.margin.top + 20})`) // margin left, top
+    .attr('transform', `translate(${p.margin.left}, ${p.margin.top + 20})`) // margin left, top
     .classed('labels', true);
 
     // group for header (current zoom)
     const header = svg.append('g')
-    .attr('transform', `translate(${p.margin.left + 1}, ${p.margin.top})`) // margin left, top
+    .attr('transform', `translate(${p.margin.left}, ${p.margin.top})`) // margin left, top
     .classed('header', true)
     .style('font-size', '14px');
     // create visual element rect
@@ -146,6 +120,7 @@ export default function Chart(p) {
     .attr('dy', '.75em')
     .style('pointer-events', 'none')
     .text('Data loading..');
+
   };
 
   // accessor
@@ -163,7 +138,7 @@ export default function Chart(p) {
     d4.treemap()
       .size([
         p.width - p.margin.left - p.margin.right,
-        p.height - p.margin.top - 20 - p.margin.bottom
+        p.height - p.margin.top - p.margin.bottom - 20// header + stroke
       ])
       .round(false)
       .padding(2)(root.sum(d => d.size));
@@ -180,8 +155,8 @@ export default function Chart(p) {
     const t3 = d4.transition().delay(delay * 2).duration(delay);
 
     // rects
-    sel = d4.select(`#${p.id}`).select('.rects').selectAll('.rect')
-      .data(root.descendants(), d => d.data.id);
+    sel = d4.select(`#${p.id}`).select('.rects').selectAll('.rect') // width > 0 & height > 0
+      .data(root.descendants().filter(d => d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => d.data.id + d.data.data.sample);
     // exit
     sel.exit().transition(t1)
       .attr('transform', 'translate(0,0)')
@@ -196,14 +171,18 @@ export default function Chart(p) {
       .attr('height', d => d.y1 - d.y0);
     // add
     add = sel.enter().append('rect')
-      .attr('class', d => `v${d.data.name.id + d.data.data.sample}`)
+      .attr('class', d => `v${d.data.id}${d.data.data.sample}`)
       .attr('transform', 'translate(0,0)')
       .attr('width', 0)
       .attr('height', 0)
       .style('opacity', 0)
       .style('fill', d => color(d.data.name))
       .style('stroke', '#000')
-      .style('cursor', 'pointer');
+      .style('cursor', 'pointer')
+      .on('mouseover', d => tip('show', d))
+      .on('mousemove', d => tip('move', d))
+      .on('mouseout', d => tip('hide', d));
+
     // update
     sel = add.merge(sel);
     sel.transition(t3)
@@ -212,64 +191,112 @@ export default function Chart(p) {
     .attr('height', d => d.y1 - d.y0)
     .style('opacity', 1);
 
-  /*  // nodes
-    sel = d4.select(`#${p.id}`).select('.nodes').selectAll('.node')
-        .data(root.descendants().filter(d => !d.data.hidden), d => d.data.name);
+    // path
+    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.path') // width > 0 & height > 0
+      .data(root.descendants().filter(d => !d.children && d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => d.data.id + d.data.data.sample);
     // exit
     sel.exit().transition(t1)
-      .attr('transform', d => {
-        const coord = d.parent ? middle(d.parent) : middle(root);
-        return `translate(${coord[0]}, ${coord[1]})`;
-      })
+      .attr('d', 'M0,0L0,0')
       .style('opacity', 0)
       .remove();
     // update
     sel.transition(t2)
-    .attr('transform', d => {
-      const coord = middle(d);
-      return `translate(${coord[0]}, ${coord[1]})`;
-    });
+      .attr('d', (d, i) => line(d, i));
     // add
-    add = sel.enter().append('g')
-      .attr('class', d => `node n${d.data.name.replace(' ', '')}`)
-      .attr('transform', d => {
-        const coord = d.parent ? middle(d.parent) : middle(root);
-        return `translate(${coord[0]}, ${coord[1]})`;
-      })
-      .style('cursor', 'pointer')
-      .style('opacity', 0)
-      .on('click', d => {
-        if (d.data.collapsed) {
-          p.dispatch({type: 'expand', node: d.data});
-        } else if (d.children) {
-          p.dispatch({type: 'collapse', node: d.data});
-        }
-      })
-      .on('mouseover', d => p.dispatch({type: 'hover', node: d.data}))
-      .on('mouseout', d => p.dispatch({type: 'hoverOut', node: d.data}));
-    add.append('circle')
-      .style('fill', d => color(d.data.name))
-      .style('stroke-width', '2px');
-    add.append('text')
-      .attr('dy', 3)
-      .attr('dx', -8)
-      .style('text-anchor', 'end');
+    add = sel.enter().append('path')
+      .attr('id', d => `map${d.data.id}${d.data.data.sample}`)
+      .attr('d', 'M0,0L0,0')
+      .style('opacity', 0);
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-      .attr('transform', d => {
-        const coord = middle(d);
-        return `translate(${coord[0]}, ${coord[1]})`;
-      })
-      .style('opacity', 1);
-    sel.select('circle')
-        .attr('r', d => d.data.collapsed ? 5.5 : 4.5)
-        .style('stroke', d => d.data.collapsed ? '#324eb3' : '#000000');
-    sel.select('text')
-      .text(d => d.data.name);
-      */
+    .attr('d', (d, i) => line(d, i))
+    .style('opacity', 1);
+
+    // text
+    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.text') // width > 0 & height > 0
+      .data(root.descendants().filter(d => !d.children && d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => d.data.id + d.data.data.sample);
+    // exit
+    sel.exit().transition(t1)
+      .remove();
+    // add
+    add = sel.enter().append('text')
+      .attr('class', d => `t${d.data.id}${d.data.data.sample}`)
+      .attr('text-anchor', 'left')
+      .attr('dy', '0.5ex')
+      .style('pointer-events', 'none')
+      .append('textPath')
+        .attr('xlink:href', d => `#map${d.data.id}${d.data.data.sample}`)
+        .text(d => d.data.name);
   };
 
+  function line(d) {
+    let ax;
+    let ay;
+    let bx;
+    let by;
+    const mw = 5; // margin width
+    const mh = 22; // margin height
+    const rw = d.x1 - d.x0; // rect width
+    const rh = d.y1 - d.y0; // rect height
+
+    if (rw < rh) {// vertical
+      ax = d.x0 + (rw / 2);
+      ay = d.y0;
+      bx = ax;
+      by = d.y1;
+      // margin && min width
+      if (ay + mw < by - mw && rw > mh) {
+        ay += mw;
+        by -= mw;
+      } else {
+        by = ay;
+      }
+    } else { // horizontal
+      ax = d.x0;
+      ay = d.y0 + (rh / 2);
+      bx = d.x1;
+      by = ay;
+      // margin && min height
+      if (ax + mw < bx - mw && rh > mh) {
+        ax += mw;
+        bx -= mw;
+      } else {
+        bx = ax;
+      }
+    }
+
+    const path = d4.line()
+			.x(t => t[0])
+			.y(t => t[1])
+			.curve(d4.curveLinear);
+
+    return path([[ax, ay], [bx, by]]);
+  }
+
+  function tip(state, d) {
+    if (state === 'show') {
+      d4.select('#tip')
+        .datum(d)
+        .style('opacity', 1)
+        .html(d => `Name: ${d.data.name}
+          <br/>ID: ${f(d.data.id)}
+          <br/>Hits: ${f(d.value)}
+          <br/>Rank: ${d.data.data.rank}`);
+      // highlight(d);
+    } else if (state === 'hide') {
+      d4.select('#tip').style('opacity', 0);
+      // highlight();
+    } else { // move
+      d4.select('#tip')
+        .style('top', `${d3sel.event.pageY - 10}px`)
+        .style('left', `${d3sel.event.pageX + 10}px`);
+    }
+  }
+
+  function f(i) {
+    return Number(i).toLocaleString('en');
+  }
   // HELPERS
 /*  function collapse(n) {
     const d = d4.select(`#${p.id}`).selectAll(`.n${n.name.replace(' ', '')}`);
