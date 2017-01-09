@@ -120,7 +120,6 @@ export default function Chart(p) {
     .attr('dy', '.75em')
     // .style('pointer-events', 'none')
     .text('Root');
-
   };
 
   // accessor
@@ -144,6 +143,12 @@ export default function Chart(p) {
       .padding(2)(root.sum(d => d.size));
 
     console.log('root', root);
+    // link root to header
+    d4.select(`#${p.id}`).select('.header')
+    .select('rect').datum(root)
+    .on('mouseover', d => tip('show', d))
+    .on('mousemove', d => tip('move', d))
+    .on('mouseout', d => tip('hide', d));
 
     // update pattern
     let sel;
@@ -280,7 +285,7 @@ export default function Chart(p) {
         .datum(d)
         .style('opacity', 1)
         .html(d => `Name: ${d.data.name}
-          <br/>ID: ${f(d.data.id)}
+          <br/>ID: ${d.data.id}
           <br/>Hits: ${f(d.value)}
           <br/>Rank: ${d.data.data.rank}`);
       // highlight(d);
