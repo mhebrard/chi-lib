@@ -1,22 +1,27 @@
-// import Chart from './clonal';
+import Treemap from '../../../common/charts/treemap';
+import completeTree from './complete-tree';
 
 controller.$inject = ['$log', 'dataService'];
 function controller($log, dataService) {
   const $ctrl = this;
 
-/*  // views
-  const paramChart = {
+  console.log('data', $ctrl.dataPackage.resources[0].data);
+  // complete tree
+  const tree = completeTree($ctrl.dataPackage.resources[0].data);
+  console.log('tree', tree);
+  // add treemap
+  const paramTreemap = {
     div: 'charts',
-    id: 'clonal',
+    id: 'treemap',
     dispatch,
-    title: 'Clonal evolution diagram of flare package',
-    titleSize: 20,
+    title: `Treemap of ${$ctrl.dataPackage.resources[0].name}`,
+    // titleSize: 20,
     width: 700,
-    height: 5000
+    height: 500
     // shape: 'rake' // comb, curve, rake
   };
-  const chart = new Chart(paramChart);
-*/
+  const treemap = new Treemap(paramTreemap);
+
   return Object.assign($ctrl, {
     editorOptions: {
       data: $ctrl.dataPackage,
@@ -28,24 +33,24 @@ function controller($log, dataService) {
   });
 
   function draw() {
-//    chart.init();
+    treemap.init();
     update();
   }
 
   function update() {
-//    chart.data($ctrl.dataPackage.resources[0].data);
-//    chart.update();
+    treemap.data(tree);
+    treemap.update();
   }
 
   // dispatch all action to all views
   function dispatch(action) {
-//    chart.consumer(action);
+    treemap.consumer(action);
   }
 }
 
 export default {
   controller,
-  templateUrl: 'components/projects/phylogeny/phylogeny.html',
+  templateUrl: 'components/projects/taxonomy/taxonomy.html',
   bindings: {
     dataPackage: '<package'
   }
