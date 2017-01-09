@@ -1,9 +1,9 @@
 import {select, selectAll} from 'd3-selection';
-import {hierarchy, treemap} from 'd3-hierarchy';
+import {hierarchy, partition} from 'd3-hierarchy';
 import {transition} from 'd3-transition';
-import {scaleOrdinal} from 'd3-scale';
+import {scaleOrdinal, scaleLinear} from 'd3-scale';
 import {schemeSet3} from 'd3-scale-chromatic';
-import {line, curveLinear} from 'd3-shape';
+import {arc, curveLinear, line} from 'd3-shape';
 
 // workaround for event manager (d3sel.event)
 import * as d3sel from 'd3-selection';
@@ -11,11 +11,11 @@ import * as d3sel from 'd3-selection';
 // Map d3v4
 const d4 = {
   select, selectAll,
-  hierarchy, treemap,
+  hierarchy, partition,
   transition,
-  scaleOrdinal,
+  scaleOrdinal, scaleLinear,
   schemeSet3,
-  line, curveLinear
+  arc, curveLinear, line
 };
 
 export default function Chart(p) {
@@ -35,6 +35,9 @@ export default function Chart(p) {
   p.color = p.color || d4.schemeSet3;
 
   const color = d4.scaleOrdinal(p.color);
+  const radius = Math.min(p.width - p.margin.left - p.margin.right, p.height - p.margin.top - p.margin.bottom) / 2;
+  const x = d4.scaleLinear().range([0, 2 * Math.PI]);
+  const y = d4.scaleLinear().range([0, radius]);
 
   // consume action: mutate data and apply changes
   chart.consumer = function(action) {
@@ -93,33 +96,13 @@ export default function Chart(p) {
 
     // group for visual elements
     svg.append('g')
-    .attr('transform', `translate(${p.margin.left}, ${p.margin.top + 20})`) // margin left, top
-    .classed('rects', true);
+    .attr('transform', `translate(${(p.width / 2) + p.margin.left}, ${(p.height / 2) + p.margin.top})`)
+    .classed('arcs', true);
 
     // group for labels
     svg.append('g')
-    .attr('transform', `translate(${p.margin.left}, ${p.margin.top + 20})`) // margin left, top
+    .attr('transform', `translate(${(p.width / 2) + p.margin.left}, ${(p.height / 2) + p.margin.top})`)
     .classed('labels', true);
-
-    // group for header (current zoom)
-    const header = svg.append('g')
-    .attr('transform', `translate(${p.margin.left}, ${p.margin.top})`) // margin left, top
-    .classed('header', true)
-    .style('font-size', '14px');
-    // create visual element rect
-    header.append('rect')
-    .attr('y', 0)
-    .attr('width', p.width - p.margin.left - p.margin.right)
-    .attr('height', 20)
-    .style('fill', '#888')
-    .style('cursor', 'pointer');
-		// create text element
-    header.append('text')
-    .attr('x', 6)
-    .attr('y', 4)
-    .attr('dy', '.75em')
-    // .style('pointer-events', 'none')
-    .text('Root');
   };
 
   // accessor
@@ -134,21 +117,9 @@ export default function Chart(p) {
     console.log('chart.update');
     // layout
     const root = d4.hierarchy(p.data);
-    d4.treemap()
-      .size([
-        p.width - p.margin.left - p.margin.right,
-        p.height - p.margin.top - p.margin.bottom - 20// header + stroke
-      ])
-      .round(false)
-      .padding(2)(root.sum(d => d.size));
+    d4.partition()(root.sum(d => d.size));
 
-    console.log('root', root);
-    // link root to header
-    d4.select(`#${p.id}`).select('.header')
-    .select('rect').datum(root)
-    .on('mouseover', d => tip('show', d))
-    .on('mousemove', d => tip('move', d))
-    .on('mouseout', d => tip('hide', d));
+    console.log('sunburst root', root);
 
     // update pattern
     let sel;
@@ -159,68 +130,61 @@ export default function Chart(p) {
     const t2 = d4.transition().delay(delay).duration(delay);
     const t3 = d4.transition().delay(delay * 2).duration(delay);
 
-    // rects
-    sel = d4.select(`#${p.id}`).select('.rects').selectAll('.rect') // width > 0 & height > 0
-      .data(root.descendants().filter(d => d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => d.data.id + d.data.data.sample);
+    // arcs
+    sel = d4.select(`#${p.id}`).select('.arcs').selectAll('.path')
+      .data(root.descendants(), d => d.data.id + d.data.data.sample);
     // exit
     sel.exit().transition(t1)
-      .attr('transform', 'translate(0,0)')
-      .attr('width', 0)
-      .attr('height', 0)
+      .attr('d', 'M0,0A0,0Z')
       .style('opacity', 0)
       .remove();
     // update
     sel.transition(t2)
-      .attr('transform', d => `translate(${d.x0}, ${d.y0})`)
-      .attr('width', d => d.x1 - d.x0)
-      .attr('height', d => d.y1 - d.y0);
+      .attr('d', d => arc(d));
     // add
-    add = sel.enter().append('rect')
+    add = sel.enter().append('path')
       .attr('class', d => `v${d.data.id}${d.data.data.sample}`)
-      .attr('transform', 'translate(0,0)')
-      .attr('width', 0)
-      .attr('height', 0)
+      .attr('d', 'M0,0A0,0Z')
       .style('opacity', 0)
       .style('fill', d => color(d.data.name))
+      .style('fill-rule', 'evenodd')
       .style('stroke', '#000')
       .style('cursor', 'pointer')
       .on('mouseover', d => tip('show', d))
       .on('mousemove', d => tip('move', d))
       .on('mouseout', d => tip('hide', d));
-
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-    .attr('transform', d => `translate(${d.x0}, ${d.y0})`)
-    .attr('width', d => d.x1 - d.x0)
-    .attr('height', d => d.y1 - d.y0)
+    .attr('d', d => arc(d))
     .style('opacity', 1);
 
     // path
-    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.path') // width > 0 & height > 0
-      .data(root.descendants().filter(d => !d.children && d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => d.data.id + d.data.data.sample);
+    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.path')
+      .data(root.descendants(), d => d.data.id + d.data.data.sample);
     // exit
     sel.exit().transition(t1)
-      .attr('d', 'M0,0L0,0')
+      .attr('d', 'M0,0A0,0Z')
       .style('opacity', 0)
       .remove();
     // update
     sel.transition(t2)
-      .attr('d', (d, i) => line(d, i));
+      .attr('d', d => arc(d, 'middle'));
     // add
     add = sel.enter().append('path')
       .attr('id', d => `map${p.id}${d.data.id}${d.data.data.sample}`)
-      .attr('d', 'M0,0L0,0')
+      .attr('d', 'M0,0A0,0Z')
+      .style('pointer-events', 'none')
       .style('opacity', 0);
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-    .attr('d', (d, i) => line(d, i))
-    .style('opacity', 1);
+    .attr('d', d => arc(d, 'middle'))
+    .style('opacity', 0);
 
     // text
-    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.text') // width > 0 & height > 0
-      .data(root.descendants().filter(d => !d.children && d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => d.data.id + d.data.data.sample);
+    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.text')
+      .data(root.descendants(), d => d.data.id + d.data.data.sample);
     // exit
     sel.exit().transition(t1)
       .remove();
@@ -235,7 +199,52 @@ export default function Chart(p) {
         .text(d => d.data.name);
   };
 
-  function line(d) {
+  function arc(d, edge) {
+    // visual
+    let a = x(d.x0);
+    let b = x(d.x1);
+    const ir = y(d.y0);
+    let or = y(d.y1);
+
+    if (edge === 'middle') { // label guide
+      or = y((d.y0 + d.y1) / 2); // middle arc
+      // add marges angle = pi-2*acos(marge/radius)
+      const m = Math.PI - (2 * Math.acos(2 / ir));
+      // verify a < b or path=0;
+      if (a + m < b - m) {
+        a += m;
+        b -= m;
+      } else {
+        b = a;
+      }
+    } else if (edge === 'extern') { // HL
+      or = radius;
+    }
+
+    // compute path
+    const path = d4.arc()
+      .startAngle(Math.max(0, Math.min(2 * Math.PI, a)))
+      .endAngle(Math.max(0, Math.min(2 * Math.PI, b)))
+      .innerRadius(Math.max(0, ir))
+      .outerRadius(Math.max(0, or));
+
+    let res;
+    if (edge === 'middle') { // extract outer arc
+      const extract = /[Mm][\d.\-e,\s]+A[\d.\-e,\s]+/;
+      const guide = extract.exec(path(d));
+      if (guide) {
+        res = guide[0];
+      } else {
+        res = 'M0,0A0,0Z';
+      }
+    } else {
+      res = path(d);
+    }
+
+    return res;
+  }
+
+/*  function line(d) {
     let ax;
     let ay;
     let bx;
@@ -278,7 +287,7 @@ export default function Chart(p) {
 
     return path([[ax, ay], [bx, by]]);
   }
-
+*/
   function tip(state, d) {
     if (state === 'show') {
       d4.select('#tip')
