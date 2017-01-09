@@ -1,4 +1,5 @@
 import Treemap from '../../../common/charts/treemap';
+import Sunburst from '../../../common/charts/sunburst';
 import completeTree from './complete-tree';
 
 controller.$inject = ['$log', 'dataService'];
@@ -15,12 +16,22 @@ function controller($log, dataService) {
     id: 'treemap',
     dispatch,
     title: `Treemap of ${$ctrl.dataPackage.resources[0].name}`,
-    // titleSize: 20,
     width: 700,
     height: 500
     // shape: 'rake' // comb, curve, rake
   };
   const treemap = new Treemap(paramTreemap);
+
+  // add sunburst
+  const paramSunburst = {
+    div: 'charts',
+    id: 'sunburst',
+    dispatch,
+    title: `Sunburst of ${$ctrl.dataPackage.resources[0].name}`,
+    width: 700,
+    height: 500
+  };
+  const sunburst = new Sunburst(paramSunburst);
 
   return Object.assign($ctrl, {
     editorOptions: {
@@ -33,18 +44,20 @@ function controller($log, dataService) {
   });
 
   function draw() {
-    treemap.init();
+    // init all views
+    dispatch({type: 'init'});
     update();
   }
 
   function update() {
-    treemap.data(tree);
-    treemap.update();
+    // update all views
+    dispatch({type: 'update', data: tree});
   }
 
   // dispatch all action to all views
   function dispatch(action) {
     treemap.consumer(action);
+    sunburst.consumer(action);
   }
 }
 
