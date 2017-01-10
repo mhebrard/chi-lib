@@ -3,7 +3,7 @@ import {hierarchy, partition} from 'd3-hierarchy';
 import {transition} from 'd3-transition';
 import {scaleOrdinal} from 'd3-scale';
 import {schemeSet3} from 'd3-scale-chromatic';
-import {rgb} from 'd3-color';
+import {line, curveLinear} from 'd3-shape';
 
 // workaround for event manager (d3sel.event)
 import * as d3sel from 'd3-selection';
@@ -15,7 +15,7 @@ const d4 = {
   transition,
   scaleOrdinal,
   schemeSet3,
-  rgb
+  curveLinear, line
 };
 
 export default function Chart(p) {
@@ -36,6 +36,8 @@ export default function Chart(p) {
   p.color = p.color || null;
 
   const color = d4.scaleOrdinal(p.color ? p.color : d4.schemeSet3);
+  const mw = 6; // left/right margin for labels;
+  const mh = 22; // minimal height for label;
 
   // consume action: mutate data and apply changes
   chart.consumer = function(action) {
@@ -47,7 +49,7 @@ export default function Chart(p) {
         p.data = action.data;
         chart.update();
         break;
-/*      case 'collapse':
+    /*  case 'collapse':
         action.node.collapsed = true;
         collapse(action.node);
         chart.update();
@@ -65,7 +67,7 @@ export default function Chart(p) {
         action.node.hover = false;
         hoverOut(action.node);
         break;
-  */
+      */
       default:
         // console.log('unknown event');
     }
@@ -130,6 +132,10 @@ export default function Chart(p) {
       .style('stroke', '#000')
       .style('stroke-width', '1.5px')
       .style('pointer-events', 'none');
+
+    // group for labels
+    svg.append('g').attr('class', 'labels')
+    .attr('transform', `translate(${p.margin.left}, ${p.margin.top})`);
   };
 
   // accessor
@@ -166,7 +172,7 @@ export default function Chart(p) {
 
     // edges
     sel = d4.select(`#${p.id}`).select('.edges').selectAll('.edge')
-      .data(root.descendants().filter(d => !d.data.hidden), d => d.data.name);
+      .data(root.descendants().filter(d => !d.data.hidden), d => d.data.id + d.data.data.sample);
     // exit
     sel.exit().transition(t1)
       .attr('d', d => area(d, false))
@@ -194,7 +200,7 @@ export default function Chart(p) {
 
     // nodes
     sel = d4.select(`#${p.id}`).select('.nodes').selectAll('.node')
-        .data(root.descendants().filter(d => !d.data.hidden), d => d.data.name);
+        .data(root.descendants().filter(d => !d.data.hidden), d => d.data.id + d.data.data.sample);
     // exit
     sel.exit().transition(t1)
       .attr('transform', d => {
@@ -253,7 +259,62 @@ export default function Chart(p) {
     /* sel.select('text')
       .text(d => d.data.name);
     */
+
+    // path
+    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.path') // height > 1
+      .data(root.descendants().filter(d => !d.data.hidden && d.x1 - d.x0 > mh), d => d.data.id + d.data.data.sample);
+    // exit
+    sel.exit().transition(t1)
+      .attr('d', d => line(d, false))
+      .remove();
+    // update
+    sel.transition(t2)
+      .attr('d', d => line(d, true));
+    // add
+    add = sel.enter().append('path')
+      .attr('id', d => `map${p.id}${d.data.id}${d.data.data.sample}`)
+      .attr('d', d => line(d, false))
+      .style('opacity', 0);
+    // update
+    sel = add.merge(sel);
+    sel.transition(t3)
+    .attr('d', d => line(d, true));
+
+    // text
+    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.text') // height > 1
+      .data(root.descendants().filter(d => !d.data.hidden && d.x1 - d.x0 > mh), d => d.data.id + d.data.data.sample);
+    // exit
+    sel.exit().transition(t1)
+      .remove();
+    // add
+    add = sel.enter().append('text')
+      .attr('class', d => `t${d.data.id}${d.data.data.sample}`)
+      .attr('text-anchor', 'left')
+      .attr('dy', '0.5ex')
+      .style('pointer-events', 'none')
+      .append('textPath')
+        .attr('xlink:href', d => `#map${p.id}${d.data.id}${d.data.data.sample}`)
+        .text(d => d.data.name);
   };
+
+  function line(d, mode) {
+    const coord = middle(d);
+    let ax = coord[0];
+    const ay = coord[1];
+    let bx = coord[0];
+    const by = coord[1];
+    if (mode) {
+      ax += mw;
+      bx = d.children ? bx + (2 * p.space) - (2 * mw) : p.width - p.margin.left - p.margin.right;
+    }
+
+    const path = d4.line()
+      .x(t => t[0])
+      .y(t => t[1])
+      .curve(d4.curveLinear);
+
+    return path([[ax, ay], [bx, by]]);
+  }
 
   function tip(state, d) {
     if (state === 'show') {
