@@ -4,6 +4,10 @@
   "description": "Projects that combine charts and biological datasets",
   "resources": [
     {
+      "path": "../mtm/datapackage.json",
+      "link": "http://metasystems.riken.jp/visualization/treemap/"
+    },
+    {
       "path": "../taxonomy/datapackage.json",
       "link": "#/projects/taxonomy/"
     }
