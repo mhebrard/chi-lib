@@ -39,7 +39,7 @@ function controller($log, dataService) {
     div: 'charts',
     id: 'clonal',
     dispatch,
-    title: `Clonal of ${$ctrl.dataPackage.resources[0].name}`,
+    title: `Clonal Expantion of ${$ctrl.dataPackage.resources[0].name}`,
     width: 700,
     height: 900
   };

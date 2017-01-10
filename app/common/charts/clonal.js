@@ -182,7 +182,10 @@ export default function Chart(p) {
       .style('fill', d => color(d.data.name))
       .style('stroke', '#000')
       .style('stroke-width', '1.5px')
-      .style('opacity', 0);
+      .style('opacity', 0)
+      .on('mouseover', d => tip('show', d))
+      .on('mousemove', d => tip('move', d))
+      .on('mouseout', d => tip('hide', d));
     // update
     sel = add.merge(sel);
     sel.transition(t3)
@@ -231,10 +234,11 @@ export default function Chart(p) {
     add.append('circle')
       .style('fill', d => color(d.data.name))
       .style('stroke-width', '2px');
-    add.append('text')
+    /* add.append('text')
       .attr('dy', 3)
       .attr('dx', -8)
       .style('text-anchor', 'end');
+    */
     // update
     sel = add.merge(sel);
     sel.transition(t3)
@@ -246,8 +250,9 @@ export default function Chart(p) {
     sel.select('circle')
         .attr('r', d => d.data.collapsed ? 5.5 : 4.5)
         .style('stroke', d => d.data.collapsed ? '#324eb3' : '#000000');
-    sel.select('text')
+    /* sel.select('text')
       .text(d => d.data.name);
+    */
   };
 
   function tip(state, d) {
