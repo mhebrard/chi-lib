@@ -1,5 +1,6 @@
 import Treemap from '../../../common/charts/treemap';
 import Sunburst from '../../../common/charts/sunburst';
+import Clonal from '../../../common/charts/clonal';
 import completeTree from './complete-tree';
 
 controller.$inject = ['$log', 'dataService'];
@@ -33,6 +34,17 @@ function controller($log, dataService) {
   };
   const sunburst = new Sunburst(paramSunburst);
 
+  // add clonal
+  const paramClonal = {
+    div: 'charts',
+    id: 'clonal',
+    dispatch,
+    title: `Clonal of ${$ctrl.dataPackage.resources[0].name}`,
+    width: 700,
+    height: 900
+  };
+  const clonal = new Clonal(paramClonal);
+
   return Object.assign($ctrl, {
     editorOptions: {
       data: $ctrl.dataPackage,
@@ -58,6 +70,7 @@ function controller($log, dataService) {
   function dispatch(action) {
     treemap.consumer(action);
     sunburst.consumer(action);
+    clonal.consumer(action);
   }
 }
 
