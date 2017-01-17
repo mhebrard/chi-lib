@@ -1,7 +1,6 @@
-import Chart from './violin';
+import Chart from 'common/charts/violin';
 
-controller.$inject = ['$log', 'dataService'];
-function controller($log, dataService) {
+function controller() {
   const $ctrl = this;
 
   // views
@@ -51,7 +50,7 @@ function controller($log, dataService) {
 
 export default {
   controller,
-  templateUrl: 'components/charts/violin/violin.html',
+  templateUrl: 'components/charts/violin/template.html',
   bindings: {
     dataPackage: '<package'
   }

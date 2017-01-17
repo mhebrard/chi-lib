@@ -19,7 +19,7 @@ const d4 = {
 };
 
 export default function Chart(p) {
-  const chart = {version: 1.0};
+  const chart = {version: 1.1};
 
   // PARAMETERS
   p = p || {};
@@ -161,7 +161,7 @@ export default function Chart(p) {
 
     // rects
     sel = d4.select(`#${p.id}`).select('.rects').selectAll('.rect') // width > 0 & height > 0
-      .data(root.descendants().filter(d => d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => d.data.id + d.data.data.sample);
+      .data(root.descendants().filter(d => d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => id(d));
     // exit
     sel.exit().transition(t1)
       .attr('transform', 'translate(0,0)')
@@ -176,7 +176,7 @@ export default function Chart(p) {
       .attr('height', d => d.y1 - d.y0);
     // add
     add = sel.enter().append('rect')
-      .attr('class', d => `v${d.data.id}${d.data.data.sample}`)
+      .attr('class', d => 'v' + id(d))
       .attr('transform', 'translate(0,0)')
       .attr('width', 0)
       .attr('height', 0)
@@ -198,7 +198,7 @@ export default function Chart(p) {
 
     // path
     sel = d4.select(`#${p.id}`).select('.labels').selectAll('.path') // width > 0 & height > 0
-      .data(root.descendants().filter(d => !d.children && d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => d.data.id + d.data.data.sample);
+      .data(root.descendants().filter(d => !d.children && d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => id(d));
     // exit
     sel.exit().transition(t1)
       .attr('d', 'M0,0L0,0')
@@ -209,7 +209,7 @@ export default function Chart(p) {
       .attr('d', (d, i) => line(d, i));
     // add
     add = sel.enter().append('path')
-      .attr('id', d => `map${p.id}${d.data.id}${d.data.data.sample}`)
+      .attr('id', d => `map${p.id}` + id(d))
       .attr('d', 'M0,0L0,0')
       .style('opacity', 0);
     // update
@@ -220,18 +220,18 @@ export default function Chart(p) {
 
     // text
     sel = d4.select(`#${p.id}`).select('.labels').selectAll('.text') // width > 0 & height > 0
-      .data(root.descendants().filter(d => !d.children && d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => d.data.id + d.data.data.sample);
+      .data(root.descendants().filter(d => !d.children && d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => id(d));
     // exit
     sel.exit().transition(t1)
       .remove();
     // add
     add = sel.enter().append('text')
-      .attr('class', d => `t${d.data.id}${d.data.data.sample}`)
+      .attr('class', d => 't' + id(d))
       .attr('text-anchor', 'left')
       .attr('dy', '0.5ex')
       .style('pointer-events', 'none')
       .append('textPath')
-        .attr('xlink:href', d => `#map${p.id}${d.data.id}${d.data.data.sample}`)
+        .attr('xlink:href', d => `#map${p.id}` + id(d))
         .text(d => d.data.name);
   };
 
@@ -284,10 +284,16 @@ export default function Chart(p) {
       d4.select('#tip')
         .datum(d)
         .style('opacity', 1)
-        .html(d => `Name: ${d.data.name}
-          <br/>ID: ${d.data.id}
-          <br/>Hits: ${f(d.value)}
-          <br/>Rank: ${d.data.data.rank}`);
+        .html(d => {
+          let txt = `name: ${d.data.name}
+          <br/>value: ${f(d.value)}`;
+          if (d.data.data) {
+            Object.keys(d.data.data).forEach(k => {
+              txt += `<br/>${k}: ${d.data.data[k]}`;
+            });
+          }
+          return txt;
+        });
       // highlight(d);
     } else if (state === 'hide') {
       d4.select('#tip').style('opacity', 0);
@@ -302,6 +308,14 @@ export default function Chart(p) {
   function f(i) {
     return Number(i).toLocaleString('en');
   }
+
+  function id(d) {
+    if (d.data.id) {
+      return d.data.id;
+    }
+    return d.data.name;
+  }
+
   // HELPERS
 /*  function collapse(n) {
     const d = d4.select(`#${p.id}`).selectAll(`.n${n.name.replace(' ', '')}`);
