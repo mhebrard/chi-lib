@@ -1,4 +1,4 @@
-import template from './index.html!text';
+import template from './template.html!text';
 import 'common/styles/index.css!';
 
 controller.$inject = ['dataService'];
