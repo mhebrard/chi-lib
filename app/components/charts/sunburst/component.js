@@ -1,37 +1,49 @@
-import './style.css!';
-import d3 from 'd3';
-import Chart from './chart';
+import Chart from 'common/charts/sunburst';
 
-function controller () {
+function controller() {
   const $ctrl = this;
-  const chart = new Chart();
 
-  Object.assign($ctrl, {
+  // views
+  const paramChart = {
+    div: 'charts',
+    id: 'sunburst',
+    dispatch,
+    title: 'Sunburst of flare package',
+    titleSize: 20,
+    width: 800,
+    height: 600
+  };
+  const chart = new Chart(paramChart);
+
+  return Object.assign($ctrl, {
     editorOptions: {
       data: $ctrl.dataPackage,
-      onChange: draw
+      onChange: update
     },
-    draw,
-    $onInit: draw
+    $onInit() {
+      draw();
+    }
   });
 
-  function draw () {
-    const data = $ctrl.dataPackage.resources.map(d => d.data);
+  function draw() {
+    chart.init();
+    update();
+  }
 
-    const divs = d3.select('#chart')
-      .selectAll('div').data(data);
+  function update() {
+    chart.data($ctrl.dataPackage.resources[0].data);
+    chart.update();
+  }
 
-    divs.enter().append('div');
-
-    divs.exit().remove();
-
-    divs.call(chart);
+  // dispatch all action to all views
+  function dispatch(action) {
+    chart.consumer(action);
   }
 }
 
 export default {
   controller,
-  templateUrl: 'components/charts/sunburst/index.html',
+  templateUrl: 'components/charts/sunburst/template.html',
   bindings: {
     dataPackage: '<package'
   }
