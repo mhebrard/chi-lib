@@ -1,7 +1,6 @@
-import Chart from './dendrogram';
+import Chart from 'common/charts/dendrogram';
 
-controller.$inject = ['$log', 'dataService'];
-function controller($log, dataService) {
+function controller() {
   const $ctrl = this;
 
   // views
@@ -53,7 +52,7 @@ function controller($log, dataService) {
 
 export default {
   controller,
-  templateUrl: 'components/charts/dendrogram/dendrogram.html',
+  templateUrl: 'components/charts/dendrogram/template.html',
   bindings: {
     dataPackage: '<package'
   }
