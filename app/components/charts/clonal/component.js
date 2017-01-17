@@ -1,7 +1,6 @@
-import Chart from './clonal';
+import Chart from 'common/charts/clonal';
 
-controller.$inject = ['$log', 'dataService'];
-function controller($log, dataService) {
+function controller() {
   const $ctrl = this;
 
   // views
@@ -45,7 +44,7 @@ function controller($log, dataService) {
 
 export default {
   controller,
-  templateUrl: 'components/charts/clonal/clonal.html',
+  templateUrl: 'components/charts/clonal/template.html',
   bindings: {
     dataPackage: '<package'
   }

@@ -6,24 +6,19 @@ import {area, line, curveBasis, curveLinear, curveStepAfter} from 'd3-shape';
 import {select, selectAll} from 'd3-selection';
 import {transition} from 'd3-transition';
 
-// test d3 version Map d3v4
-let d4 = {};
-if (d3.version) { // d3v3.x present as global
-  d4 = {
-    ascending, histogram, max, quantile, mean,
-    axisLeft, axisRight,
-    scaleOrdinal, scaleLinear,
-    schemeSet3,
-    area, line, curveBasis, curveLinear, curveStepAfter,
-    select, selectAll,
-    transition
-  };
-} else { // d3v4 present as global
-  d4 = d3;
-}
+// Map d3v4
+const d4 = {
+  ascending, histogram, max, quantile, mean,
+  axisLeft, axisRight,
+  scaleOrdinal, scaleLinear,
+  schemeSet3,
+  area, line, curveBasis, curveLinear, curveStepAfter,
+  select, selectAll,
+  transition
+};
 
 export default function Chart(p) {
-  const chart = {version: 1.0};
+  const chart = {version: 1.1};
 
   // PARAMETERS
   p = p || {};

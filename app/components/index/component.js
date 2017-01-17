@@ -1,5 +1,6 @@
 import template from './index.html!text';
 import 'common/styles/index.css!';
+import 'common/styles/charts.css!';
 
 controller.$inject = ['dataService'];
 function controller(dataService) {

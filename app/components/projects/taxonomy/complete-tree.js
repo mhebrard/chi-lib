@@ -7,7 +7,7 @@ const ranks = ['no rank', 'superkingdom', 'kingdom', 'subkingdom', 'superphylum'
 
 export default function CompleteTree(data) {
   // root init.
-  const root = {name: 'root', id: '1', size: 0, children: [], data: {rank: 'no rank', sample: 0}}; // skeleton tree
+  const root = {name: 'root', id: '10', size: 0, children: [], data: {rank: 'no rank', sample: 0, taxonID: 1}}; // skeleton tree
   bkeys.push(root.id);
   bobjs.push(root);
 
@@ -18,8 +18,10 @@ export default function CompleteTree(data) {
 
 function complete(n, p, s) {
   // Create skeleton tree and leaves with assigned hits
-	// avoid space in id
-  n.id = (String(n.id)).replace(/\s+/g, '_');
+  // move id
+  n.data.taxonID = Number(n.id);
+  // avoid space in id
+  n.id = (String(n.id)).replace(/\s+/g, '_') + '0';
 	// avoid no rank
   if (n.data.rank === 'no rank' && p !== '') {
     n.data.rank = p.data.rank;
@@ -48,7 +50,7 @@ function complete(n, p, s) {
       size: 0,
       children: [],
       parent: psk,
-      data: {rank: n.data.rank, sample: 0},
+      data: {rank: n.data.rank, sample: 0, taxonID: n.data.taxonID},
       id: n.id
     };
     psk.children.push(nsk);
@@ -63,10 +65,10 @@ function complete(n, p, s) {
       children: [],
       data: {
         rank: n.data.rank,
-        sample: s // ,
-        // percent: Number(n.data.assigned) * 100 / h[s]
+        sample: s,
+        taxonID: n.data.taxonID
       },
-      id: n.id
+      id: String(n.data.taxonID) + s
     };
     nsk.children.push(tag);
   }
