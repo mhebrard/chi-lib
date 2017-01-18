@@ -1,0 +1,9 @@
+{
+	"name": "metatreemap",
+	"title": "MetaTreeMap",
+	"description": "An alternative visualization method for displaying metagenomic phylogenic trees",
+	"resources": [
+		"http://metasystems.riken.jp/visualization/treemap/"
+	],
+	"image": "thumbnail.png"
+}

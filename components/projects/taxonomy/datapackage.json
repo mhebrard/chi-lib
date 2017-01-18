@@ -1,0 +1,10 @@
+{
+	"name": "taxonomy",
+	"title": "Taxonomic Assignment",
+	"description": "Phylogenic tree with a number of sequences associated to each taxon",
+	"resources": [
+		"../../../data/HuFS.json"
+	],
+	"image": "thumbnail.png",
+	"readme": "README.md"
+}

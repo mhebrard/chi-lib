@@ -1,0 +1,15 @@
+{
+  "name": "Index",
+  "title": "Index",
+  "description": "Index of Visualizations",
+  "resources": [
+    {
+      "path": "../charts/charts-index/datapackage.json",
+      "link": "#/charts/"
+    },
+    {
+      "path": "../projects/projects-index/datapackage.json",
+      "link": "#/projects/"
+    }
+  ]
+}
