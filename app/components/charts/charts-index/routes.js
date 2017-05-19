@@ -7,6 +7,7 @@ import dendrogramComponent from '../dendrogram/component';
 import radialComponent from '../radial/component';
 import clonalComponent from '../clonal/component';
 import violinComponent from '../violin/component';
+import pieComponent from '../pie/component';
 
 routeConfig.$inject = ['$routeProvider'];
 function routeConfig($routeProvider) {
@@ -39,6 +40,10 @@ function routeConfig($routeProvider) {
       template: '<violin data-package="$resolve.dataPackage"></violin>',
       datapackageUrl: 'components/charts/violin/datapackage.json'
     })
+    .when('/charts/pie', {
+      template: '<pie data-package="$resolve.dataPackage"></pie>',
+      datapackageUrl: 'components/charts/pie/datapackage.json'
+    })
     .otherwise({redirectTo: '/'});
 }
 
@@ -51,4 +56,5 @@ export default angular
   .component('radial', radialComponent)
   .component('clonal', clonalComponent)
   .component('violin', violinComponent)
+  .component('pie', pieComponent)
   .config(routeConfig);

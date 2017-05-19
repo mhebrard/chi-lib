@@ -49,7 +49,8 @@ export default function Chart(p) {
         p.data = action.data;
         chart.update();
         break;
-/*      case 'collapse':
+      /*
+      case 'collapse':
         action.node.collapsed = true;
         collapse(action.node);
         chart.update();
@@ -67,7 +68,7 @@ export default function Chart(p) {
         action.node.hover = false;
         hoverOut(action.node);
         break;
-  */
+      */
       default:
         // console.log('unknown event');
     }
