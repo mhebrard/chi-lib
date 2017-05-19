@@ -26,7 +26,7 @@ export default function Chart(p) {
   p.id = p.id || 'view';
   p.data = p.data || {serie: [0, 1]};
   p.title = p.title || `Violin plot of ${p.id}`;
-  p.titleSize = p.titleSize || 18;
+  p.titleSize = p.titleSize || 20;
   p.fontSize = p.fontSize || 14;
   // p.width // adjust according to series number
   p.height = p.height || 600;

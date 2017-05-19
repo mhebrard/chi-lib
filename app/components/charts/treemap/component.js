@@ -9,7 +9,6 @@ function controller() {
     id: 'treemap',
     dispatch,
     title: 'Treemap of flare package',
-    titleSize: 20,
     width: 800,
     height: 600
   };

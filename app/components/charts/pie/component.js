@@ -8,8 +8,6 @@ function controller() {
     div: 'charts',
     id: 'pie',
     title: 'Pie chart of "layout" node of flare package',
-    margin: {top: 30, bottom: 0, left: 0, right: 0},
-    titleSize: 20,
     dispatch
   };
   const chart = new Chart(paramChart);

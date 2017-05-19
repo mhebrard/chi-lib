@@ -11,11 +11,11 @@ Series of values represented as pie chart. the sum of values is displayed at the
 * id = 'view': figure id
 * data = {serie: [{name: 'root', size: 1}]}: input data
 * title = 'Pie chart of ': figure title
-* titleSize = 18: title font size
+* titleSize = 20: title font size
 * fontSize = 14: text font size
 * width = 800: figure width
 * height = 600: figure height
-* margin = {top: 20, bottom: 0, left: 0, right: 0}: margin in pixel
+* margin = {top: 30, bottom: 0, left: 0, right: 0}: margin in pixel
 * color = null: palette for violin fill color
 * inner = 70: radius of central (empty) circle in pixel
 * cornerRadius = 3: round corner for each slice

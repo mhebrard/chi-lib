@@ -9,7 +9,6 @@ function controller() {
     id: 'dendro',
     dispatch,
     title: 'Dendrogram of flare package',
-    titleSize: 20,
     width: 800,
     height: 2500
     // shape: 'rake' // comb, curve, rake

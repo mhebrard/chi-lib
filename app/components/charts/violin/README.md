@@ -11,7 +11,7 @@ Series of values represented as violin plot. The corps of the violin is the dist
 * id = 'view': figure id
 * data = {serie: [0, 1]}: input data
 * title = 'Violin plot of ': figure title
-* titleSize = 18: title font size
+* titleSize = 20: title font size
 * fontSize = 14: text font size
 * height = 600: figure height
 * margin = {top: 30, bottom: 30, left: 50, right: 50}: margin in pixel

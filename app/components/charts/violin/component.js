@@ -9,16 +9,10 @@ function controller() {
     id: 'violin',
     dispatch,
     title: 'Charaters Stats',
-    titleSize: 20,
-    // margin:{top:10, bottom:20, left:50, right:50},
     height: 300,
     catWidth: 100,
     catSpacing: 10,
     resolution: 20
-    // ymin: 0,
-    // ymax: 255
-    // interpolation: 'step'
-    // shape: 'rake' // comb, curve, rake
   };
   const chart = new Chart(paramChart);
 

@@ -9,7 +9,6 @@ function controller() {
     id: 'clonal',
     dispatch,
     title: 'Clonal evolution diagram of flare package',
-    titleSize: 20,
     width: 700,
     height: 5000
     // shape: 'rake' // comb, curve, rake

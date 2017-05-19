@@ -27,11 +27,11 @@ export default function Chart(p) {
   p.id = p.id || 'view';
   p.data = p.data || {name: 'root', size: 1};
   p.title = p.title || `Treemap of ${p.id}`;
-  p.titleSize = p.titleSize || 18;
+  p.titleSize = p.titleSize || 20;
   p.fontSize = p.fontSize || 14;
   p.width = p.width || 800;
   p.height = p.height || 600;
-  p.margin = p.margin || {top: 20, bottom: 0, left: 0, right: 0};
+  p.margin = p.margin || {top: 30, bottom: 0, left: 0, right: 0};
   p.color = p.color || d4.schemeSet3;
 
   const color = d4.scaleOrdinal(p.color);
@@ -245,50 +245,6 @@ export default function Chart(p) {
     return res;
   }
 
-/*  function line(d) {
-    let ax;
-    let ay;
-    let bx;
-    let by;
-    const mw = 5; // margin width
-    const mh = 22; // margin height
-    const rw = d.x1 - d.x0; // rect width
-    const rh = d.y1 - d.y0; // rect height
-
-    if (rw < rh) {// vertical
-      ax = d.x0 + (rw / 2);
-      ay = d.y0;
-      bx = ax;
-      by = d.y1;
-      // margin && min width
-      if (ay + mw < by - mw && rw > mh) {
-        ay += mw;
-        by -= mw;
-      } else {
-        by = ay;
-      }
-    } else { // horizontal
-      ax = d.x0;
-      ay = d.y0 + (rh / 2);
-      bx = d.x1;
-      by = ay;
-      // margin && min height
-      if (ax + mw < bx - mw && rh > mh) {
-        ax += mw;
-        bx -= mw;
-      } else {
-        bx = ax;
-      }
-    }
-
-    const path = d4.line()
-			.x(t => t[0])
-			.y(t => t[1])
-			.curve(d4.curveLinear);
-
-    return path([[ax, ay], [bx, by]]);
-  }
-*/
   function tip(state, d) {
     if (state === 'show') {
       d4.select('#tip')
@@ -326,50 +282,6 @@ export default function Chart(p) {
     return d.data.name;
   }
 
-  // HELPERS
-/*  function collapse(n) {
-    const d = d4.select(`#${p.id}`).selectAll(`.n${n.name.replace(' ', '')}`);
-    d.datum().descendants().slice(1).forEach(n => {
-      n.data.collapsed = false;
-      n.data.hidden = true;
-    });
-  }
-*/
-/*
-  function expand(n) {
-    const d = d4.select(`#${p.id}`).selectAll(`.n${n.name.replace(' ', '')}`);
-    d.datum().descendants().slice(1).forEach(n => {
-      n.data.hidden = false;
-    });
-  }
-*/
-/*
-  function hover(n) {
-    // hl node
-    const d = d4.select(`#${p.id}`).selectAll(`.n${n.name.replace(' ', '')}`);
-    d.select('circle').style('stroke', '#9a0026');
-    d.select('text').style('font-weight', 'bold');
-    // hl path
-    d4.select(`#${p.id}`).select('path.hl')
-      .attr('d', area(d.datum(), true))
-      .style('fill', () => {
-        const c = d4.rgb(color(n.name));
-        c.opacity = 0.9;
-        return c;
-      });
-  }
-*/
-/*
-  function hoverOut(n) {
-    // console.log(n);
-    // un-hl node
-    const d = d4.select(`#${p.id}`).selectAll(`.n${n.name.replace(' ', '')}`);
-    d.select('circle').style('stroke', d => d.data.collapsed ? '#324eb3' : '#000000');
-    d.select('text').style('font-weight', '');
-    // delete hl path
-    d4.select(`#${p.id}`).select('path.hl').attr('d', null);
-  }
-*/
   // RETURN
   return chart;
 }
