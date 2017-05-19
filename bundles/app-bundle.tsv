@@ -1,12 +1,13 @@
 Source	Size
 components/index/README.md	584
 ../error.html	284
-../component.js	1698
+../component.js	1672
 ../dendrogram.js	5595
 ../chart.js	1301
 ../violin.js	8395
-../routes.js	2488
-../template.html	824
+../pie.js	5932
+../routes.js	2728
+../template.html	667
 ../treemap.js	6160
 ../sunburst.js	5483
 ../clonal.js	7422
@@ -32,7 +33,7 @@ common/services/datapackage/datapackage.js	713
 ../active-path.js	1022
 ../common.js	1059
 ../footer.html	841
-../header.html	1225
+../header.html	968
 ../app.component.js	857
 ../app.js	1351
 ../boot.js	348

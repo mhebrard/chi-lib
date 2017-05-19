@@ -1,0 +1,10 @@
+{
+	"name": "Pie",
+	"title": "Pie",
+	"description": "Display a serie of value as a donut",
+	"resources": [
+		"../../../data/percentage.json"
+	],
+	"image": "thumbnail.png",
+	"readme": "README.md"
+}
