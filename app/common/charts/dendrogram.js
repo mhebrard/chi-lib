@@ -18,11 +18,11 @@ export default function Chart(p) {
   p.id = p.id || 'view';
   p.data = p.data || {name: 'root', size: 1};
   p.title = p.title || `Dendrogram of ${p.id}`;
-  p.titleSize = p.titleSize || 18;
+  p.titleSize = p.titleSize || 20;
   p.fontSize = p.fontSize || 14;
   p.width = p.width || 800;
   p.height = p.height || 600;
-  p.margin = p.margin || {top: 20, bottom: 10, left: 50, right: 200};
+  p.margin = p.margin || {top: 30, bottom: 10, left: 50, right: 200};
   p.shape = p.shape || 'curve';
 
   // consume action: mutate data and apply changes

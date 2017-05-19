@@ -1,4 +1,4 @@
-import Chart from 'common/charts/treemap';
+import Chart from 'common/charts/pie';
 
 function controller() {
   const $ctrl = this;
@@ -6,11 +6,9 @@ function controller() {
   // views
   const paramChart = {
     div: 'charts',
-    id: 'treemap',
-    dispatch,
-    title: 'Treemap of flare package',
-    width: 800,
-    height: 600
+    id: 'pie',
+    title: 'Pie chart of "layout" node of flare package',
+    dispatch
   };
   const chart = new Chart(paramChart);
 
@@ -42,7 +40,7 @@ function controller() {
 
 export default {
   controller,
-  templateUrl: 'components/charts/treemap/template.html',
+  templateUrl: 'components/charts/pie/template.html',
   bindings: {
     dataPackage: '<package'
   }

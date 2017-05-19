@@ -12,6 +12,10 @@
       "link": "#/charts/dendrogram/"
     },
     {
+      "path": "../pie/datapackage.json",
+      "link": "#/charts/pie/"
+    },
+    {
       "path": "../radial/datapackage.json",
       "link": "#/charts/radial/"
     },
