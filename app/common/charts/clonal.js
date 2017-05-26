@@ -261,7 +261,7 @@ export default function Chart(p) {
     */
 
     // path
-    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.path') // height > 1
+    sel = d4.select(`#${p.id}`).select('.labels').selectAll('path') // height > 1
       .data(root.descendants().filter(d => !d.data.hidden && d.x1 - d.x0 > mh), d => id(d));
     // exit
     sel.exit().transition(t1)
@@ -281,7 +281,7 @@ export default function Chart(p) {
     .attr('d', d => line(d, true));
 
     // text
-    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.text') // height > 1
+    sel = d4.select(`#${p.id}`).select('.labels').selectAll('text') // height > 1
       .data(root.descendants().filter(d => !d.data.hidden && d.x1 - d.x0 > mh), d => id(d));
     // exit
     sel.exit().transition(t1)

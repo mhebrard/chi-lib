@@ -31,7 +31,7 @@ export default function Chart(p) {
   p.fontSize = p.fontSize || 14;
   p.width = p.width || 800;
   p.height = p.height || 600;
-  p.margin = p.margin || {top: 30, bottom: 0, left: 0, right: 0};
+  p.margin = p.margin || {top: 30, bottom: 5, left: 0, right: 0};
   p.color = p.color || d4.schemeSet3;
 
   const color = d4.scaleOrdinal(p.color);
@@ -97,12 +97,12 @@ export default function Chart(p) {
 
     // group for visual elements
     svg.append('g')
-    .attr('transform', `translate(${(p.width / 2) + p.margin.left}, ${(p.height / 2) + p.margin.top})`)
+    .attr('transform', `translate(${(p.width + p.margin.left) / 2}, ${(p.height + p.margin.top) / 2})`)
     .classed('arcs', true);
 
     // group for labels
     svg.append('g')
-    .attr('transform', `translate(${(p.width / 2) + p.margin.left}, ${(p.height / 2) + p.margin.top})`)
+    .attr('transform', `translate(${(p.width + p.margin.left) / 2}, ${(p.height + p.margin.top) / 2})`)
     .classed('labels', true);
   };
 
@@ -132,7 +132,7 @@ export default function Chart(p) {
     const t3 = d4.transition().delay(delay * 2).duration(delay);
 
     // arcs
-    sel = d4.select(`#${p.id}`).select('.arcs').selectAll('.path')
+    sel = d4.select(`#${p.id}`).select('.arcs').selectAll('path')
       .data(root.descendants(), d => id(d));
     // exit
     sel.exit().transition(t1)
@@ -161,7 +161,7 @@ export default function Chart(p) {
     .style('opacity', 1);
 
     // path
-    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.path')
+    sel = d4.select(`#${p.id}`).select('.labels').selectAll('path')
       .data(root.descendants(), d => id(d));
     // exit
     sel.exit().transition(t1)
@@ -184,7 +184,7 @@ export default function Chart(p) {
     .style('opacity', 0);
 
     // text
-    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.text')
+    sel = d4.select(`#${p.id}`).select('.labels').selectAll('text')
       .data(root.descendants(), d => id(d));
     // exit
     sel.exit().transition(t1)
