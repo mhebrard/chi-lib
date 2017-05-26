@@ -172,7 +172,7 @@ export default function Chart(p) {
 
     // nodes
     sel = d4.select(`#${p.id}`).select('.nodes').selectAll('.node')
-        .data(root.descendants(), d => d.data.name);
+        .data(root.descendants().slice(1), d => d.data.name);
     // exit
     sel.exit().transition(t1)
       .attr('transform', d => `translate(${d.parent.y}, ${d.parent.x})`)
