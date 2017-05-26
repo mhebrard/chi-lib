@@ -9,8 +9,8 @@ function controller() {
     id: 'clonal',
     dispatch,
     title: 'Clonal evolution diagram of flare package',
-    width: 700,
-    height: 5000
+    width: 800,
+    height: 2500
     // shape: 'rake' // comb, curve, rake
   };
   const chart = new Chart(paramChart);

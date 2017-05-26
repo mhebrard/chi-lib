@@ -160,7 +160,7 @@ export default function Chart(p) {
     const t3 = d4.transition().delay(delay * 2).duration(delay);
 
     // rects
-    sel = d4.select(`#${p.id}`).select('.rects').selectAll('.rect') // width > 0 & height > 0
+    sel = d4.select(`#${p.id}`).select('.rects').selectAll('rect') // width > 0 & height > 0
       .data(root.descendants().filter(d => d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => id(d));
     // exit
     sel.exit().transition(t1)
@@ -197,7 +197,7 @@ export default function Chart(p) {
     .style('opacity', 1);
 
     // path
-    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.path') // width > 0 & height > 0
+    sel = d4.select(`#${p.id}`).select('.labels').selectAll('path') // width > 0 & height > 0
       .data(root.descendants().filter(d => !d.children && d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => id(d));
     // exit
     sel.exit().transition(t1)
@@ -212,14 +212,14 @@ export default function Chart(p) {
       .attr('id', d => `map${p.id}` + id(d))
       .attr('d', 'M0,0L0,0')
       .style('opacity', 0);
+
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-    .attr('d', (d, i) => line(d, i))
-    .style('opacity', 1);
+    .attr('d', (d, i) => line(d, i));
 
     // text
-    sel = d4.select(`#${p.id}`).select('.labels').selectAll('.text') // width > 0 & height > 0
+    sel = d4.select(`#${p.id}`).select('.labels').selectAll('text') // width > 0 & height > 0
       .data(root.descendants().filter(d => !d.children && d.x1 - d.x0 > 0 && d.y1 - d.y0 > 0), d => id(d));
     // exit
     sel.exit().transition(t1)
