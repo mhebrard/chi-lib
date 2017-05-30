@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<style>
-</style>
+<link rel="stylesheet" type="text/css" href="demo.css"/>
 
 <body>
 <script src="https://d3js.org/d3-collection.v1.min.js"></script>
@@ -11,9 +10,11 @@
 <script src="https://d3js.org/d3-ease.v1.min.js"></script>
 <script src="https://d3js.org/d3-hierarchy.v1.min.js"></script>
 <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-path.v1.min.js"></script>
 <script src="https://d3js.org/d3-request.v1.min.js"></script>
 <script src="https://d3js.org/d3-scale.v1.min.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/d3-shape.v1.min.js"></script>
 <script src="https://d3js.org/d3-selection.v1.min.js"></script>
 <script src="https://d3js.org/d3-timer.v1.min.js"></script>
 <script src="https://d3js.org/d3-transition.v1.min.js"></script>
@@ -27,6 +28,9 @@ var container = d3.select('body').append('div').attr('id','charts')
 
 var v1 = container.append('div').attr('id','view1');
 var v2 = container.append('div').attr('id','view2');
+
+// tooltip
+d3.select('body').append('div').attr('id','tip').attr('class', 'tooltip');
 
 // views
 var param = {

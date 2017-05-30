@@ -20,21 +20,20 @@
 
 
   // test d3 version Map d3v4
+  /* global d3:true */
   var d4 = {};
-  if (d3.version) {
-    // d3v3.x present as global
+  if (d3 === 'undefined' || d3.version) {
     d4 = {
       select: _d3Selection.select, selectAll: _d3Selection.selectAll,
       hierarchy: _d3Hierarchy.hierarchy, cluster: _d3Hierarchy.cluster,
       transition: _d3Transition.transition
     };
   } else {
-    // d3v4 present as global
     d4 = d3;
   }
 
   function Chart(p) {
-    var chart = { version: 1.0 };
+    var chart = { version: 1.1 };
 
     // PARAMETERS
     p = p || {};
@@ -42,11 +41,11 @@
     p.id = p.id || 'view';
     p.data = p.data || { name: 'root', size: 1 };
     p.title = p.title || 'Dendrogram of ' + p.id;
-    p.titleSize = p.titleSize || 18;
+    p.titleSize = p.titleSize || 20;
     p.fontSize = p.fontSize || 14;
     p.width = p.width || 800;
     p.height = p.height || 600;
-    p.margin = p.margin || { top: 20, bottom: 10, left: 50, right: 200 };
+    p.margin = p.margin || { top: 30, bottom: 10, left: 50, right: 200 };
     p.shape = p.shape || 'curve';
 
     // consume action: mutate data and apply changes
@@ -171,7 +170,7 @@
       }).style('opacity', 1);
 
       // nodes
-      sel = d4.select('#' + p.id).select('.nodes').selectAll('.node').data(root.descendants(), function (d) {
+      sel = d4.select('#' + p.id).select('.nodes').selectAll('.node').data(root.descendants().slice(1), function (d) {
         return d.data.name;
       });
       // exit

@@ -1,16 +1,16 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports', 'd3-selection', 'd3-transition', 'd3-scale', 'd3-scale-chromatic', 'd3-shape'], factory);
+    define(['exports', 'd3-scale', 'd3-scale-chromatic', 'd3-shape', 'd3-transition', 'd3-selection'], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require('d3-selection'), require('d3-transition'), require('d3-scale'), require('d3-scale-chromatic'), require('d3-shape'));
+    factory(exports, require('d3-scale'), require('d3-scale-chromatic'), require('d3-shape'), require('d3-transition'), require('d3-selection'));
   } else {
     var mod = {
       exports: {}
     };
-    factory(mod.exports, global.d3Selection, global.d3Transition, global.d3Scale, global.d3ScaleChromatic, global.d3Shape);
+    factory(mod.exports, global.d3Scale, global.d3ScaleChromatic, global.d3Shape, global.d3Transition, global.d3Selection);
     global.pie = mod.exports;
   }
-})(this, function (exports, _d3Selection, _d3Transition, _d3Scale, _d3ScaleChromatic, _d3Shape) {
+})(this, function (exports, _d3Scale, _d3ScaleChromatic, _d3Shape, _d3Transition, _d3Selection) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -37,15 +37,24 @@
     }
   }
 
-  // Map d3v4
-  var d4 = {
-    select: _d3Selection.select, selectAll: _d3Selection.selectAll,
-    transition: _d3Transition.transition,
-    scaleOrdinal: _d3Scale.scaleOrdinal,
-    schemeSet3: _d3ScaleChromatic.schemeSet3,
-    arc: _d3Shape.arc, pie: _d3Shape.pie
-  };
+  // test d3 version Map d3v4
+  /* global d3:true */
+  var d4 = {};
   // workaround for event
+
+  if (d3 === 'undefined' || d3.version) {
+    d4 = {
+      select: d3sel.select,
+      selectAll: d3sel.selectAll,
+      transition: _d3Transition.transition,
+      scaleOrdinal: _d3Scale.scaleOrdinal,
+      schemeSet3: _d3ScaleChromatic.schemeSet3,
+      arc: _d3Shape.arc, pie: _d3Shape.pie
+    };
+  } else {
+    d4 = d3;
+  }
+
   function Chart(p) {
     var chart = { version: 1.0 };
 
@@ -147,7 +156,7 @@
       var root = d4.pie().value(function (d) {
         return d.size;
       })(p.data.serie);
-      console.log('pir layout', root);
+      console.log('pie layout', root);
 
       // center
       p.total = root.reduce(function (res, r) {
@@ -268,7 +277,16 @@
         // highlight();
       } else {
         // move
-        d4.select('#tip').style('top', d3sel.event.pageY - 10 + 'px').style('left', d3sel.event.pageX + 10 + 'px');
+        var x = 0;
+        var y = 0;
+        if (d3sel.event) {
+          y = d3sel.event.pageY;
+          x = d3sel.event.pageX;
+        } else {
+          y = d3.event.clientY;
+          x = d3.event.clientX;
+        }
+        d4.select('#tip').style('top', y - 10 + 'px').style('left', x + 10 + 'px');
       }
     }
 
