@@ -2,12 +2,18 @@ import {select, selectAll} from 'd3-selection';
 import {hierarchy, cluster} from 'd3-hierarchy';
 import {transition} from 'd3-transition';
 
-// Map d3v4
-const d4 = {
-  select, selectAll,
-  hierarchy, cluster,
-  transition
-};
+// test d3 version Map d3v4
+/* global d3:true */
+let d4 = {};
+if (d3 === 'undefined' || d3.version) {
+  d4 = {
+    select, selectAll,
+    hierarchy, cluster,
+    transition
+  };
+} else {
+  d4 = d3;
+}
 
 export default function Chart(p) {
   const chart = {version: 1.1};

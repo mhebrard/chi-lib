@@ -37,5 +37,9 @@
     "url": "https://github.com/mhebrard/chi-lib/issues"
   },
   "homepage": "https://github.com/mhebrard/chi-lib#readme",
-  "description": "A datapackage for Project-Chi that present a set a visualizations used at Laboratory for Integrated Bioinformatics, RIKEN"
+  "description": "A datapackage for Project-Chi that present a set a visualizations used at Laboratory for Integrated Bioinformatics, RIKEN",
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-plugin-transform-es2015-modules-umd": "^6.24.1"
+  }
 }
