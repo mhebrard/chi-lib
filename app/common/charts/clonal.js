@@ -1,22 +1,27 @@
-import {select, selectAll} from 'd3-selection';
 import {hierarchy, partition} from 'd3-hierarchy';
 import {transition} from 'd3-transition';
 import {scaleOrdinal} from 'd3-scale';
 import {schemeSet3} from 'd3-scale-chromatic';
 import {line, curveLinear} from 'd3-shape';
-
 // workaround for event manager (d3sel.event)
 import * as d3sel from 'd3-selection';
 
-// Map d3v4
-const d4 = {
-  select, selectAll,
-  hierarchy, partition,
-  transition,
-  scaleOrdinal,
-  schemeSet3,
-  curveLinear, line
-};
+// test d3 version Map d3v4
+/* global d3:true */
+let d4 = {};
+if (d3 === 'undefined' || d3.version) {
+  d4 = {
+    select: d3sel.select,
+    selectAll: d3sel.selectAll,
+    hierarchy, partition,
+    transition,
+    scaleOrdinal,
+    schemeSet3,
+    curveLinear, line
+  };
+} else {
+  d4 = d3;
+}
 
 export default function Chart(p) {
   const chart = {version: 1.1};
@@ -227,7 +232,8 @@ export default function Chart(p) {
       .on('mouseover', d => tip('show', d))
       .on('mousemove', d => tip('move', d))
       .on('mouseout', d => tip('hide', d));
-  /*    .on('click', d => {
+      /*
+      .on('click', d => {
         if (d.data.collapsed) {
           p.dispatch({type: 'expand', node: d.data});
         } else if (d.children) {
@@ -236,7 +242,7 @@ export default function Chart(p) {
       })
       .on('mouseover', d => p.dispatch({type: 'hover', node: d.data}))
       .on('mouseout', d => p.dispatch({type: 'hoverOut', node: d.data}));
-*/
+      */
     add.append('circle')
       .style('fill', d => color(d.data.name))
       .style('stroke-width', '2px');
@@ -336,9 +342,18 @@ export default function Chart(p) {
       d4.select('#tip').style('opacity', 0);
       // highlight();
     } else { // move
+      let x = 0;
+      let y = 0;
+      if (d3sel.event) {
+        y = d3sel.event.pageY;
+        x = d3sel.event.pageX;
+      } else {
+        y = d3.event.clientY;
+        x = d3.event.clientX;
+      }
       d4.select('#tip')
-        .style('top', `${d3sel.event.pageY - 10}px`)
-        .style('left', `${d3sel.event.pageX + 10}px`);
+        .style('top', `${y - 10}px`)
+        .style('left', `${x + 10}px`);
     }
   }
 

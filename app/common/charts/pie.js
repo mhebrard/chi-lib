@@ -1,19 +1,25 @@
-import {select, selectAll} from 'd3-selection';
-import {transition} from 'd3-transition';
 import {scaleOrdinal} from 'd3-scale';
 import {schemeSet3} from 'd3-scale-chromatic';
 import {arc, pie} from 'd3-shape';
+import {transition} from 'd3-transition';
 // workaround for event
 import * as d3sel from 'd3-selection';
 
-// Map d3v4
-const d4 = {
-  select, selectAll,
-  transition,
-  scaleOrdinal,
-  schemeSet3,
-  arc, pie
-};
+// test d3 version Map d3v4
+/* global d3:true */
+let d4 = {};
+if (d3 === 'undefined' || d3.version) {
+  d4 = {
+    select: d3sel.select,
+    selectAll: d3sel.selectAll,
+    transition,
+    scaleOrdinal,
+    schemeSet3,
+    arc, pie
+  };
+} else {
+  d4 = d3;
+}
 
 export default function Chart(p) {
   const chart = {version: 1.0};
@@ -137,7 +143,7 @@ export default function Chart(p) {
     console.log('chart update');
     // Layout
     const root = d4.pie().value(d => d.size)(p.data.serie);
-    console.log('pir layout', root);
+    console.log('pie layout', root);
 
     // center
     p.total = root.reduce((res, r) => {
@@ -259,9 +265,18 @@ export default function Chart(p) {
       d4.select('#tip').style('opacity', 0);
       // highlight();
     } else { // move
+      let x = 0;
+      let y = 0;
+      if (d3sel.event) {
+        y = d3sel.event.pageY;
+        x = d3sel.event.pageX;
+      } else {
+        y = d3.event.clientY;
+        x = d3.event.clientX;
+      }
       d4.select('#tip')
-        .style('top', `${d3sel.event.pageY - 10}px`)
-        .style('left', `${d3sel.event.pageX + 10}px`);
+        .style('top', `${y - 10}px`)
+        .style('left', `${x + 10}px`);
     }
   }
 
