@@ -34,7 +34,7 @@ export default function Chart(p) {
   p.fontSize = p.fontSize || 14;
   p.width = p.width || 800;
   p.height = p.height || 600;
-  p.margin = p.margin || {top: 30, bottom: 0, left: 0, right: 0};
+  p.margin = p.margin || {top: 30, bottom: 5, left: 5, right: 0};
   p.color = p.color || d4.schemeSet3;
   p.inner = p.inner || 70;
   p.cornerRadius = p.cornerRadius || 3;
