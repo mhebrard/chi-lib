@@ -34,12 +34,15 @@ export default function Chart(p) {
   p.height = p.height || 400;
   p.margin = p.margin || {top: 30, bottom: 5, left: 5, right: 5, padding: 1};
   p.legend = p.legend || {top: 100, bottom: 100, left: 100, right: 100, padding: 5};
+  p.grid = p.grid || false; // true: use gris size, false: use global size;
+  p.gridWidth = p.gridWidth || 0;
+  p.gridHeight = p.gridHeight || 0;
   p.color = p.color || ['#fff7ec', '#fee8c8', '#fdd49e', '#fdbb84', '#fc8d59', '#ef6548', '#d7301f', '#b30000', '#7f0000']; // ColorBrewer sequential
   p.cornerRadius = p.cornerRadius || 3;
 
   const color = d4.scaleSequential(d4.interpolateRgbBasis(p.color));
   const scale = d4.scaleLinear().range([0.000, 1.000]);
-  p.max = 0;
+  p.max = 0; // Maximal cell value
 
   // consume action: mutate data and apply changes
   chart.consumer = function(action) {
@@ -64,9 +67,7 @@ export default function Chart(p) {
     // SVG
     const svg = d4.select(`#${p.div}`).append('svg')
       .attr('id', p.id)
-      .attr('title', p.title)
-      .attr('width', p.width)
-      .attr('height', p.height);
+      .attr('title', p.title);
 
     // title
     svg.append('g').attr('class', 'title')
@@ -83,18 +84,14 @@ export default function Chart(p) {
     .classed('rows', true);
 
     // group for legend
-    svg.append('g')
-    .attr('transform', `translate(${p.margin.left + p.legend.left}, ${p.margin.top})`)
-    .classed('legendTop', true);
-    svg.append('g')
-    .attr('transform', `translate(${p.margin.left + p.legend.left}, ${p.height - p.margin.bottom - p.legend.bottom})`)
-    .classed('legendBottom', true);
-    svg.append('g')
-    .attr('transform', `translate(${p.margin.left}, ${p.margin.top + p.legend.top})`)
-    .classed('legendLeft', true);
-    svg.append('g')
-    .attr('transform', `translate(${p.width - p.margin.right - p.legend.right}, ${p.margin.top + p.legend.top})`)
-    .classed('legendRight', true);
+    svg.append('g').classed('legendTop', true)
+    .attr('transform', `translate(${p.margin.left + p.legend.left}, ${p.margin.top})`);
+    svg.append('g').classed('legendBottom', true);
+/**/// .attr('transform', `translate(${p.margin.left + p.legend.left}, ${p.height - p.margin.bottom - p.legend.bottom})`)
+    svg.append('g').classed('legendLeft', true)
+    .attr('transform', `translate(${p.margin.left}, ${p.margin.top + p.legend.top})`);
+    svg.append('g').classed('legendRight', true);
+/**///    .attr('transform', `translate(${p.width - p.margin.right - p.legend.right}, ${p.margin.top + p.legend.top})`)
   };
 
   // accessor
@@ -133,15 +130,31 @@ export default function Chart(p) {
         p.max = Math.max(p.max, cell.size);
       });
     });
+    // Scale color
+    scale.domain([0, p.max]);
     // Sort label
     p.labelX = p.labelX.map((m, i) => [m, i]);
     p.labelY = p.labelY.map((m, i) => [m, i]);
     p.labelX.sort((a, b) => a[0] < b[0] ? -1 : 1);
     p.labelY.sort((a, b) => a[0] < b[0] ? -1 : 1);
-    // grid
-    p.gridWidth = (p.width - p.margin.left - p.legend.left - p.margin.right - p.legend.right) / p.labelX.length;
-    p.gridHeight = (p.height - p.margin.top - p.legend.top - p.margin.bottom - p.legend.bottom) / p.labelY.length;
-    scale.domain([0, p.max]);
+    // Grid
+    // If grid is defined, size accordingly
+    // else size according to width / height
+    if (p.grid) {
+      p.width = p.margin.left + p.legend.left + (p.labelX.length * p.gridWidth) + p.legend.right + p.margin.right;
+      p.height = p.margin.top + p.legend.top + (p.labelY.length * p.gridHeight) + p.legend.bottom + p.margin.bottom;
+    } else {
+      p.gridWidth = (p.width - p.margin.left - p.legend.left - p.margin.right - p.legend.right) / p.labelX.length;
+      p.gridHeight = (p.height - p.margin.top - p.legend.top - p.margin.bottom - p.legend.bottom) / p.labelY.length;
+    }
+    // Adjust SVG
+    const svg = d4.select(`#${p.div}`).select('svg')
+      .attr('width', p.width)
+      .attr('height', p.height);
+    svg.select('.legendBottom')
+      .attr('transform', `translate(${p.margin.left + p.legend.left}, ${p.height - p.margin.bottom - p.legend.bottom})`);
+    svg.select('.legendRight')
+      .attr('transform', `translate(${p.width - p.margin.right - p.legend.right}, ${p.margin.top + p.legend.top})`);
 
     // Update pattern
     let sel;
@@ -153,7 +166,7 @@ export default function Chart(p) {
     const t3 = d4.transition().delay(delay * 2).duration(delay);
 
     // Legend
-    const svg = d4.select(`#${p.id}`);
+    // const svg = d4.select(`#${p.id}`);
     if (p.legend.top > 2 * p.legend.padding) {
       addLegend('T', svg.select('.legendTop'), p.labelX.map(m => m[0]));
     }
