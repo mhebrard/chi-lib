@@ -1,5 +1,5 @@
+import {interpolateRgbBasis} from 'd3-interpolate';
 import {scaleLinear, scaleSequential} from 'd3-scale';
-import {interpolateOranges} from 'd3-scale-chromatic';
 import {transition} from 'd3-transition';
 // workaround for event
 import * as d3sel from 'd3-selection';
@@ -12,8 +12,8 @@ if (d3 === 'undefined' || d3.version) {
     select: d3sel.select,
     selectAll: d3sel.selectAll,
     transition,
-    scaleLinear, scaleSequential,
-    interpolateOranges
+    interpolateRgbBasis,
+    scaleLinear, scaleSequential
   };
 } else {
   d4 = d3;
@@ -34,15 +34,12 @@ export default function Chart(p) {
   p.height = p.height || 400;
   p.margin = p.margin || {top: 30, bottom: 5, left: 5, right: 5, padding: 1};
   p.legend = p.legend || {top: 100, bottom: 100, left: 100, right: 100, padding: 5};
-  // p.color = p.color || d4.schemeSet3;
+  p.color = p.color || ['#fff7ec', '#fee8c8', '#fdd49e', '#fdbb84', '#fc8d59', '#ef6548', '#d7301f', '#b30000', '#7f0000']; // ColorBrewer sequential
   p.cornerRadius = p.cornerRadius || 3;
 
-  const color = d4.scaleSequential(d4.interpolateOranges);
+  const color = d4.scaleSequential(d4.interpolateRgbBasis(p.color));
   const scale = d4.scaleLinear().range([0.000, 1.000]);
   p.max = 0;
-  p.labelX = [];
-  p.labelY = [];
-  p.heatmap = [];
 
   // consume action: mutate data and apply changes
   chart.consumer = function(action) {
@@ -83,7 +80,7 @@ export default function Chart(p) {
     // group for visual elements
     svg.append('g')
     .attr('transform', `translate(${p.margin.left + p.legend.left}, ${p.margin.top + p.legend.top})`)
-    .classed('rects', true);
+    .classed('rows', true);
 
     // group for legend
     svg.append('g')
@@ -110,6 +107,9 @@ export default function Chart(p) {
 
   chart.update = function() {
     console.log('chart update');
+    p.labelX = [];
+    p.labelY = [];
+    p.heatmap = [];
     // Parse data
     Object.keys(p.data).forEach(row => {
       // Define Y label and index
@@ -126,93 +126,161 @@ export default function Chart(p) {
           p.labelX.push(cell.name);
         }
         // Populate heatmap
-        if (p.heatmap[x] === undefined) {
-          p.heatmap[x] = [];
+        if (p.heatmap[y] === undefined) {
+          p.heatmap[y] = [];
         }
-        p.heatmap[x][y] = cell.size;
+        p.heatmap[y][x] = cell.size;
         p.max = Math.max(p.max, cell.size);
       });
     });
+    // Sort label
+    p.labelX = p.labelX.map((m, i) => [m, i]);
+    p.labelY = p.labelY.map((m, i) => [m, i]);
+    p.labelX.sort((a, b) => a[0] < b[0] ? -1 : 1);
+    p.labelY.sort((a, b) => a[0] < b[0] ? -1 : 1);
     // grid
     p.gridWidth = (p.width - p.margin.left - p.legend.left - p.margin.right - p.legend.right) / p.labelX.length;
     p.gridHeight = (p.height - p.margin.top - p.legend.top - p.margin.bottom - p.legend.bottom) / p.labelY.length;
     scale.domain([0, p.max]);
 
-    // C console.log('heatmap', p.heatmap);
+    // Update pattern
+    let sel;
+    let add;
+    // Transitions
+    const delay = 500;
+    const t1 = d4.transition().duration(delay);
+    const t2 = d4.transition().delay(delay).duration(delay);
+    const t3 = d4.transition().delay(delay * 2).duration(delay);
 
-    // display data
-    const rects = d4.select(`#${p.id}`).select('.rects');
-    const top = d4.select(`#${p.id}`).select('.legendTop');
-    const bottom = d4.select(`#${p.id}`).select('.legendBottom');
-    const left = d4.select(`#${p.id}`).select('.legendLeft');
-    const right = d4.select(`#${p.id}`).select('.legendRight');
-    // const labelsY = d4.select(`#${p.id}`).select('.labelsY');
+    // Legend
+    const svg = d4.select(`#${p.id}`);
+    if (p.legend.top > 2 * p.legend.padding) {
+      addLegend('T', svg.select('.legendTop'), p.labelX.map(m => m[0]));
+    }
+    if (p.legend.bottom > 2 * p.legend.padding) {
+      addLegend('B', svg.select('.legendBottom'), p.labelX.map(m => m[0]));
+    }
+    if (p.legend.left > 2 * p.legend.padding) {
+      addLegend('L', svg.select('.legendLeft'), p.labelY.map(m => m[0]));
+    }
+    if (p.legend.right > 2 * p.legend.padding) {
+      addLegend('R', svg.select('.legendRight'), p.labelY.map(m => m[0]));
+    }
 
-    p.labelY.sort().forEach((row, j) => {
-      // Display labels
-      const line = j * p.gridHeight;
-      const id = row.replace(' ', '_');
-      addLabel('L', left, line, row, id);
-      addLabel('R', right, line, row, id);
-      // Define X index
-      const y = p.labelY.indexOf(row);
-      p.labelX.sort().forEach((cell, i) => {
-        const x = p.labelX.indexOf(cell);
-        // Create rect
-        rects.append('rect')
-          .datum(p.heatmap[x][y] || 0)
-          .attr('x', (i * p.gridWidth) + p.margin.padding)
-          .attr('y', (j * p.gridHeight) + p.margin.padding)
-          .attr('width', p.gridWidth - (2 * p.margin.padding))
-          .attr('height', p.gridHeight - (2 * p.margin.padding))
-          .attr('rx', p.cornerRadius)
-          .attr('ry', p.cornerRadius)
-          .style('opacity', 1)
-          .style('fill', d => color(scale(d)))
-          .style('fill-rule', 'evenodd')
-          .style('stroke', '#000')
-          .style('cursor', 'pointer')
-          .on('mouseover', d => tip('show', {x: cell, y: row, size: d}))
-          .on('mousemove', d => tip('move', d))
-          .on('mouseout', d => tip('hide', d));
-      });
-    });
+    // Rows
+    sel = d4.select(`#${p.id}`).select('.rows').selectAll('g')
+    .data(p.labelY.map(y => [y[0], p.heatmap[y[1]]]));
+    // exit
+    sel.exit().transition(t1)
+      .attr('transform', 'translate(0,0)')
+      .remove();
+    // update
+    sel.transition(t2)
+      .attr('transform', (d, i) => `translate(0, ${i * p.gridHeight})`);
+    // add
+    add = sel.enter().append('g')
+      .attr('transform', 'translate(0,0)');
+    // update
+    sel = add.merge(sel);
+    sel.transition(t3)
+    .attr('transform', (d, i) => `translate(0, ${i * p.gridHeight})`);
 
-    p.labelX.sort().forEach((col, i) => {
-      // Display labels
-      const line = i * p.gridWidth;
-      const id = col.replace(' ', '_');
-      addLabel('T', top, line, col, id);
-      addLabel('B', bottom, line, col, id);
-    });
+    // Cells
+    sel = d4.select(`#${p.id}`).select('.rows').selectAll('g').selectAll('rect')
+    .data(d => p.labelX.map(x => [d[0], x[0], d[1][x[1]] || 0]));
+    // exit
+    sel.exit().transition(t1)
+      .remove();
+    // update
+    sel.transition(t2)
+    .attr('x', (d, i) => (i * p.gridWidth) + p.margin.padding)
+    .attr('width', p.gridWidth - (2 * p.margin.padding))
+    .attr('height', p.gridHeight - (2 * p.margin.padding))
+    .style('fill', d => color(scale(d[2])));
+    // add
+    add = sel.enter().append('rect')
+    .attr('x', 0)
+    .attr('y', p.margin.padding)
+    .attr('width', 0)
+    .attr('height', 0)
+    .attr('rx', p.cornerRadius)
+    .attr('ry', p.cornerRadius)
+    .style('opacity', 1)
+    .style('fill', '#fff')
+    .style('fill-rule', 'evenodd')
+    .style('stroke', '#000')
+    .style('cursor', 'pointer')
+    .on('mouseover', d => tip('show', {row: d[0], col: d[1], value: d[2]}))
+    .on('mousemove', d => tip('move', d))
+    .on('mouseout', d => tip('hide', d));
+    // update
+    sel = add.merge(sel);
+    sel.transition(t3)
+    .attr('x', (d, i) => (i * p.gridWidth) + p.margin.padding)
+    .attr('width', p.gridWidth - (2 * p.margin.padding))
+    .attr('height', p.gridHeight - (2 * p.margin.padding))
+    .style('fill', d => color(scale(d[2])));
+
+    function addLegend(mode, g, data) {
+      // Path
+      sel = g.selectAll('path')
+        .data(data, d => d);
+      // exit
+      sel.exit().transition(t1)
+        .attr('d', 'M0,0L0,0')
+        .remove();
+      // update
+      sel.transition(t2)
+        .attr('d', (d, i) => path(mode, d, i));
+      // add
+      add = sel.enter().append('path')
+        .attr('id', d => `map${mode}${d.replace(' ', '_')}`)
+        .attr('d', 'M0,0L0,0')
+        .style('pointer-events', 'none')
+        .style('opacity', 0);
+      // update
+      sel = add.merge(sel);
+      sel.transition(t3)
+      .attr('d', (d, i) => path(mode, d, i));
+
+      // Text
+      sel = g.selectAll('text')
+        .data(data, d => d);
+      // exit
+      sel.exit().transition(t1)
+        .style('opacity', 0)
+        .remove();
+      // add
+      add = sel.enter().append('text')
+        .attr('text-anchor', 'left')
+        .attr('dy', '0.5ex')
+        .style('pointer-events', 'none')
+        .style('opacity', 1)
+        .append('textPath')
+          .attr('xlink:href', d => `#map${mode}${d.replace(' ', '_')}`)
+          .text(d => d);
+    }
   };
 
-  function addLabel(mode, group, line, txt, id) {
-    let d = '';
+  function path(mode, d, i) {
+    let path;
+    let line = 0;
     if (mode === 'L') {
-      d = `M${p.legend.padding},${line + (p.gridHeight / 2)} L${p.legend.left - p.legend.padding},${line + (p.gridHeight / 2)}`;
+      line = i * p.gridHeight;
+      path = `M${p.legend.padding},${line + (p.gridHeight / 2)} L${p.legend.left - p.legend.padding},${line + (p.gridHeight / 2)}`;
     } else if (mode === 'R') {
-      d = `M${p.legend.padding},${line + (p.gridHeight / 2)} L${p.legend.right - p.legend.padding},${line + (p.gridHeight / 2)}`;
+      line = i * p.gridHeight;
+      path = `M${p.legend.padding},${line + (p.gridHeight / 2)} L${p.legend.right - p.legend.padding},${line + (p.gridHeight / 2)}`;
     } else if (mode === 'T') {
-      d = `M${line + p.legend.padding},${p.legend.top - p.legend.padding} L${line + p.gridWidth - p.legend.padding},${p.legend.padding}`;
+      line = i * p.gridWidth;
+      path = `M${line + p.legend.padding},${p.legend.top - p.legend.padding} L${line + p.gridWidth - p.legend.padding},${p.legend.padding}`;
     } else if (mode === 'B') {
-      d = `M${line + p.legend.padding},${p.legend.padding} L${line + p.gridWidth - p.legend.padding},${p.legend.bottom - p.legend.padding}`;
+      line = i * p.gridWidth;
+      path = `M${line + p.legend.padding},${p.legend.padding} L${line + p.gridWidth - p.legend.padding},${p.legend.bottom - p.legend.padding}`;
     } else {
       console.log('Error addLabel mode');
     }
-
-    // Common
-    group.append('path')
-      .attr('id', `map${mode}${id}`)
-      .attr('d', d)
-      .style('opacity', 0);
-    group.append('text')
-      .attr('text-anchor', 'left')
-      .attr('dy', '0.5ex')
-      .style('pointer-events', 'none')
-      .append('textPath')
-        .attr('xlink:href', `#map${mode}${id}`)
-        .text(txt);
+    return path;
   }
 
   function tip(state, d) {
@@ -220,7 +288,7 @@ export default function Chart(p) {
       d4.select('#tip')
         .datum(d)
         .style('opacity', 1)
-        .html(d => `Row: ${d.y}<br/>\nColumn: ${d.x}<br/>\nValue: ${d.size}`);
+        .html(d => `Row: ${d.row}<br/>\nColumn: ${d.col}<br/>\nValue: ${d.value}`);
       // highlight(d);
     } else if (state === 'hide') {
       d4.select('#tip').style('opacity', 0);

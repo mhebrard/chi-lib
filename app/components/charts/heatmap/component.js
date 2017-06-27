@@ -6,7 +6,7 @@ function controller() {
   // views
   const paramChart = {
     div: 'charts',
-    id: 'heatmap',
+    id: 'heatmapSVG',
     title: 'Heatmap derived from "layout" node of flare package',
     dispatch
   };
