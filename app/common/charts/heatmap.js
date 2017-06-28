@@ -26,7 +26,7 @@ export default function Chart(p) {
   p = p || {};
   p.div = p.div || 'body';
   p.id = p.id || 'view';
-  p.data = p.data || {serieA: [{name: 'root', size: 1}]};
+  p.data = p.data || {row1: [{name: 'column1', size: 1}]};
   p.title = p.title || `Heatmap of ${p.id}`;
   p.titleSize = p.titleSize || 20;
   p.fontSize = p.fontSize || 14;
