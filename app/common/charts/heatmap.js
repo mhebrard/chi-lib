@@ -26,7 +26,7 @@ export default function Chart(p) {
   p = p || {};
   p.div = p.div || 'body';
   p.id = p.id || 'view';
-  p.data = p.data || {row1: [{name: 'column1', size: 1}]};
+  p.data = p.data || {row1: {column1: 1}};
   p.title = p.title || `Heatmap of ${p.id}`;
   p.titleSize = p.titleSize || 20;
   p.fontSize = p.fontSize || 14;
@@ -115,19 +115,19 @@ export default function Chart(p) {
         y = p.labelY.length;
         p.labelY.push(row);
       }
-      p.data[row].forEach(cell => {
+      Object.keys(p.data[row]).forEach(col => {
         // Define X label and index
-        let x = p.labelX.indexOf(cell.name);
+        let x = p.labelX.indexOf(col);
         if (x < 0) {
           x = p.labelX.length;
-          p.labelX.push(cell.name);
+          p.labelX.push(col);
         }
         // Populate heatmap
         if (p.heatmap[y] === undefined) {
           p.heatmap[y] = [];
         }
-        p.heatmap[y][x] = cell.size;
-        p.max = Math.max(p.max, cell.size);
+        p.heatmap[y][x] = p.data[row][col];
+        p.max = Math.max(p.max, p.data[row][col]);
       });
     });
     // Scale color
