@@ -1,0 +1,23 @@
+# Heatmap
+Two dimensions table of values represented as heatmap. The value is mapped to a color range.
+
+**sources**
+* [D3.js v4.x](https://github.com/d3/d3/blob/master/API.md) (d3-interpolate, d3-scale, d3-selection, d3-transition)
+* Input data is an object where each properties (that will be the rows) are an array of objects (that will be the cells). If cells are missing they will be initiate at 0: {row1: [{name: 'column1', size: #}, {...}], row-2:[...]}.
+
+**parameters**
+* div = 'body': container id
+* id = 'view': figure id
+* data = {row1: [{name: 'column1', size: 1}]}: input data
+* title = 'Heatmap of ': figure title
+* titleSize = 20: title font size
+* fontSize = 14: text font size
+* width = 800: figure width
+* height = 600: figure height
+* margin = {top: 30, bottom: 5, left: 5, right: 5, padding: 1}: margin and cell/cell padding in pixel
+* legend = {top: 100, bottom: 100, left: 100, right: 100, padding: 5}: legend and cell/legend padding in pixel (if 0, the legend is not displayed)
+* grid = false: if true, use gridWidth and gridHeight to set the figure size. If false, use width and height to set the figure size
+* gridWidth = 0: cell width if grid is true
+* gridHeight = 0: cell height if grid is true
+* color = [oranges]: palette for cell fill color
+* cornerRadius = 3: round corner for each cell

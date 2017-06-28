@@ -1,0 +1,10 @@
+{
+	"name": "Heatmap",
+	"title": "Heatmap",
+	"description": "Display a two dimensions table with values mapped to color range",
+	"resources": [
+		"../../../data/twoDimensions.json"
+	],
+	"image": "thumbnail.png",
+	"readme": "README.md"
+}
