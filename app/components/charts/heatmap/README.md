@@ -3,12 +3,12 @@ Two dimensions table of values represented as heatmap. The value is mapped to a 
 
 **sources**
 * [D3.js v4.x](https://github.com/d3/d3/blob/master/API.md) (d3-interpolate, d3-scale, d3-selection, d3-transition)
-* Input data is an object where each properties (that will be the rows) are an array of objects (that will be the cells). If cells are missing they will be initiate at 0: {row1: [{name: 'column1', size: #}, {...}], row-2:[...]}.
+* Input data is an object where each properties (that will be the rows) is an object where each properties (that will be the columns) is the actual value of the cell. If columns are missing, they will be initiate at 0: {row1: {column1: #, ...}, row2:{...}}.
 
 **parameters**
 * div = 'body': container id
 * id = 'view': figure id
-* data = {row1: [{name: 'column1', size: 1}]}: input data
+* data = {row1: {column1: 1}}: input data
 * title = 'Heatmap of ': figure title
 * titleSize = 20: title font size
 * fontSize = 14: text font size
