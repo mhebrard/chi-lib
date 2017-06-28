@@ -8,6 +8,7 @@ import radialComponent from '../radial/component';
 import clonalComponent from '../clonal/component';
 import violinComponent from '../violin/component';
 import pieComponent from '../pie/component';
+import heatmapComponent from '../heatmap/component';
 
 routeConfig.$inject = ['$routeProvider'];
 function routeConfig($routeProvider) {
@@ -44,6 +45,10 @@ function routeConfig($routeProvider) {
       template: '<pie data-package="$resolve.dataPackage"></pie>',
       datapackageUrl: 'components/charts/pie/datapackage.json'
     })
+    .when('/charts/heatmap', {
+      template: '<heatmap data-package="$resolve.dataPackage"></heatmap>',
+      datapackageUrl: 'components/charts/heatmap/datapackage.json'
+    })
     .otherwise({redirectTo: '/'});
 }
 
@@ -57,4 +62,5 @@ export default angular
   .component('clonal', clonalComponent)
   .component('violin', violinComponent)
   .component('pie', pieComponent)
+  .component('heatmap', heatmapComponent)
   .config(routeConfig);
