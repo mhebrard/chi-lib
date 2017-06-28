@@ -68,7 +68,7 @@
     p.fontSize = p.fontSize || 14;
     p.width = p.width || 800;
     p.height = p.height || 600;
-    p.margin = p.margin || { top: 30, bottom: 0, left: 0, right: 0 };
+    p.margin = p.margin || { top: 30, bottom: 5, left: 5, right: 0 };
     p.color = p.color || d4.schemeSet3;
     p.inner = p.inner || 70;
     p.cornerRadius = p.cornerRadius || 3;
@@ -283,8 +283,8 @@
           y = d3sel.event.pageY;
           x = d3sel.event.pageX;
         } else {
-          y = d3.event.clientY;
-          x = d3.event.clientX;
+          y = d3.event.layerY;
+          x = d3.event.layerX;
         }
         d4.select('#tip').style('top', y - 10 + 'px').style('left', x + 10 + 'px');
       }

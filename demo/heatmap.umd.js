@@ -337,8 +337,8 @@
           y = d3sel.event.pageY;
           x = d3sel.event.pageX;
         } else {
-          y = d3.event.clientY;
-          x = d3.event.clientX;
+          y = d3.event.layerY;
+          x = d3.event.layerX;
         }
         d4.select('#tip').style('top', y - 10 + 'px').style('left', x + 10 + 'px');
       }
