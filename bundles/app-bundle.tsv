@@ -9,6 +9,7 @@ components/index/README.md	584
 ../heatmap.js	8013
 ../routes.js	3008
 ../template.html	824
+../mutbypos.js	6447
 ../treemap.js	6200
 ../sunburst.js	5550
 ../clonal.js	7482
@@ -23,8 +24,8 @@ components/index/README.md	584
 ../dataservice.js	6109
 ../index.js	638
 common/services/datapackage/datapackage.js	713
-../editor.html	6894
-../editor-controller.js	3814
+../editor.html	6718
+../editor-controller.js	3813
 ../editor.js	1408
 ../loading-bar.html	522
 ../loading-bar.js	897
