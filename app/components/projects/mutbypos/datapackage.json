@@ -1,0 +1,10 @@
+{
+	"name": "mutbypos",
+	"title": "Mutation by positions",
+	"description": "Histogram of mutation count along a reference sequence.",
+	"resources": [
+		"../../../data/mutationByPosition.json"
+	],
+	"image": "thumbnail.png",
+	"readme": "README.md"
+}

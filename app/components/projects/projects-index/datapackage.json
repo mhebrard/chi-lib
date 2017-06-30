@@ -8,6 +8,10 @@
       "link": "http://metasystems.riken.jp/visualization/treemap/"
     },
     {
+      "path": "../mutbypos/datapackage.json",
+      "link": "#/projects/mutbypos/"
+    },
+    {
       "path": "../taxonomy/datapackage.json",
       "link": "#/projects/taxonomy/"
     }
