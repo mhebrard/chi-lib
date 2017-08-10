@@ -1,8 +1,8 @@
-import {ascending, histogram, max, quantile, mean} from 'd3-array';
+import {ascending, extent, histogram, max, quantile, mean} from 'd3-array';
 import {axisLeft, axisRight} from 'd3-axis';
 import {scaleOrdinal, scaleLinear} from 'd3-scale';
 import {schemeSet3} from 'd3-scale-chromatic';
-import {area, line, curveBasis, curveLinear, curveStepAfter} from 'd3-shape';
+import {area, line, curveBasis, curveCatmullRom, curveLinear, curveStepAfter} from 'd3-shape';
 import {select, selectAll} from 'd3-selection';
 import {transition} from 'd3-transition';
 
@@ -11,11 +11,11 @@ import {transition} from 'd3-transition';
 let d4 = {};
 if (d3 === 'undefined' || d3.version) {
   d4 = {
-    ascending, histogram, max, quantile, mean,
+    ascending, extent, histogram, max, quantile, mean,
     axisLeft, axisRight,
     scaleOrdinal, scaleLinear,
     schemeSet3,
-    area, line, curveBasis, curveLinear, curveStepAfter,
+    area, line, curveBasis, curveCatmullRom, curveLinear, curveStepAfter,
     select, selectAll,
     transition
   };
@@ -37,6 +37,7 @@ export default function Chart(p) {
   // p.width // adjust according to series number
   p.height = p.height || 600;
   p.margin = p.margin || {top: 30, bottom: 30, left: 50, right: 50};
+  p.layouts = p.layouts || {violin: true, box: true, bar: false, bees: false};
   p.ymin = p.ymin || null;
   p.ymax = p.ymax || null;
   p.catWidth = p.catWidth || 100;
@@ -48,7 +49,7 @@ export default function Chart(p) {
   p.meanColor = p.meanColor || '#000';
   p.labelColor = p.labelColor || '#000';
   p.resolution = p.resolution || 10;
-  p.interpolation = p.interpolation || 'basis'; // basis | linear | step
+  p.interpolation = p.interpolation || 'catmull'; // catmull | basis | linear | step
   p.xScale = p.xScale === 'common' ? 'common' : 'each'; // each | common
 
   const color = d4.scaleOrdinal(p.color ? p.color : d4.schemeSet3);
@@ -64,6 +65,23 @@ export default function Chart(p) {
         p.data = action.data;
         chart.update();
         break;
+      case 'setLayouts': {
+        const a = action.payload;
+        if (a.violin !== undefined) {
+          p.layouts.violin = a.violin;
+        }
+        if (a.box !== undefined) {
+          p.layouts.box = a.box;
+        }
+        if (a.bar !== undefined) {
+          p.layouts.bar = a.bar;
+        }
+        if (a.bees !== undefined) {
+          p.layouts.bees = a.bees;
+        }
+        chart.update();
+        break;
+      }
       default:
         // console.log('unknown event');
     }
@@ -86,8 +104,11 @@ export default function Chart(p) {
       case 'step':
         v.curve = d4.curveStepAfter;
         break;
-      default: // basis
+      case 'basis':
         v.curve = d4.curveBasis;
+        break;
+      default: // CatmullRom
+        v.curve = d4.curveCatmullRom;
     }
     // Scales
     v.y = d4.scaleLinear()
@@ -171,13 +192,14 @@ export default function Chart(p) {
       .attr('width', v.width);
 
     // update y axis domain
+    // Set domain as [min-1, max+1]
     if (p.ymin === null) {
-      v.domain[0] = Math.min(...sorted.map(s => s[0]));
+      v.domain[0] = Math.min(...sorted.map(s => s[0])) - 1;
     } else {
       v.domain[0] = p.ymin;
     }
     if (p.ymax === null) {
-      v.domain[1] = Math.max(...sorted.map(s => s[s.length - 1]));
+      v.domain[1] = Math.max(...sorted.map(s => s[s.length - 1])) + 1;
     } else {
       v.domain[1] = p.ymax;
     }
@@ -201,14 +223,31 @@ export default function Chart(p) {
       .call(v.yAxisIn);
 
     // VIOLIN
-    // bins list of sorted data
-    v.bins = sorted.map(s => {
-      return d4.histogram()
-      .thresholds(p.resolution)(s);
-    });
-
     // Violin X scale
     v.xV.domain(v.domain);
+
+    /**//* // TEST BIN
+    const data = [1,2,2,3,3,3,4,5,6,7,7,7,8,8,9,10];
+    // Number of bars I wish to have
+    const binCount = 20;
+    // Scale based on data
+    const scale = d4.scaleLinear()
+    .domain(d4.extent(data))
+    .rangeRound([0, 100]);
+
+    // Using threshold(array)
+    const bin = d4.histogram().thresholds(scale.ticks(binCount))(data);
+    const binLng = bin.length;
+    const binLast = bin[binLng - 1];
+    console.log(`BIN TEST: lng:${binLng} - last:[${binLast.x0},${binLast.x1}]: ${binLast}`);
+    // console.log('data', data, 'scale.domain', scale.domain[0], scale.domain[0], 'ticks', '20', 'bin', bin);
+*//**/ // SHOULD BE lng: 19 - last: [10,10]: 10 // JsFiddle works, Here bug
+
+    v.bins = sorted.map(s => {
+      return d4.histogram()
+      .thresholds(v.xV.ticks(p.resolution))(s);
+    });
+
     // Violin Y scale
     if (p.xScale === 'common') { // same y scale for all series
       // violin width
@@ -240,8 +279,18 @@ export default function Chart(p) {
 
     keys.forEach((k, i) => {
       const g = d4.select(`#${p.div}`).select('svg').select(`.${k}`);
-      addViolin(g, v.bins[i], k);
-      addBoxPlot(g, sorted[i], k, 0.10);
+      if (p.layouts.violin === true) {
+        addViolin(g, v.bins[i], k);
+      }
+      if (p.layouts.bar === true) {
+        addBar(g, v.bins[i], k);
+      }
+      if (p.layouts.bees === true) {
+        addCircle(g, v.bins[i], k);
+      }
+      if (p.layouts.box === true) {
+        addBoxPlot(g, sorted[i], k, 0.10);
+      }
       addLabel(g, k);
     });
 
@@ -265,11 +314,11 @@ export default function Chart(p) {
         .y(d => v.yV(d.length));
 
       // histogram
-      sel = g.selectAll('.histo').data([k]);
+      sel = g.selectAll('.curves').data([k]);
       // exit // update
       // add
       add = sel.enter().append('g')
-        .attr('class', 'histo');
+        .attr('class', 'curves');
       let sub = add.append('g')
         .attr('class', 'plus')
         .attr('transform', `rotate(90,0,0)  translate(0,-${p.catWidth})`);
@@ -300,6 +349,150 @@ export default function Chart(p) {
       sel.selectAll('.line')
         .transition(t3)
         .attr('d', line(bins));
+    }
+
+    function addBar(g, bins, k) {
+      // Violin Y scale
+      if (p.xScale === 'each') { // y scale for each series
+        // violin width
+        v.yViolinMax = Math.max(...bins.map(vals => vals.length));
+        v.yV.domain([0, v.yViolinMax]);
+      }
+      // histogram
+      sel = g.selectAll('.histo').data([k]);
+      // exit // update
+      // add
+      add = sel.enter().append('g')
+        .attr('class', 'histo');
+      add.append('g')
+        .attr('class', 'plus')
+        .attr('transform', `rotate(90,0,0)  translate(0,-${p.catWidth})`);
+      add.append('g')
+        .attr('class', 'minus')
+        .attr('transform', 'rotate(90,0,0) scale(1,-1)');
+      // update
+      sel = add.merge(sel);
+
+      // Plus
+      let sub = sel.selectAll('.plus').selectAll('rect').data(bins);
+      // exit
+      sub.exit()
+        .transition(t1)
+        .attr('width', 0)
+        .attr('height', 0)
+        .remove();
+      // update
+      // add
+      add = sub.enter().append('rect')
+        .style('fill', color(k))
+        .style('stroke', p.violinStroke);
+      // update
+      sub = add.merge(sub);
+      sub.transition(t3)
+        .attr('x', d => v.xV(d.x0))
+        .attr('y', d => v.yV(d.length))
+        .attr('width', d => v.xV(d.x0) - v.xV(d.x1))
+        .attr('height', d => v.yV(0) - v.yV(d.length));
+
+      // Plus
+      sub = sel.selectAll('.minus').selectAll('rect').data(bins);
+      // exit
+      sub.exit()
+        .transition(t1)
+        .attr('width', 0)
+        .attr('height', 0)
+        .remove();
+      // update
+      // add
+      add = sub.enter().append('rect')
+        .style('fill', color(k))
+        .style('stroke', p.violinStroke);
+      // update
+      sub = add.merge(sub);
+      sub.transition(t3)
+        .attr('x', d => v.xV(d.x0))
+        .attr('y', d => v.yV(d.length))
+        .attr('width', d => v.xV(d.x0) - v.xV(d.x1))
+        .attr('height', d => v.yV(0) - v.yV(d.length));
+    }
+
+    function addCircle(g, bins, k) {
+      // Violin Y scale
+      if (p.xScale === 'each') { // y scale for each series
+        // violin width
+        v.yViolinMax = Math.max(...bins.map(vals => vals.length));
+        v.yV.domain([0, v.yViolinMax]);
+      }
+      // Scale data to circles
+      const radius = (v.xV(bins[1].x0) - v.xV(bins[1].x1)) / 2;
+      // v.yV[ymax, 0]
+      const circleMax = Math.floor(v.yV(0) / radius);
+      let valueByCircle = Math.floor(v.yViolinMax / circleMax);
+      if (valueByCircle === 0) {
+        valueByCircle = 1;
+      }
+      // Graph
+      sel = g.selectAll('.circles').data([k]);
+      // exit // update
+      // add
+      add = sel.enter().append('g')
+        .attr('class', 'circles')
+        .attr('transform', `rotate(90,0,0)  translate(0,-${p.catWidth})`)
+        .style('fill', color(k))
+        .style('stroke', p.violinStroke);
+      sel = add.merge(sel);
+      // One groub by nin
+      let sub = sel.selectAll('g').data(bins);
+      // exit // update
+      // add
+      add = sub.enter().append('g')
+        .attr('transform', d => `translate(${v.xV(d.x0)}, ${v.yV(0)})`);
+      // update
+      sub = add.merge(sub);
+      sub.transition(t3)
+        .attr('transform', d => `translate(${v.xV(d.x0)}, ${v.yV(0)})`);
+
+      // Circles
+      sel = sub.selectAll('circle').data(d => {
+        // transform data to circles
+        const value = d.length;
+        const draw = [];
+        if (value > 0) { // value exist
+          // nb circle
+          const c = Math.ceil(value / valueByCircle);
+          // circle center
+          let center = 0;
+          if (c % 2 !== 0) { // nb of circle odd
+            // draw central circle
+            draw.push(center);
+            center += radius;
+          }
+          while (draw.length < c) {
+            // draw symmetric circles
+            center += radius;
+            draw.push(center);
+            draw.push(-center);
+            center += radius;
+          }
+        }
+        return draw;
+      });
+      // exit
+      sel.exit()
+        .transition(t1)
+        .attr('r', 0)
+        .remove();
+      // update
+      // add
+      add = sel.enter().append('circle')
+        .attr('cx', 0)
+        .attr('cy', 0)
+        .attr('r', 0);
+      // update
+      sel = add.merge(sel);
+      sel.transition(t3)
+        .attr('cy', d => d)
+        .attr('r', radius);
     }
 
     function addBoxPlot(g, vals, k, boxPlotWidth) {
