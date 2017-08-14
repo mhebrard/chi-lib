@@ -20,7 +20,7 @@ Series of values represented as violin plot. The corps of the violin is the dist
 * fontSize = 14: text font size
 * height = 600: figure height
 * margin = {top: 30, bottom: 30, left: 50, right: 50}: margin in pixel
-* layouts = {violin: true, box: true, bar: false, bees: false}: display/hide the different violin "body shape"
+* layouts = {violin: true, box: true, bar: false, beeswarm: false}: display/hide the different violin "body shape"
 * ymin = null: minimal value of Y axis
 * ymax = null: maximal value of Y axis
 * catWidth = 100: width of each violin
