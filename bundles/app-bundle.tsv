@@ -4,9 +4,9 @@ components/index/README.md	584
 ../component.js	1672
 ../dendrogram.js	5642
 ../chart.js	1301
-../violin.js	8433
-../pie.js	5994
-../heatmap.js	8013
+../violin.js	12494
+../pie.js	5982
+../heatmap.js	8012
 ../routes.js	3008
 ../template.html	824
 ../mutbypos.js	6447
@@ -21,10 +21,10 @@ components/index/README.md	584
 ../file-drop.js	2826
 ../file-download.js	717
 ../resolver.js	1217
-../dataservice.js	6109
+../dataservice.js	6110
 ../index.js	638
 common/services/datapackage/datapackage.js	713
-../editor.html	6718
+../editor.html	6894
 ../editor-controller.js	3813
 ../editor.js	1408
 ../loading-bar.html	522
