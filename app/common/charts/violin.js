@@ -1,4 +1,4 @@
-import {ascending, extent, histogram, max, quantile, mean} from 'd3-array';
+import {ascending, extent, histogram, max, mean, quantile, range} from 'd3-array';
 import {axisLeft, axisRight} from 'd3-axis';
 import {scaleOrdinal, scaleLinear} from 'd3-scale';
 import {schemeSet3} from 'd3-scale-chromatic';
@@ -11,7 +11,7 @@ import {transition} from 'd3-transition';
 let d4 = {};
 if (d3 === 'undefined' || d3.version) {
   d4 = {
-    ascending, extent, histogram, max, quantile, mean,
+    ascending, extent, histogram, max, mean, quantile, range,
     axisLeft, axisRight,
     scaleOrdinal, scaleLinear,
     schemeSet3,
@@ -43,19 +43,22 @@ export default function Chart(p) {
   p.ymax = p.ymax || null;
   p.catWidth = p.catWidth || 100;
   p.catSpacing = p.catSpacing || 20;
-  p.color = p.color || null;
-  p.violinStroke = p.violinStroke || '#000';
-  p.boxFill = p.boxFill || '#fff';
-  p.boxStroke = p.boxStroke || '#000';
-  p.meanColor = p.meanColor || '#000';
-  p.labelColor = p.labelColor || '#000';
+  // p.violinStroke = p.violinStroke || '#000';
+  // p.boxFill = p.boxFill || '#fff';
+  // p.boxStroke = p.boxStroke || '#000';
+  // p.meanColor = p.meanColor || '#000';
+  // p.labelColor = p.labelColor || '#000';
   p.resolution = p.resolution || 10;
   p.interpolation = p.interpolation || 'catmull'; // catmull | basis | linear | step
   p.xScale = p.xScale === 'common' ? 'common' : 'each'; // each | common
 
-  const color = d4.scaleOrdinal(p.color ? p.color : d4.schemeSet3);
-  const v = {}; // initial variables
+  // const color = d4.scaleOrdinal(p.color ? p.color : d4.schemeSet3);
+  p.strokeWidth = p.strokeWidth || 3;
+  p.bg = p.bg || ['#F88', '#A8F', '#AF8', '#8FF', '#FA8', '#F8F', '#8F8', '#88F', '#FF8', '#F8A', '#8FA', '#8AF'];
+  p.fg = p.fg || ['#900', '#609', '#690', '#099', '#960', '#909', '#090', '#009', '#990', '#906', '#096', '#069'];
+  const color = d4.scaleOrdinal(d4.range(12));
 
+  const v = {};
   // consume action: mutate data and apply changes
   chart.consumer = function(action) {
     switch (action.type) {
@@ -354,24 +357,24 @@ export default function Chart(p) {
         .attr('transform', `rotate(90,0,0)  translate(0,-${p.catWidth})`);
       add.append('path')
         .attr('class', 'area')
-        .style('fill', color(k))
+        .style('fill', p.bg[color(k)])
         .style('stroke', 'none');
       add.append('path')
           .attr('class', 'line')
           .style('fill', 'none')
-          .style('stroke', p.violinStroke);
+          .style('stroke', '#000');
       // Add minus curve
       sel = g.selectAll('.minus').data([0]);
       add = sel.enter().append('g').attr('class', 'minus')
           .attr('transform', 'rotate(90,0,0) scale(1,-1)');
       add.append('path')
           .attr('class', 'area')
-          .style('fill', color(k))
+          .style('fill', p.bg[color(k)])
           .style('stroke', 'none');
       add.append('path')
           .attr('class', 'line')
           .style('fill', 'none')
-          .style('stroke', p.violinStroke);
+          .style('stroke', '#000');
       // update
       g.selectAll('.area')
         .transition(t3)
@@ -407,8 +410,8 @@ export default function Chart(p) {
       // update
       // add
       add = sel.enter().append('rect')
-        .style('fill', color(k))
-        .style('stroke', p.violinStroke);
+        .style('fill', p.bg[color(k)])
+        .style('stroke', '#000');
       // update
       sel = add.merge(sel);
       sel.transition(t3)
@@ -427,8 +430,8 @@ export default function Chart(p) {
       // update
       // add
       add = sel.enter().append('rect')
-        .style('fill', color(k))
-        .style('stroke', p.violinStroke);
+        .style('fill', p.bg[color(k)])
+        .style('stroke', '#000');
       // update
       sel = add.merge(sel);
       sel.transition(t3)
@@ -458,8 +461,8 @@ export default function Chart(p) {
       sel = g.selectAll('g').data([k]);
       add = sel.enter().append('g')
         .attr('transform', `rotate(90,0,0)  translate(0,-${p.catWidth})`)
-        .style('fill', color(k))
-        .style('stroke', p.violinStroke);
+        .style('fill', p.bg[color(k)])
+        .style('stroke', '#000');
       sel = add.merge(sel);
       // One groub by bin
       let sub = sel.selectAll('g').data(bins);
@@ -529,32 +532,26 @@ export default function Chart(p) {
 
       sel = g.selectAll('.box').data([k]);
       add = sel.enter();
-      // sel.enter().append('rect')
-//      sel = g.selectAll('.boxplot').data([k]);
-      // exit // update
-      // add
-//      add = sel.enter().append('g')
-//        .attr('class', 'boxplot');
-//      add.selectAll('.box').data([k])
-//        .enter().append('rect')
       add.append('rect')
         .attr('class', 'box')
-        .style('fill', p.boxFill)
-        .style('stroke', p.boxStroke);
+        .style('fill', p.bg[color(k)])
+        .style('stroke', p.fg[color(k)])
+        .style('stroke-width', p.strokeWidth);
       add.selectAll('.iSH').data(iSH)
         .enter().append('line')
         .attr('class', 'ISH')
-        .style('fill', p.boxStroke)
-        .style('stroke', p.boxStroke);
+        .style('stroke', p.fg[color(k)])
+        .style('stroke-width', p.strokeWidth);
       add.selectAll('iSV').data(iSV)
         .enter().append('line')
         .attr('class', 'ISV')
-        .style('stroke', p.boxStroke);
+        .style('stroke', p.fg[color(k)])
+        .style('stroke-width', p.strokeWidth);
       add.selectAll('.mean').data([k])
         .enter().append('circle')
         .attr('class', 'mean')
-        .style('fill', p.meanColor)
-        .style('stroke', p.boxStroke)
+        .style('fill', p.bg[color(k)])
+        .style('stroke', '#000')
         .attr('r', v.x(boxPlotWidth / 5));
       // update
       // sel = d4.select(g.node());
@@ -583,13 +580,14 @@ export default function Chart(p) {
     }
 
     function addLabel(g, label) {
-      g.append('text')
+      g.selectAll('text').data([label])
+        .enter().append('text')
         .attr('class', 'label')
         .attr('x', v.x(0.5))
         .attr('y', p.height - (p.margin.bottom / 2))
         .attr('dy', '-0.5ex')
         .attr('text-anchor', 'middle')
-        .style('fill', p.labelColor)
+        .style('fill', '#000')
         .text(label);
     }
   };
