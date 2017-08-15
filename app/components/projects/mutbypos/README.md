@@ -17,6 +17,6 @@ Histogram of mutation count along a reference sequence. At each position the mut
 * height = 400: figure height
 * margin = {top: 50, bottom: 40, left: 40, right: 20}: margin in pixel
 * xRange = [0, 15]: min and max for x axis;
-* yRange = [0, 10]; min and max for y axis;
+* yRange = [0, null]; min and max for y axis, if 'null': self adapt to data;
 * frames = [{label: 'FRAME1', x1: 5, x2: 10, fill: '#eee'}]: array of labeled regions.
 * masks = [{label: 'mask1', x1: 1, x2: 5, fill: '#808'}]: array of region where the mutation are not shown.

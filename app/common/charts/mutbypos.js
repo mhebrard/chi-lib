@@ -36,13 +36,14 @@ export default function Chart(p) {
   p.height = p.height || 400;
   p.margin = p.margin || {top: 50, bottom: 40, left: 40, right: 20};
   p.xRange = p.xRange || [0, 15];
-  p.yRange = p.yRange || [0, 10];
+  p.yRange = p.yRange || [0, null];
   p.frames = p.frames || [{label: 'FRAME1', x1: 5, x2: 10, fill: '#eee'}];
   p.masks = p.masks || [{label: 'mask1', x1: 1, x2: 5, fill: '#808'}];
 
-  const labels = ['a', 't', 'g', 'c'];
+  const v = {};
+  v.labels = ['a', 't', 'g', 'c'];
   const color = d4.scaleOrdinal()
-    .domain(labels)
+    .domain(v.labels)
     .range(['#274A99', '#E4A527', '#1FB71F', '#E42727']);
 
   // consume action: mutate data and apply changes
@@ -64,40 +65,40 @@ export default function Chart(p) {
   p.dispatch = p.dispatch || chart.consumer;
 
   chart.init = function() {
-    console.log('chart init');
+    // console.log('chart init');
     // Scales
-    p.x = d4.scaleLinear()
+    v.x = d4.scaleLinear()
       .domain(p.xRange)
       .range([p.margin.left, p.width - p.margin.right]);
-    p.y = d4.scaleLinear()
-      .domain(p.yRange)
+    v.y = d4.scaleLinear()
+      // .domain(p.yRange) // in update
       .range([p.height - p.margin.bottom, p.margin.top]);
 
     // Axis def
-    p.xAxis = d4.axisBottom(p.x)
-      .ticks(8)
+    v.xAxis = d4.axisBottom(v.x)
+      .ticks(10)
       .tickSize(5, 1);
-    p.yAxisOut = d4.axisLeft(p.y)
+    v.yAxisOut = d4.axisLeft(v.y)
       .ticks(5)
       .tickSize(5, 0);
-    p.yAxisIn = d4.axisRight(p.y)
+    v.yAxisIn = d4.axisRight(v.y)
       .ticks(5)
       .tickSize(p.width - p.margin.right - p.margin.left, 0);
 
     // SVG
-    const svg = d4.select(`#${p.div}`).append('svg')
+    v.svg = d4.select(`#${p.div}`).append('svg')
       .attr('id', p.id)
       .attr('title', p.title)
       .attr('width', p.width)
       .attr('height', p.height);
 
     // Frames
-    let sel = svg.selectAll('.frame')
+    let sel = v.svg.selectAll('.frame')
       .data(p.frames)
       .enter().append('g')
       .attr('class', 'frame');
     sel.append('text')
-      .attr('x', d => p.x((d.x1 + d.x2) / 2))
+      .attr('x', d => v.x((d.x1 + d.x2) / 2))
       .attr('y', p.margin.top)
       .attr('dy', '-0.5ex')
       .attr('text-anchor', 'middle')
@@ -105,36 +106,36 @@ export default function Chart(p) {
     sel.selectAll('rect')
       .data(d => [d])
       .enter().append('rect')
-      .attr('x', d => p.x(d.x1 - 0.5))
+      .attr('x', d => v.x(d.x1 - 0.5))
       .attr('y', p.margin.top)
-      .attr('width', d => p.x(d.x2 + 1) - p.x(d.x1))
+      .attr('width', d => v.x(d.x2 + 1) - v.x(d.x1))
       .attr('height', p.height - p.margin.top - p.margin.bottom)
       .attr('stroke', d => d.fill === 'none' ? 'none' : '#000')
       .attr('fill', d => d.fill);
 
     // Masks
-    sel = svg.selectAll('.mask')
+    sel = v.svg.selectAll('.mask')
       .data(p.masks)
       .enter().append('g')
       .attr('class', 'mask');
     sel.append('text')
-      .attr('x', d => p.x((d.x1 + d.x2) / 2))
-      .attr('y', p.y(0) - 15)
+      .attr('x', d => v.x((d.x1 + d.x2) / 2))
+      .attr('y', v.y(0) - 15)
       .attr('dy', '-0.5ex')
       .attr('text-anchor', 'middle')
       .text(d => d.label);
     sel.selectAll('rect')
       .data(d => [d])
       .enter().append('rect')
-      .attr('x', d => p.x(d.x1 - 0.5))
-      .attr('y', p.y(0) - 10)
-      .attr('width', d => p.x(d.x2 + 1) - p.x(d.x1))
+      .attr('x', d => v.x(d.x1 - 0.5))
+      .attr('y', v.y(0) - 10)
+      .attr('width', d => v.x(d.x2 + 1) - v.x(d.x1))
       .attr('height', 10)
       .attr('stroke', d => d.fill === 'none' ? 'none' : '#000')
       .attr('fill', d => d.fill);
 
     // Title
-    svg.append('g').attr('class', 'title')
+    v.svg.append('g').attr('class', 'title')
       .append('text')
       .attr('x', 0)
       .attr('y', p.margin.top / 2)
@@ -143,18 +144,18 @@ export default function Chart(p) {
       .text(p.title);
 
     // Axis
-    svg.append('g').attr('class', 'axis')
+    v.svg.append('g').attr('class', 'axis')
       .attr('transform', `translate(0, ${p.height - p.margin.bottom})`)
-      .call(p.xAxis);
-    svg.append('g').attr('class', 'axis')
+      .call(v.xAxis);
+    v.svg.append('g').attr('class', 'axis yOut')
       .attr('transform', `translate(${p.margin.left},0)`)
-      .call(p.yAxisOut);
-    svg.append('g').attr('class', 'axis')
+      .call(v.yAxisOut);
+    v.svg.append('g').attr('class', 'axis yIn')
       .attr('transform', `translate(${p.margin.left},0)`)
-      .call(p.yAxisIn);
+      .call(v.yAxisIn);
 
     // Legend
-    sel = svg.append('g').attr('class', 'legend');
+    sel = v.svg.append('g').attr('class', 'legend');
     sel.append('text')
       .attr('x', p.margin.left / 2)
       .attr('y', (p.height / 2) + p.margin.top)
@@ -170,7 +171,7 @@ export default function Chart(p) {
     sel = sel.append('g')
       .attr('transform', `translate(${p.width - 120}, ${p.height - (p.margin.bottom / 2)})`);
     sel.selectAll('rect')
-      .data(labels)
+      .data(v.labels)
       .enter().append('rect')
       .attr('x', (d, i) => (i - 1) * 30)
       .attr('y', 0)
@@ -178,7 +179,7 @@ export default function Chart(p) {
       .attr('width', 10)
       .attr('fill', d => color(d));
     sel.selectAll('text')
-      .data(labels)
+      .data(v.labels)
       .enter().append('text')
       .attr('x', (d, i) => ((i - 1) * 30) + 15)
       .attr('y', 5)
@@ -187,7 +188,7 @@ export default function Chart(p) {
       .text(d => d);
 
     // Series
-    svg.selectAll('.serie').data(labels)
+    v.svg.selectAll('.serie').data(v.labels)
     .enter().append('g').attr('class', 'serie');
   };
 
@@ -200,7 +201,7 @@ export default function Chart(p) {
   };
 
   chart.update = function() {
-    console.log('chart update');
+    // console.log('chart update');
     const poss = Object.keys(p.data);
     // Masks
     // for each pos under a mask, mutations are down to 0
@@ -211,10 +212,6 @@ export default function Chart(p) {
         }
       });
     });
-    // Layout
-    const layout = d4.stack()
-      .keys(labels)(poss.map(m => p.data[m]));
-    console.log('layout', layout);
 
     // Update pattern
     let sel;
@@ -224,6 +221,42 @@ export default function Chart(p) {
     const t1 = d4.transition().duration(delay);
     const t2 = d4.transition().delay(delay).duration(delay);
     const t3 = d4.transition().delay(delay * 2).duration(delay);
+
+    // AXIS
+    const domain = [...p.yRange] || [0, null];
+    const sum = poss.map(pos => {
+      const mut = p.data[pos];
+      return mut.a + mut.t + mut.g + mut.c;
+    });
+    // Set domain as [0, max+1]
+    // if (domain[0] === null) {
+    //  domain[0] = Math.min(...sum) - 1;
+    // }
+    if (domain[1] === null) {
+      domain[1] = Math.max(...sum) + 1;
+    }
+    v.y.domain(domain);
+
+    // update Axis ticks
+    v.yAxisOut = d4.axisLeft(v.y)
+      .ticks(5)
+      .tickSize(5, 0);
+    v.yAxisIn = d4.axisRight(v.y)
+      .ticks(5)
+      .tickSize(p.width - p.margin.right - p.margin.left, 0);
+
+    // update axis
+    v.svg.select('.yOut')
+      .transition(t3)
+      .call(v.yAxisOut);
+    v.svg.select('.yIn')
+      .transition(t3)
+      .call(v.yAxisIn);
+
+    // Layout
+    const layout = d4.stack()
+      .keys(v.labels)(poss.map(m => p.data[m]));
+    // console.log('layout', layout);
 
     // Rects
     sel = d4.select(`#${p.id}`).selectAll('.serie')
@@ -237,22 +270,22 @@ export default function Chart(p) {
       .remove();
     // update
     sel.transition(t2)
-      .attr('y', d => p.y(d[1]))
-      .attr('height', d => p.y(d[0]) - p.y(d[1]));
+      .attr('y', d => v.y(d[1]))
+      .attr('height', d => v.y(d[0]) - v.y(d[1]));
     // add
     const add = sel.enter().append('rect')
-      .attr('x', (d, i) => p.x(poss[i] - 0.5)) // Rect is centered on the tick
-      .attr('y', p.y(0))
+      .attr('x', (d, i) => v.x(poss[i] - 0.5)) // Rect is centered on the tick
+      .attr('y', v.y(0))
       .attr('height', 0)
-      .attr('width', p.x(1) - p.x(0)) // Rect width is 1 unit
+      .attr('width', v.x(1) - v.x(0)) // Rect width is 1 unit
       .on('mouseover', (d, i) => tip('show', {pos: poss[i], value: d[1] - d[0]}))
       .on('mousemove', d => tip('move', d))
       .on('mouseout', d => tip('hide', d));
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-    .attr('y', d => p.y(d[1]))
-    .attr('height', d => p.y(d[0]) - p.y(d[1]));
+    .attr('y', d => v.y(d[1]))
+    .attr('height', d => v.y(d[0]) - v.y(d[1]));
   };
 
   function tip(state, d) {

@@ -37,11 +37,21 @@
     }
   }
 
+  function _toConsumableArray(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+        arr2[i] = arr[i];
+      }
+
+      return arr2;
+    } else {
+      return Array.from(arr);
+    }
+  }
+
   // test d3 version Map d3v4
   /* global d3:true */
   var d4 = {};
-  // workaround for event
-
   if (d3 === 'undefined' || d3.version) {
     d4 = {
       select: d3sel.select,
@@ -70,12 +80,13 @@
     p.height = p.height || 400;
     p.margin = p.margin || { top: 50, bottom: 40, left: 40, right: 20 };
     p.xRange = p.xRange || [0, 15];
-    p.yRange = p.yRange || [0, 10];
+    p.yRange = p.yRange || [0, null];
     p.frames = p.frames || [{ label: 'FRAME1', x1: 5, x2: 10, fill: '#eee' }];
     p.masks = p.masks || [{ label: 'mask1', x1: 1, x2: 5, fill: '#808' }];
 
-    var labels = ['a', 't', 'g', 'c'];
-    var color = d4.scaleOrdinal().domain(labels).range(['#274A99', '#E4A527', '#1FB71F', '#E42727']);
+    var v = {};
+    v.labels = ['a', 't', 'g', 'c'];
+    var color = d4.scaleOrdinal().domain(v.labels).range(['#274A99', '#E4A527', '#1FB71F', '#E42727']);
 
     // consume action: mutate data and apply changes
     chart.consumer = function (action) {
@@ -96,32 +107,34 @@
     p.dispatch = p.dispatch || chart.consumer;
 
     chart.init = function () {
-      console.log('chart init');
+      // console.log('chart init');
       // Scales
-      p.x = d4.scaleLinear().domain(p.xRange).range([p.margin.left, p.width - p.margin.right]);
-      p.y = d4.scaleLinear().domain(p.yRange).range([p.height - p.margin.bottom, p.margin.top]);
+      v.x = d4.scaleLinear().domain(p.xRange).range([p.margin.left, p.width - p.margin.right]);
+      v.y = d4.scaleLinear()
+      // .domain(p.yRange) // in update
+      .range([p.height - p.margin.bottom, p.margin.top]);
 
       // Axis def
-      p.xAxis = d4.axisBottom(p.x).ticks(8).tickSize(5, 1);
-      p.yAxisOut = d4.axisLeft(p.y).ticks(5).tickSize(5, 0);
-      p.yAxisIn = d4.axisRight(p.y).ticks(5).tickSize(p.width - p.margin.right - p.margin.left, 0);
+      v.xAxis = d4.axisBottom(v.x).ticks(10).tickSize(5, 1);
+      v.yAxisOut = d4.axisLeft(v.y).ticks(5).tickSize(5, 0);
+      v.yAxisIn = d4.axisRight(v.y).ticks(5).tickSize(p.width - p.margin.right - p.margin.left, 0);
 
       // SVG
-      var svg = d4.select('#' + p.div).append('svg').attr('id', p.id).attr('title', p.title).attr('width', p.width).attr('height', p.height);
+      v.svg = d4.select('#' + p.div).append('svg').attr('id', p.id).attr('title', p.title).attr('width', p.width).attr('height', p.height);
 
       // Frames
-      var sel = svg.selectAll('.frame').data(p.frames).enter().append('g').attr('class', 'frame');
+      var sel = v.svg.selectAll('.frame').data(p.frames).enter().append('g').attr('class', 'frame');
       sel.append('text').attr('x', function (d) {
-        return p.x((d.x1 + d.x2) / 2);
+        return v.x((d.x1 + d.x2) / 2);
       }).attr('y', p.margin.top).attr('dy', '-0.5ex').attr('text-anchor', 'middle').text(function (d) {
         return d.label;
       });
       sel.selectAll('rect').data(function (d) {
         return [d];
       }).enter().append('rect').attr('x', function (d) {
-        return p.x(d.x1 - 0.5);
+        return v.x(d.x1 - 0.5);
       }).attr('y', p.margin.top).attr('width', function (d) {
-        return p.x(d.x2 + 1) - p.x(d.x1);
+        return v.x(d.x2 + 1) - v.x(d.x1);
       }).attr('height', p.height - p.margin.top - p.margin.bottom).attr('stroke', function (d) {
         return d.fill === 'none' ? 'none' : '#000';
       }).attr('fill', function (d) {
@@ -129,18 +142,18 @@
       });
 
       // Masks
-      sel = svg.selectAll('.mask').data(p.masks).enter().append('g').attr('class', 'mask');
+      sel = v.svg.selectAll('.mask').data(p.masks).enter().append('g').attr('class', 'mask');
       sel.append('text').attr('x', function (d) {
-        return p.x((d.x1 + d.x2) / 2);
-      }).attr('y', p.y(0) - 15).attr('dy', '-0.5ex').attr('text-anchor', 'middle').text(function (d) {
+        return v.x((d.x1 + d.x2) / 2);
+      }).attr('y', v.y(0) - 15).attr('dy', '-0.5ex').attr('text-anchor', 'middle').text(function (d) {
         return d.label;
       });
       sel.selectAll('rect').data(function (d) {
         return [d];
       }).enter().append('rect').attr('x', function (d) {
-        return p.x(d.x1 - 0.5);
-      }).attr('y', p.y(0) - 10).attr('width', function (d) {
-        return p.x(d.x2 + 1) - p.x(d.x1);
+        return v.x(d.x1 - 0.5);
+      }).attr('y', v.y(0) - 10).attr('width', function (d) {
+        return v.x(d.x2 + 1) - v.x(d.x1);
       }).attr('height', 10).attr('stroke', function (d) {
         return d.fill === 'none' ? 'none' : '#000';
       }).attr('fill', function (d) {
@@ -148,31 +161,31 @@
       });
 
       // Title
-      svg.append('g').attr('class', 'title').append('text').attr('x', 0).attr('y', p.margin.top / 2).attr('dy', '0.5ex').style('font-size', p.titleSize + 'px').text(p.title);
+      v.svg.append('g').attr('class', 'title').append('text').attr('x', 0).attr('y', p.margin.top / 2).attr('dy', '0.5ex').style('font-size', p.titleSize + 'px').text(p.title);
 
       // Axis
-      svg.append('g').attr('class', 'axis').attr('transform', 'translate(0, ' + (p.height - p.margin.bottom) + ')').call(p.xAxis);
-      svg.append('g').attr('class', 'axis').attr('transform', 'translate(' + p.margin.left + ',0)').call(p.yAxisOut);
-      svg.append('g').attr('class', 'axis').attr('transform', 'translate(' + p.margin.left + ',0)').call(p.yAxisIn);
+      v.svg.append('g').attr('class', 'axis').attr('transform', 'translate(0, ' + (p.height - p.margin.bottom) + ')').call(v.xAxis);
+      v.svg.append('g').attr('class', 'axis yOut').attr('transform', 'translate(' + p.margin.left + ',0)').call(v.yAxisOut);
+      v.svg.append('g').attr('class', 'axis yIn').attr('transform', 'translate(' + p.margin.left + ',0)').call(v.yAxisIn);
 
       // Legend
-      sel = svg.append('g').attr('class', 'legend');
+      sel = v.svg.append('g').attr('class', 'legend');
       sel.append('text').attr('x', p.margin.left / 2).attr('y', p.height / 2 + p.margin.top).attr('text-anchor', 'middle').style('writing-mode', 'vertical-rl').text('Mutation count');
       sel.append('text').attr('x', p.width / 2 + p.margin.left).attr('y', p.height - p.margin.bottom / 2).attr('text-anchor', 'middle').attr('dy', '0.5ex').text('Position');
       sel = sel.append('g').attr('transform', 'translate(' + (p.width - 120) + ', ' + (p.height - p.margin.bottom / 2) + ')');
-      sel.selectAll('rect').data(labels).enter().append('rect').attr('x', function (d, i) {
+      sel.selectAll('rect').data(v.labels).enter().append('rect').attr('x', function (d, i) {
         return (i - 1) * 30;
       }).attr('y', 0).attr('height', 10).attr('width', 10).attr('fill', function (d) {
         return color(d);
       });
-      sel.selectAll('text').data(labels).enter().append('text').attr('x', function (d, i) {
+      sel.selectAll('text').data(v.labels).enter().append('text').attr('x', function (d, i) {
         return (i - 1) * 30 + 15;
       }).attr('y', 5).attr('text-anchor', 'middle').attr('dy', '0.5ex').text(function (d) {
         return d;
       });
 
       // Series
-      svg.selectAll('.serie').data(labels).enter().append('g').attr('class', 'serie');
+      v.svg.selectAll('.serie').data(v.labels).enter().append('g').attr('class', 'serie');
     };
 
     // accessor
@@ -184,7 +197,7 @@
     };
 
     chart.update = function () {
-      console.log('chart update');
+      // console.log('chart update');
       var poss = Object.keys(p.data);
       // Masks
       // for each pos under a mask, mutations are down to 0
@@ -195,11 +208,6 @@
           }
         });
       });
-      // Layout
-      var layout = d4.stack().keys(labels)(poss.map(function (m) {
-        return p.data[m];
-      }));
-      console.log('layout', layout);
 
       // Update pattern
       var sel = void 0;
@@ -209,6 +217,35 @@
       var t1 = d4.transition().duration(delay);
       var t2 = d4.transition().delay(delay).duration(delay);
       var t3 = d4.transition().delay(delay * 2).duration(delay);
+
+      // AXIS
+      var domain = [].concat(_toConsumableArray(p.yRange)) || [0, null];
+      var sum = poss.map(function (pos) {
+        var mut = p.data[pos];
+        return mut.a + mut.t + mut.g + mut.c;
+      });
+      // Set domain as [0, max+1]
+      // if (domain[0] === null) {
+      //  domain[0] = Math.min(...sum) - 1;
+      // }
+      if (domain[1] === null) {
+        domain[1] = Math.max.apply(Math, _toConsumableArray(sum)) + 1;
+      }
+      v.y.domain(domain);
+
+      // update Axis ticks
+      v.yAxisOut = d4.axisLeft(v.y).ticks(5).tickSize(5, 0);
+      v.yAxisIn = d4.axisRight(v.y).ticks(5).tickSize(p.width - p.margin.right - p.margin.left, 0);
+
+      // update axis
+      v.svg.select('.yOut').transition(t3).call(v.yAxisOut);
+      v.svg.select('.yIn').transition(t3).call(v.yAxisIn);
+
+      // Layout
+      var layout = d4.stack().keys(v.labels)(poss.map(function (m) {
+        return p.data[m];
+      }));
+      // console.log('layout', layout);
 
       // Rects
       sel = d4.select('#' + p.id).selectAll('.serie').data(layout).attr('fill', function (d) {
@@ -220,15 +257,15 @@
       sel.exit().transition(t1).attr('height', 0).remove();
       // update
       sel.transition(t2).attr('y', function (d) {
-        return p.y(d[1]);
+        return v.y(d[1]);
       }).attr('height', function (d) {
-        return p.y(d[0]) - p.y(d[1]);
+        return v.y(d[0]) - v.y(d[1]);
       });
       // add
       var add = sel.enter().append('rect').attr('x', function (d, i) {
-        return p.x(poss[i] - 0.5);
+        return v.x(poss[i] - 0.5);
       }) // Rect is centered on the tick
-      .attr('y', p.y(0)).attr('height', 0).attr('width', p.x(1) - p.x(0)) // Rect width is 1 unit
+      .attr('y', v.y(0)).attr('height', 0).attr('width', v.x(1) - v.x(0)) // Rect width is 1 unit
       .on('mouseover', function (d, i) {
         return tip('show', { pos: poss[i], value: d[1] - d[0] });
       }).on('mousemove', function (d) {
@@ -239,9 +276,9 @@
       // update
       sel = add.merge(sel);
       sel.transition(t3).attr('y', function (d) {
-        return p.y(d[1]);
+        return v.y(d[1]);
       }).attr('height', function (d) {
-        return p.y(d[0]) - p.y(d[1]);
+        return v.y(d[0]) - v.y(d[1]);
       });
     };
 
