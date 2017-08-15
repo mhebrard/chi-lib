@@ -35,7 +35,7 @@
   var d4 = {};
   if (d3 === 'undefined' || d3.version) {
     d4 = {
-      ascending: _d3Array.ascending, extent: _d3Array.extent, histogram: _d3Array.histogram, max: _d3Array.max, quantile: _d3Array.quantile, mean: _d3Array.mean,
+      ascending: _d3Array.ascending, extent: _d3Array.extent, histogram: _d3Array.histogram, max: _d3Array.max, mean: _d3Array.mean, quantile: _d3Array.quantile, range: _d3Array.range,
       axisLeft: _d3Axis.axisLeft, axisRight: _d3Axis.axisRight,
       scaleOrdinal: _d3Scale.scaleOrdinal, scaleLinear: _d3Scale.scaleLinear,
       schemeSet3: _d3ScaleChromatic.schemeSet3,
@@ -54,6 +54,7 @@
     p = p || {};
     p.div = p.div || 'body';
     p.id = p.id || 'view';
+    p.options = p.options || null;
     p.data = p.data || { serie: [0, 1] };
     p.title = p.title || 'Violin plot of ' + p.id;
     p.titleSize = p.titleSize || 20;
@@ -61,24 +62,27 @@
     // p.width // adjust according to series number
     p.height = p.height || 600;
     p.margin = p.margin || { top: 30, bottom: 30, left: 50, right: 50 };
-    p.layouts = p.layouts || { violin: true, box: true, bar: false, bees: false };
+    p.layouts = p.layouts || { violin: true, box: true, bar: false, beeswarm: false };
     p.ymin = p.ymin || null;
     p.ymax = p.ymax || null;
     p.catWidth = p.catWidth || 100;
     p.catSpacing = p.catSpacing || 20;
-    p.color = p.color || null;
-    p.violinStroke = p.violinStroke || '#000';
-    p.boxFill = p.boxFill || '#fff';
-    p.boxStroke = p.boxStroke || '#000';
-    p.meanColor = p.meanColor || '#000';
-    p.labelColor = p.labelColor || '#000';
+    // p.violinStroke = p.violinStroke || '#000';
+    // p.boxFill = p.boxFill || '#fff';
+    // p.boxStroke = p.boxStroke || '#000';
+    // p.meanColor = p.meanColor || '#000';
+    // p.labelColor = p.labelColor || '#000';
     p.resolution = p.resolution || 10;
     p.interpolation = p.interpolation || 'catmull'; // catmull | basis | linear | step
     p.xScale = p.xScale === 'common' ? 'common' : 'each'; // each | common
 
-    var color = d4.scaleOrdinal(p.color ? p.color : d4.schemeSet3);
-    var v = {}; // initial variables
+    // const color = d4.scaleOrdinal(p.color ? p.color : d4.schemeSet3);
+    p.strokeWidth = p.strokeWidth || 3;
+    p.bg = p.bg || ['#F88', '#A8F', '#AF8', '#8FF', '#FA8', '#F8F', '#8F8', '#88F', '#FF8', '#F8A', '#8FA', '#8AF'];
+    p.fg = p.fg || ['#900', '#609', '#690', '#099', '#960', '#909', '#090', '#009', '#990', '#906', '#096', '#069'];
+    var color = d4.scaleOrdinal(d4.range(12));
 
+    var v = {};
     // consume action: mutate data and apply changes
     chart.consumer = function (action) {
       switch (action.type) {
@@ -101,20 +105,12 @@
             if (a.bar !== undefined) {
               p.layouts.bar = a.bar;
             }
-            if (a.bees !== undefined) {
-              p.layouts.bees = a.bees;
+            if (a.beeswarm !== undefined) {
+              p.layouts.beeswarm = a.beeswarm;
             }
             chart.update();
             break;
           }
-        case 'setBox':
-          p.box = action.payload;
-          chart.update();
-          break;
-        case 'setBar':
-          p.bar = action.payload;
-          chart.update();
-          break;
         default:
         // console.log('unknown event');
       }
@@ -168,6 +164,20 @@
       v.svg.append('g').attr('class', 'axis yOut').attr('transform', 'translate(' + p.margin.left + ',0)').call(v.yAxisOut);
 
       v.svg.append('g').attr('class', 'axis yIn').attr('transform', 'translate(' + p.margin.left + ',0)').call(v.yAxisIn);
+
+      // Options
+      if (p.options) {
+        d4.select('#' + p.options).append('b').text('Layouts: ');
+        d4.select('#' + p.options).selectAll('input').data(Object.keys(p.layouts)).enter().append('label').attr('for', function (d) {
+          return 'layout-' + d;
+        }).text(function (d) {
+          return d;
+        }).append('input').attr('type', 'checkbox').attr('id', function (d) {
+          return 'layout-' + d;
+        }).property('checked', function (d) {
+          return p.layouts[d];
+        }).style('margin', '0 10px 0 5px').on('change', layoutChange);
+      }
     };
 
     // accessor
@@ -285,18 +295,33 @@
 
       keys.forEach(function (k, i) {
         var g = d4.select('#' + p.div).select('svg').select('.' + k);
-        if (p.layouts.violin === true) {
-          addViolin(g, v.bins[i], k);
-        }
-        if (p.layouts.bar === true) {
-          addBar(g, v.bins[i], k);
-        }
-        if (p.layouts.bees === true) {
-          addCircle(g, v.bins[i], k);
-        }
-        if (p.layouts.box === true) {
-          addBoxPlot(g, sorted[i], k, 0.10);
-        }
+        // layouts order
+        var lay = ['violin', 'bar', 'beeswarm', 'box'];
+        lay.forEach(function (l) {
+          g.selectAll('.' + l).data([l]).enter().append('g').attr('class', l);
+
+          var sub = g.select('.' + l);
+          if (p.layouts[l]) {
+            sub.transition(t2).style('opacity', 1);
+            switch (l) {
+              case 'violin':
+                addViolin(sub, v.bins[i], k);
+                break;
+              case 'bar':
+                addBar(sub, v.bins[i], k);
+                break;
+              case 'beeswarm':
+                addCircle(sub, v.bins[i], k);
+                break;
+              case 'box':
+                addBoxPlot(sub, sorted[i], k, 0.10);
+                break;
+              default:
+            }
+          } else {
+            sub.transition(t1).style('opacity', 0).text(null);
+          }
+        });
         addLabel(g, k);
       });
 
@@ -323,21 +348,19 @@
           return v.yV(d.length);
         });
 
-        // histogram
-        sel = g.selectAll('.curves').data([k]);
-        // exit // update
-        // add
-        add = sel.enter().append('g').attr('class', 'curves');
-        var sub = add.append('g').attr('class', 'plus').attr('transform', 'rotate(90,0,0)  translate(0,-' + p.catWidth + ')');
-        sub.append('path').attr('class', 'area').style('fill', color(k)).style('stroke', 'none');
-        sub.append('path').attr('class', 'line').style('fill', 'none').style('stroke', p.violinStroke);
-        sub = add.append('g').attr('class', 'minus').attr('transform', 'rotate(90,0,0) scale(1,-1)');
-        sub.append('path').attr('class', 'area').style('fill', color(k)).style('stroke', 'none');
-        sub.append('path').attr('class', 'line').style('fill', 'none').style('stroke', p.violinStroke);
+        // Add plus curve
+        sel = g.selectAll('.plus').data([0]);
+        add = sel.enter().append('g').attr('class', 'plus').attr('transform', 'rotate(90,0,0)  translate(0,-' + p.catWidth + ')');
+        add.append('path').attr('class', 'area').style('fill', p.bg[color(k)]).style('stroke', 'none');
+        add.append('path').attr('class', 'line').style('fill', 'none').style('stroke', '#000');
+        // Add minus curve
+        sel = g.selectAll('.minus').data([0]);
+        add = sel.enter().append('g').attr('class', 'minus').attr('transform', 'rotate(90,0,0) scale(1,-1)');
+        add.append('path').attr('class', 'area').style('fill', p.bg[color(k)]).style('stroke', 'none');
+        add.append('path').attr('class', 'line').style('fill', 'none').style('stroke', '#000');
         // update
-        sel = add.merge(sel);
-        sel.selectAll('.area').transition(t3).attr('d', area(bins));
-        sel.selectAll('.line').transition(t3).attr('d', line(bins));
+        g.selectAll('.area').transition(t3).attr('d', area(bins));
+        g.selectAll('.line').transition(t3).attr('d', line(bins));
       }
 
       function addBar(g, bins, k) {
@@ -350,26 +373,22 @@
           })));
           v.yV.domain([0, v.yViolinMax]);
         }
-        // histogram
-        sel = g.selectAll('.histo').data([k]);
-        // exit // update
+        // Add plus
+        sel = g.selectAll('.plus').data([0]);
+        add = sel.enter().append('g').attr('class', 'plus').attr('transform', 'rotate(90,0,0)  translate(0,-' + p.catWidth + ')');
+        // Add minus
+        sel = g.selectAll('.minus').data([0]);
+        add = sel.enter().append('g').attr('class', 'minus').attr('transform', 'rotate(90,0,0) scale(1,-1)');
+        // Update plus
+        sel = g.selectAll('.plus').selectAll('rect').data(bins);
+        // exit
+        sel.exit().transition(t1).attr('width', 0).attr('height', 0).remove();
+        // update
         // add
-        add = sel.enter().append('g').attr('class', 'histo');
-        add.append('g').attr('class', 'plus').attr('transform', 'rotate(90,0,0)  translate(0,-' + p.catWidth + ')');
-        add.append('g').attr('class', 'minus').attr('transform', 'rotate(90,0,0) scale(1,-1)');
+        add = sel.enter().append('rect').style('fill', p.bg[color(k)]).style('stroke', '#000');
         // update
         sel = add.merge(sel);
-
-        // Plus
-        var sub = sel.selectAll('.plus').selectAll('rect').data(bins);
-        // exit
-        sub.exit().transition(t1).attr('width', 0).attr('height', 0).remove();
-        // update
-        // add
-        add = sub.enter().append('rect').style('fill', color(k)).style('stroke', p.violinStroke);
-        // update
-        sub = add.merge(sub);
-        sub.transition(t3).attr('x', function (d) {
+        sel.transition(t3).attr('x', function (d) {
           return v.xV(d.x0);
         }).attr('y', function (d) {
           return v.yV(d.length);
@@ -378,17 +397,16 @@
         }).attr('height', function (d) {
           return v.yV(0) - v.yV(d.length);
         });
-
-        // Plus
-        sub = sel.selectAll('.minus').selectAll('rect').data(bins);
+        // Update minus
+        sel = g.selectAll('.minus').selectAll('rect').data(bins);
         // exit
-        sub.exit().transition(t1).attr('width', 0).attr('height', 0).remove();
+        sel.exit().transition(t1).attr('width', 0).attr('height', 0).remove();
         // update
         // add
-        add = sub.enter().append('rect').style('fill', color(k)).style('stroke', p.violinStroke);
+        add = sel.enter().append('rect').style('fill', p.bg[color(k)]).style('stroke', '#000');
         // update
-        sub = add.merge(sub);
-        sub.transition(t3).attr('x', function (d) {
+        sel = add.merge(sel);
+        sel.transition(t3).attr('x', function (d) {
           return v.xV(d.x0);
         }).attr('y', function (d) {
           return v.yV(d.length);
@@ -417,13 +435,12 @@
         if (valueByCircle === 0) {
           valueByCircle = 1;
         }
-        // Graph
-        sel = g.selectAll('.circles').data([k]);
-        // exit // update
-        // add
-        add = sel.enter().append('g').attr('class', 'circles').attr('transform', 'rotate(90,0,0)  translate(0,-' + p.catWidth + ')').style('fill', color(k)).style('stroke', p.violinStroke);
+
+        // Add plus
+        sel = g.selectAll('g').data([k]);
+        add = sel.enter().append('g').attr('transform', 'rotate(90,0,0)  translate(0,-' + p.catWidth + ')').style('fill', p.bg[color(k)]).style('stroke', '#000');
         sel = add.merge(sel);
-        // One groub by nin
+        // One groub by bin
         var sub = sel.selectAll('g').data(bins);
         // exit // update
         // add
@@ -487,35 +504,42 @@
         var iSH = [0, 2, 4];
         var iSV = [[0, 1], [3, 4]];
 
-        sel = g.selectAll('.boxplot').data([k]);
-        // exit // update
-        // add
-        add = sel.enter().append('g').attr('class', 'boxplot');
-        add.selectAll('.box').data([k]).enter().append('rect').attr('class', 'box').style('fill', p.boxFill).style('stroke', p.boxStroke);
-        add.selectAll('.iSH').data(iSH).enter().append('line').attr('class', 'ISH').style('fill', p.boxStroke).style('stroke', p.boxStroke);
-        add.selectAll('iSV').data(iSV).enter().append('line').attr('class', 'ISV').style('stroke', p.boxStroke);
-        add.selectAll('.mean').data([k]).enter().append('circle').attr('class', 'mean').style('fill', p.meanColor).style('stroke', p.boxStroke).attr('r', v.x(boxPlotWidth / 5));
+        sel = g.selectAll('.box').data([k]);
+        add = sel.enter();
+        add.append('rect').attr('class', 'box').style('fill', p.bg[color(k)]).style('stroke', p.fg[color(k)]).style('stroke-width', p.strokeWidth);
+        add.selectAll('.iSH').data(iSH).enter().append('line').attr('class', 'ISH').style('stroke', p.fg[color(k)]).style('stroke-width', p.strokeWidth);
+        add.selectAll('iSV').data(iSV).enter().append('line').attr('class', 'ISV').style('stroke', p.fg[color(k)]).style('stroke-width', p.strokeWidth);
+        add.selectAll('.mean').data([k]).enter().append('circle').attr('class', 'mean').style('fill', p.bg[color(k)]).style('stroke', '#000').attr('r', v.x(boxPlotWidth / 5));
         // update
-        sel = d4.select(g.node());
-        sel.select('.box').transition(t3).attr('x', v.x(left)).attr('width', v.x(right) - v.x(left)).attr('y', probs[3]).attr('height', -probs[3] + probs[1]);
-        sel.selectAll('.ISH').transition(t3).attr('x1', v.x(left)).attr('x2', v.x(right)).attr('y1', function (d) {
+        // sel = d4.select(g.node());
+        g.select('.box').transition(t3).attr('x', v.x(left)).attr('width', v.x(right) - v.x(left)).attr('y', probs[3]).attr('height', -probs[3] + probs[1]);
+        g.selectAll('.ISH').transition(t3).attr('x1', v.x(left)).attr('x2', v.x(right)).attr('y1', function (d) {
           return probs[d];
         }).attr('y2', function (d) {
           return probs[d];
         });
-        sel.selectAll('.ISV').transition(t3).attr('x1', v.x(0.5)).attr('x2', v.x(0.5)).attr('y1', function (d) {
+        g.selectAll('.ISV').transition(t3).attr('x1', v.x(0.5)).attr('x2', v.x(0.5)).attr('y1', function (d) {
           return probs[d[0]];
         }).attr('y2', function (d) {
           return probs[d[1]];
         });
-        sel.selectAll('.mean').transition(t3).attr('cx', v.x(0.5)).attr('cy', v.y(d4.mean(vals)));
+        g.selectAll('.mean').transition(t3).attr('cx', v.x(0.5)).attr('cy', v.y(d4.mean(vals)));
       }
 
       function addLabel(g, label) {
-        g.append('text').attr('class', 'label').attr('x', v.x(0.5)).attr('y', p.height - p.margin.bottom / 2).attr('dy', '-0.5ex').attr('text-anchor', 'middle').style('fill', p.labelColor).text(label);
+        g.selectAll('text').data([label]).enter().append('text').attr('class', 'label').attr('x', v.x(0.5)).attr('y', p.height - p.margin.bottom / 2).attr('dy', '-0.5ex').attr('text-anchor', 'middle').style('fill', '#000').text(label);
       }
     };
 
+    function layoutChange() {
+      var _this = this;
+
+      d4.select(this).each(function (d) {
+        console.log(d, _this.checked);
+        p.layouts[d] = _this.checked;
+        chart.update();
+      });
+    }
     // RETURN
     return chart;
   }
