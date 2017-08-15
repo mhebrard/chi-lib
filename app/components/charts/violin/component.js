@@ -7,6 +7,7 @@ function controller() {
   const paramChart = {
     div: 'charts',
     id: 'violin',
+    options: 'options',
     dispatch,
     title: 'Charaters Stats',
     height: 300,
