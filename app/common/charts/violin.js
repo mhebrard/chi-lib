@@ -1,7 +1,6 @@
 import {ascending, extent, histogram, max, mean, quantile, range} from 'd3-array';
 import {axisLeft, axisRight} from 'd3-axis';
 import {scaleOrdinal, scaleLinear} from 'd3-scale';
-import {schemeSet3} from 'd3-scale-chromatic';
 import {area, line, curveBasis, curveCatmullRom, curveLinear, curveStepAfter} from 'd3-shape';
 import {select, selectAll} from 'd3-selection';
 import {transition} from 'd3-transition';
@@ -14,7 +13,6 @@ if (d3 === 'undefined' || d3.version) {
     ascending, extent, histogram, max, mean, quantile, range,
     axisLeft, axisRight,
     scaleOrdinal, scaleLinear,
-    schemeSet3,
     area, line, curveBasis, curveCatmullRom, curveLinear, curveStepAfter,
     select, selectAll,
     transition
@@ -43,21 +41,14 @@ export default function Chart(p) {
   p.ymax = p.ymax || null;
   p.catWidth = p.catWidth || 100;
   p.catSpacing = p.catSpacing || 20;
-  // p.violinStroke = p.violinStroke || '#000';
-  // p.boxFill = p.boxFill || '#fff';
-  // p.boxStroke = p.boxStroke || '#000';
-  // p.meanColor = p.meanColor || '#000';
-  // p.labelColor = p.labelColor || '#000';
+  p.strokeWidth = p.strokeWidth || 3;
   p.resolution = p.resolution || 10;
   p.interpolation = p.interpolation || 'catmull'; // catmull | basis | linear | step
   p.xScale = p.xScale === 'common' ? 'common' : 'each'; // each | common
-
-  // const color = d4.scaleOrdinal(p.color ? p.color : d4.schemeSet3);
-  p.strokeWidth = p.strokeWidth || 3;
   p.bg = p.bg || ['#F88', '#A8F', '#AF8', '#8FF', '#FA8', '#F8F', '#8F8', '#88F', '#FF8', '#F8A', '#8FA', '#8AF'];
   p.fg = p.fg || ['#900', '#609', '#690', '#099', '#960', '#909', '#090', '#009', '#990', '#906', '#096', '#069'];
-  const color = d4.scaleOrdinal(d4.range(12));
 
+  const color = d4.scaleOrdinal(d4.range(12));
   const v = {};
   // consume action: mutate data and apply changes
   chart.consumer = function(action) {

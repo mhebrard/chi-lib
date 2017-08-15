@@ -3,7 +3,7 @@ Series of values represented as violin plot. The corps of the violin is the dist
 
 **sources**
 * From a plot by [z-m-k](http://bl.ocks.org/z-m-k/5014368)
-* [D3.js v4.x](https://github.com/d3/d3/blob/master/API.md) (d3-array, d3-axis, d3-scale, d3-scale-chromatic, d3-shape, d3-selection, d3-transition)
+* [D3.js v4.x](https://github.com/d3/d3/blob/master/API.md) (d3-array, d3-axis, d3-scale, d3-shape, d3-selection, d3-transition)
 * Input data is an object with one property by serie and an array of value for each property. {serie1: [val1,val2,...], serie2: [val1,val2...]}
 
 **actions**
@@ -14,6 +14,7 @@ Series of values represented as violin plot. The corps of the violin is the dist
 **parameters**
 * div = 'body': container id
 * id = 'view': figure id
+* options = null: options menu id
 * data = {serie: [0, 1]}: input data
 * title = 'Violin plot of ': figure title
 * titleSize = 20: title font size
@@ -25,12 +26,9 @@ Series of values represented as violin plot. The corps of the violin is the dist
 * ymax = null: maximal value of Y axis
 * catWidth = 100: width of each violin
 * catSpacing = 20: space between violins
-* color = null: palette for violin fill color
-* violinStroke = '#000': violin stroke color
-* boxFill = '#fff': box fill color
-* boxStroke = '#000': box stroke color
-* meanColor = '#000': mean fill color
-* labelColor = '#000': labels color
+* strokeWidth = 3: width of boxplot stroke
 * resolution = 10: number of bins for the violin
 * interpolation 'basis': shape of the violin (basis | linear | step)
-* normalized = false: violin X scale is shared (false) or specific (true);
+* xScale = 'common': violin X scale is shared (common) or specific to each serie (each);
+* p.bg = ['#F88', '#A8F'...]: list of colors for the series
+* p.fg = ['#900', '#609'...]: list of colors for the boxplot

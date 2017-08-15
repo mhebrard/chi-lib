@@ -1,16 +1,16 @@
 (function (global, factory) {
   if (typeof define === "function" && define.amd) {
-    define(['exports', 'd3-array', 'd3-axis', 'd3-scale', 'd3-scale-chromatic', 'd3-shape', 'd3-selection', 'd3-transition'], factory);
+    define(['exports', 'd3-array', 'd3-axis', 'd3-scale', 'd3-shape', 'd3-selection', 'd3-transition'], factory);
   } else if (typeof exports !== "undefined") {
-    factory(exports, require('d3-array'), require('d3-axis'), require('d3-scale'), require('d3-scale-chromatic'), require('d3-shape'), require('d3-selection'), require('d3-transition'));
+    factory(exports, require('d3-array'), require('d3-axis'), require('d3-scale'), require('d3-shape'), require('d3-selection'), require('d3-transition'));
   } else {
     var mod = {
       exports: {}
     };
-    factory(mod.exports, global.d3Array, global.d3Axis, global.d3Scale, global.d3ScaleChromatic, global.d3Shape, global.d3Selection, global.d3Transition);
+    factory(mod.exports, global.d3Array, global.d3Axis, global.d3Scale, global.d3Shape, global.d3Selection, global.d3Transition);
     global.violin = mod.exports;
   }
-})(this, function (exports, _d3Array, _d3Axis, _d3Scale, _d3ScaleChromatic, _d3Shape, _d3Selection, _d3Transition) {
+})(this, function (exports, _d3Array, _d3Axis, _d3Scale, _d3Shape, _d3Selection, _d3Transition) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -38,7 +38,6 @@
       ascending: _d3Array.ascending, extent: _d3Array.extent, histogram: _d3Array.histogram, max: _d3Array.max, mean: _d3Array.mean, quantile: _d3Array.quantile, range: _d3Array.range,
       axisLeft: _d3Axis.axisLeft, axisRight: _d3Axis.axisRight,
       scaleOrdinal: _d3Scale.scaleOrdinal, scaleLinear: _d3Scale.scaleLinear,
-      schemeSet3: _d3ScaleChromatic.schemeSet3,
       area: _d3Shape.area, line: _d3Shape.line, curveBasis: _d3Shape.curveBasis, curveCatmullRom: _d3Shape.curveCatmullRom, curveLinear: _d3Shape.curveLinear, curveStepAfter: _d3Shape.curveStepAfter,
       select: _d3Selection.select, selectAll: _d3Selection.selectAll,
       transition: _d3Transition.transition
@@ -67,21 +66,14 @@
     p.ymax = p.ymax || null;
     p.catWidth = p.catWidth || 100;
     p.catSpacing = p.catSpacing || 20;
-    // p.violinStroke = p.violinStroke || '#000';
-    // p.boxFill = p.boxFill || '#fff';
-    // p.boxStroke = p.boxStroke || '#000';
-    // p.meanColor = p.meanColor || '#000';
-    // p.labelColor = p.labelColor || '#000';
+    p.strokeWidth = p.strokeWidth || 3;
     p.resolution = p.resolution || 10;
     p.interpolation = p.interpolation || 'catmull'; // catmull | basis | linear | step
     p.xScale = p.xScale === 'common' ? 'common' : 'each'; // each | common
-
-    // const color = d4.scaleOrdinal(p.color ? p.color : d4.schemeSet3);
-    p.strokeWidth = p.strokeWidth || 3;
     p.bg = p.bg || ['#F88', '#A8F', '#AF8', '#8FF', '#FA8', '#F8F', '#8F8', '#88F', '#FF8', '#F8A', '#8FA', '#8AF'];
     p.fg = p.fg || ['#900', '#609', '#690', '#099', '#960', '#909', '#090', '#009', '#990', '#906', '#096', '#069'];
-    var color = d4.scaleOrdinal(d4.range(12));
 
+    var color = d4.scaleOrdinal(d4.range(12));
     var v = {};
     // consume action: mutate data and apply changes
     chart.consumer = function (action) {
