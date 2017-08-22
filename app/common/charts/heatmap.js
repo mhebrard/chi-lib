@@ -37,6 +37,7 @@ export default function Chart(p) {
   p.grid = p.grid || false; // true: use gris size, false: use global size;
   p.gridWidth = p.gridWidth || 0;
   p.gridHeight = p.gridHeight || 0;
+  p.colorNull = '#fff';
   p.color = p.color || ['#fff7ec', '#fee8c8', '#fdd49e', '#fdbb84', '#fc8d59', '#ef6548', '#d7301f', '#b30000', '#7f0000']; // ColorBrewer sequential
   p.cornerRadius = p.cornerRadius || 3;
 
@@ -209,7 +210,7 @@ export default function Chart(p) {
     .attr('x', (d, i) => (i * p.gridWidth) + p.margin.padding)
     .attr('width', p.gridWidth - (2 * p.margin.padding))
     .attr('height', p.gridHeight - (2 * p.margin.padding))
-    .style('fill', d => color(scale(d[2])));
+    .style('fill', d => d[2] === 0 ? p.colorNull : color(scale(d[2])));
     // add
     add = sel.enter().append('rect')
     .attr('x', 0)
@@ -232,7 +233,7 @@ export default function Chart(p) {
     .attr('x', (d, i) => (i * p.gridWidth) + p.margin.padding)
     .attr('width', p.gridWidth - (2 * p.margin.padding))
     .attr('height', p.gridHeight - (2 * p.margin.padding))
-    .style('fill', d => color(scale(d[2])));
+    .style('fill', d => d[2] === 0 ? p.colorNull : color(scale(d[2])));
 
     function addLegend(mode, g, data) {
       // Path

@@ -72,6 +72,7 @@
     p.grid = p.grid || false; // true: use gris size, false: use global size;
     p.gridWidth = p.gridWidth || 0;
     p.gridHeight = p.gridHeight || 0;
+    p.colorNull = '#fff';
     p.color = p.color || ['#fff7ec', '#fee8c8', '#fdd49e', '#fdbb84', '#fc8d59', '#ef6548', '#d7301f', '#b30000', '#7f0000']; // ColorBrewer sequential
     p.cornerRadius = p.cornerRadius || 3;
 
@@ -245,7 +246,7 @@
       sel.transition(t2).attr('x', function (d, i) {
         return i * p.gridWidth + p.margin.padding;
       }).attr('width', p.gridWidth - 2 * p.margin.padding).attr('height', p.gridHeight - 2 * p.margin.padding).style('fill', function (d) {
-        return color(scale(d[2]));
+        return d[2] === 0 ? p.colorNull : color(scale(d[2]));
       });
       // add
       add = sel.enter().append('rect').attr('x', 0).attr('y', p.margin.padding).attr('width', 0).attr('height', 0).attr('rx', p.cornerRadius).attr('ry', p.cornerRadius).style('opacity', 1).style('fill', '#fff').style('fill-rule', 'evenodd').style('stroke', '#000').style('cursor', 'pointer').on('mouseover', function (d) {
@@ -260,7 +261,7 @@
       sel.transition(t3).attr('x', function (d, i) {
         return i * p.gridWidth + p.margin.padding;
       }).attr('width', p.gridWidth - 2 * p.margin.padding).attr('height', p.gridHeight - 2 * p.margin.padding).style('fill', function (d) {
-        return color(scale(d[2]));
+        return d[2] === 0 ? p.colorNull : color(scale(d[2]));
       });
 
       function addLegend(mode, g, data) {

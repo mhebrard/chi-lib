@@ -19,5 +19,6 @@ Two dimensions table of values represented as heatmap. The value is mapped to a 
 * grid = false: if true, use gridWidth and gridHeight to set the figure size. If false, use width and height to set the figure size
 * gridWidth = 0: cell width if grid is true
 * gridHeight = 0: cell height if grid is true
+* colorNull = '#fff': color for cell with value = 0
 * color = [oranges]: palette for cell fill color
 * cornerRadius = 3: round corner for each cell
