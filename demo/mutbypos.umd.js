@@ -98,6 +98,10 @@
           p.data = action.data;
           chart.update();
           break;
+        case 'setMasks':
+          p.masks = action.payload;
+          chart.update();
+          break;
         default:
         // console.log('unknown event');
       }
@@ -136,25 +140,6 @@
       }).attr('y', p.margin.top).attr('width', function (d) {
         return v.x(d.x2 + 1) - v.x(d.x1);
       }).attr('height', p.height - p.margin.top - p.margin.bottom).attr('stroke', function (d) {
-        return d.fill === 'none' ? 'none' : '#000';
-      }).attr('fill', function (d) {
-        return d.fill;
-      });
-
-      // Masks
-      sel = v.svg.selectAll('.mask').data(p.masks).enter().append('g').attr('class', 'mask');
-      sel.append('text').attr('x', function (d) {
-        return v.x((d.x1 + d.x2) / 2);
-      }).attr('y', v.y(0) - 15).attr('dy', '-0.5ex').attr('text-anchor', 'middle').text(function (d) {
-        return d.label;
-      });
-      sel.selectAll('rect').data(function (d) {
-        return [d];
-      }).enter().append('rect').attr('x', function (d) {
-        return v.x(d.x1 - 0.5);
-      }).attr('y', v.y(0) - 10).attr('width', function (d) {
-        return v.x(d.x2 + 1) - v.x(d.x1);
-      }).attr('height', 10).attr('stroke', function (d) {
         return d.fill === 'none' ? 'none' : '#000';
       }).attr('fill', function (d) {
         return d.fill;
@@ -199,7 +184,45 @@
     chart.update = function () {
       // console.log('chart update');
       var poss = Object.keys(p.data);
+      // Update pattern
+      var sel = void 0;
+      var add = void 0;
+      // Transitions
+      var delay = 500;
+      var t1 = d4.transition().duration(delay);
+      var t2 = d4.transition().delay(delay).duration(delay);
+      var t3 = d4.transition().delay(delay * 2).duration(delay);
+
       // Masks
+      sel = v.svg.selectAll('.mask').data(p.masks);
+      // exit
+      sel.exit().transition(t1).style('opacity', 0).remove();
+      // update
+      // add
+      add = sel.enter().append('g').attr('class', 'mask').style('opacity', 0);
+      add.append('text').attr('x', v.x(0)).attr('y', v.y(0) - 15).attr('dy', '-0.5ex').attr('text-anchor', 'middle');
+      add.append('rect').attr('x', v.x(0)).attr('y', v.y(0) - 10).attr('width', 0).attr('height', 10);
+      // update
+      sel = v.svg.selectAll('.mask').style('opacity', 1);
+      sel.selectAll('text').data(function (d) {
+        return [d];
+      }).transition(t3).attr('x', function (d) {
+        return v.x((d.x1 + d.x2) / 2);
+      }).text(function (d) {
+        return d.label;
+      });
+      sel.selectAll('rect').data(function (d) {
+        return [d];
+      }).transition(t3).attr('x', function (d) {
+        return Math.max(v.x(0), v.x(d.x1 - 0.5));
+      }).attr('width', function (d) {
+        return v.x(d.x2 + 1) - v.x(d.x1);
+      }).attr('stroke', function (d) {
+        return d.fill === 'none' ? 'none' : '#000';
+      }).attr('fill', function (d) {
+        return d.fill;
+      });
+
       // for each pos under a mask, mutations are down to 0
       poss.forEach(function (f) {
         p.masks.forEach(function (g) {
@@ -208,15 +231,6 @@
           }
         });
       });
-
-      // Update pattern
-      var sel = void 0;
-      // let add;
-      // Transitions
-      var delay = 500;
-      var t1 = d4.transition().duration(delay);
-      var t2 = d4.transition().delay(delay).duration(delay);
-      var t3 = d4.transition().delay(delay * 2).duration(delay);
 
       // AXIS
       var domain = [].concat(_toConsumableArray(p.yRange)) || [0, null];
@@ -262,7 +276,7 @@
         return v.y(d[0]) - v.y(d[1]);
       });
       // add
-      var add = sel.enter().append('rect').attr('x', function (d, i) {
+      add = sel.enter().append('rect').attr('x', function (d, i) {
         return v.x(poss[i] - 0.5);
       }) // Rect is centered on the tick
       .attr('y', v.y(0)).attr('height', 0).attr('width', v.x(1) - v.x(0)) // Rect width is 1 unit

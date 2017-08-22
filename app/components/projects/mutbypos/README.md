@@ -6,6 +6,11 @@ Histogram of mutation count along a reference sequence. At each position the mut
 * [d3 stack](https://github.com/d3/d3-shape/blob/master/README.md#stacks)
 * Input data is an object with one property by position, and for each position an object that list the count of mutations for each nucleotide. {5: {a: 1, t: 1, g: 1, c: 1}, ...};
 
+**actions**
+* {type: 'init'} initialize the chart
+* {type: 'update', data: {}} inject the data in the chart
+* {type: 'setMasks', payload: {}} set masks that hide mutations
+
 **parameters**
 * div = 'body': container id
 * id = 'view': figure id
