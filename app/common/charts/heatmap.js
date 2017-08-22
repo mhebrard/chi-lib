@@ -64,7 +64,7 @@ export default function Chart(p) {
   p.dispatch = p.dispatch || chart.consumer;
 
   chart.init = function() {
-    console.log('chart init');
+    // console.log('chart init');
     // SVG
     const svg = d4.select(`#${p.div}`).append('svg')
       .attr('id', p.id)
@@ -88,11 +88,9 @@ export default function Chart(p) {
     svg.append('g').classed('legendTop', true)
     .attr('transform', `translate(${p.margin.left + p.legend.left}, ${p.margin.top})`);
     svg.append('g').classed('legendBottom', true);
-/**/// .attr('transform', `translate(${p.margin.left + p.legend.left}, ${p.height - p.margin.bottom - p.legend.bottom})`)
     svg.append('g').classed('legendLeft', true)
     .attr('transform', `translate(${p.margin.left}, ${p.margin.top + p.legend.top})`);
     svg.append('g').classed('legendRight', true);
-/**///    .attr('transform', `translate(${p.width - p.margin.right - p.legend.right}, ${p.margin.top + p.legend.top})`)
   };
 
   // accessor
@@ -104,7 +102,7 @@ export default function Chart(p) {
   };
 
   chart.update = function() {
-    console.log('chart update');
+    // console.log('chart update');
     p.labelX = [];
     p.labelY = [];
     p.heatmap = [];
@@ -149,7 +147,7 @@ export default function Chart(p) {
       p.gridHeight = (p.height - p.margin.top - p.legend.top - p.margin.bottom - p.legend.bottom) / p.labelY.length;
     }
     // Adjust SVG
-    const svg = d4.select(`#${p.div}`).select('svg')
+    const svg = d4.select(`#${p.id}`)
       .attr('width', p.width)
       .attr('height', p.height);
     svg.select('.legendBottom')
@@ -248,7 +246,7 @@ export default function Chart(p) {
         .attr('d', (d, i) => path(mode, d, i));
       // add
       add = sel.enter().append('path')
-        .attr('id', d => `map${mode}${d.replace(' ', '_')}`)
+        .attr('id', d => `map${p.id}${mode}${d.replace(' ', '_')}`)
         .attr('d', 'M0,0L0,0')
         .style('pointer-events', 'none')
         .style('opacity', 0);
@@ -271,7 +269,7 @@ export default function Chart(p) {
         .style('pointer-events', 'none')
         .style('opacity', 1)
         .append('textPath')
-          .attr('xlink:href', d => `#map${mode}${d.replace(' ', '_')}`)
+          .attr('xlink:href', d => `#map${p.id}${mode}${d.replace(' ', '_')}`)
           .text(d => d);
     }
   };
