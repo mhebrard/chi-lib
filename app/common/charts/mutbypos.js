@@ -56,6 +56,10 @@ export default function Chart(p) {
         p.data = action.data;
         chart.update();
         break;
+      case 'setMasks':
+        p.masks = action.payload;
+        chart.update();
+        break;
       default:
         // console.log('unknown event');
     }
@@ -110,27 +114,6 @@ export default function Chart(p) {
       .attr('y', p.margin.top)
       .attr('width', d => v.x(d.x2 + 1) - v.x(d.x1))
       .attr('height', p.height - p.margin.top - p.margin.bottom)
-      .attr('stroke', d => d.fill === 'none' ? 'none' : '#000')
-      .attr('fill', d => d.fill);
-
-    // Masks
-    sel = v.svg.selectAll('.mask')
-      .data(p.masks)
-      .enter().append('g')
-      .attr('class', 'mask');
-    sel.append('text')
-      .attr('x', d => v.x((d.x1 + d.x2) / 2))
-      .attr('y', v.y(0) - 15)
-      .attr('dy', '-0.5ex')
-      .attr('text-anchor', 'middle')
-      .text(d => d.label);
-    sel.selectAll('rect')
-      .data(d => [d])
-      .enter().append('rect')
-      .attr('x', d => v.x(d.x1 - 0.5))
-      .attr('y', v.y(0) - 10)
-      .attr('width', d => v.x(d.x2 + 1) - v.x(d.x1))
-      .attr('height', 10)
       .attr('stroke', d => d.fill === 'none' ? 'none' : '#000')
       .attr('fill', d => d.fill);
 
@@ -203,7 +186,50 @@ export default function Chart(p) {
   chart.update = function() {
     // console.log('chart update');
     const poss = Object.keys(p.data);
+    // Update pattern
+    let sel;
+    let add;
+    // Transitions
+    const delay = 500;
+    const t1 = d4.transition().duration(delay);
+    const t2 = d4.transition().delay(delay).duration(delay);
+    const t3 = d4.transition().delay(delay * 2).duration(delay);
+
     // Masks
+    sel = v.svg.selectAll('.mask')
+      .data(p.masks);
+    // exit
+    sel.exit().transition(t1)
+      .style('opacity', 0)
+      .remove();
+    // update
+    // add
+    add = sel.enter().append('g')
+      .attr('class', 'mask')
+      .style('opacity', 0);
+    add.append('text')
+      .attr('x', v.x(0))
+      .attr('y', v.y(0) - 15)
+      .attr('dy', '-0.5ex')
+      .attr('text-anchor', 'middle');
+    add.append('rect')
+      .attr('x', v.x(0))
+      .attr('y', v.y(0) - 10)
+      .attr('width', 0)
+      .attr('height', 10);
+    // update
+    sel = v.svg.selectAll('.mask').style('opacity', 1);
+    sel.selectAll('text').data(d => [d])
+      .transition(t3)
+      .attr('x', d => v.x((d.x1 + d.x2) / 2))
+      .text(d => d.label);
+    sel.selectAll('rect').data(d => [d])
+      .transition(t3)
+      .attr('x', d => Math.max(v.x(0), v.x(d.x1 - 0.5)))
+      .attr('width', d => v.x(d.x2 + 1) - v.x(d.x1))
+      .attr('stroke', d => d.fill === 'none' ? 'none' : '#000')
+      .attr('fill', d => d.fill);
+
     // for each pos under a mask, mutations are down to 0
     poss.forEach(f => {
       p.masks.forEach(g => {
@@ -212,15 +238,6 @@ export default function Chart(p) {
         }
       });
     });
-
-    // Update pattern
-    let sel;
-    // let add;
-    // Transitions
-    const delay = 500;
-    const t1 = d4.transition().duration(delay);
-    const t2 = d4.transition().delay(delay).duration(delay);
-    const t3 = d4.transition().delay(delay * 2).duration(delay);
 
     // AXIS
     const domain = [...p.yRange] || [0, null];
@@ -266,14 +283,16 @@ export default function Chart(p) {
     .data(d => d);
     // exit
     sel.exit().transition(t1)
+      .attr('y', v.y(0))
       .attr('height', 0)
       .remove();
     // update
     sel.transition(t2)
+      .attr('x', (d, i) => v.x(poss[i] - 0.5))
       .attr('y', d => v.y(d[1]))
       .attr('height', d => v.y(d[0]) - v.y(d[1]));
     // add
-    const add = sel.enter().append('rect')
+    add = sel.enter().append('rect')
       .attr('x', (d, i) => v.x(poss[i] - 0.5)) // Rect is centered on the tick
       .attr('y', v.y(0))
       .attr('height', 0)
@@ -284,6 +303,7 @@ export default function Chart(p) {
     // update
     sel = add.merge(sel);
     sel.transition(t3)
+    .attr('x', (d, i) => v.x(poss[i] - 0.5)) // Rect is centered on the tick
     .attr('y', d => v.y(d[1]))
     .attr('height', d => v.y(d[0]) - v.y(d[1]));
   };

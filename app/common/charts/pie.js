@@ -95,7 +95,7 @@ export default function Chart(p) {
   p.dispatch = p.dispatch || chart.consumer;
 
   chart.init = function() {
-    console.log('chart init');
+    // console.log('chart init');
     // SVG
     const svg = d4.select(`#${p.div}`).append('svg')
       .attr('id', p.id)
@@ -140,10 +140,9 @@ export default function Chart(p) {
   };
 
   chart.update = function() {
-    console.log('chart update');
+    // console.log('chart update');
     // Layout
     const root = d4.pie().value(d => d.size)(p.data.serie);
-    console.log('pie layout', root);
 
     // center
     p.total = root.reduce((res, r) => {

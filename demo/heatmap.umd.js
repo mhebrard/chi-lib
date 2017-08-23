@@ -72,6 +72,7 @@
     p.grid = p.grid || false; // true: use gris size, false: use global size;
     p.gridWidth = p.gridWidth || 0;
     p.gridHeight = p.gridHeight || 0;
+    p.colorNull = '#fff';
     p.color = p.color || ['#fff7ec', '#fee8c8', '#fdd49e', '#fdbb84', '#fc8d59', '#ef6548', '#d7301f', '#b30000', '#7f0000']; // ColorBrewer sequential
     p.cornerRadius = p.cornerRadius || 3;
 
@@ -98,7 +99,7 @@
     p.dispatch = p.dispatch || chart.consumer;
 
     chart.init = function () {
-      console.log('chart init');
+      // console.log('chart init');
       // SVG
       var svg = d4.select('#' + p.div).append('svg').attr('id', p.id).attr('title', p.title);
 
@@ -111,10 +112,8 @@
       // group for legend
       svg.append('g').classed('legendTop', true).attr('transform', 'translate(' + (p.margin.left + p.legend.left) + ', ' + p.margin.top + ')');
       svg.append('g').classed('legendBottom', true);
-      /**/ // .attr('transform', `translate(${p.margin.left + p.legend.left}, ${p.height - p.margin.bottom - p.legend.bottom})`)
       svg.append('g').classed('legendLeft', true).attr('transform', 'translate(' + p.margin.left + ', ' + (p.margin.top + p.legend.top) + ')');
       svg.append('g').classed('legendRight', true);
-      /**/ //    .attr('transform', `translate(${p.width - p.margin.right - p.legend.right}, ${p.margin.top + p.legend.top})`)
     };
 
     // accessor
@@ -126,7 +125,7 @@
     };
 
     chart.update = function () {
-      console.log('chart update');
+      // console.log('chart update');
       p.labelX = [];
       p.labelY = [];
       p.heatmap = [];
@@ -179,7 +178,7 @@
         p.gridHeight = (p.height - p.margin.top - p.legend.top - p.margin.bottom - p.legend.bottom) / p.labelY.length;
       }
       // Adjust SVG
-      var svg = d4.select('#' + p.div).select('svg').attr('width', p.width).attr('height', p.height);
+      var svg = d4.select('#' + p.id).attr('width', p.width).attr('height', p.height);
       svg.select('.legendBottom').attr('transform', 'translate(' + (p.margin.left + p.legend.left) + ', ' + (p.height - p.margin.bottom - p.legend.bottom) + ')');
       svg.select('.legendRight').attr('transform', 'translate(' + (p.width - p.margin.right - p.legend.right) + ', ' + (p.margin.top + p.legend.top) + ')');
 
@@ -245,7 +244,7 @@
       sel.transition(t2).attr('x', function (d, i) {
         return i * p.gridWidth + p.margin.padding;
       }).attr('width', p.gridWidth - 2 * p.margin.padding).attr('height', p.gridHeight - 2 * p.margin.padding).style('fill', function (d) {
-        return color(scale(d[2]));
+        return d[2] === 0 ? p.colorNull : color(scale(d[2]));
       });
       // add
       add = sel.enter().append('rect').attr('x', 0).attr('y', p.margin.padding).attr('width', 0).attr('height', 0).attr('rx', p.cornerRadius).attr('ry', p.cornerRadius).style('opacity', 1).style('fill', '#fff').style('fill-rule', 'evenodd').style('stroke', '#000').style('cursor', 'pointer').on('mouseover', function (d) {
@@ -260,7 +259,7 @@
       sel.transition(t3).attr('x', function (d, i) {
         return i * p.gridWidth + p.margin.padding;
       }).attr('width', p.gridWidth - 2 * p.margin.padding).attr('height', p.gridHeight - 2 * p.margin.padding).style('fill', function (d) {
-        return color(scale(d[2]));
+        return d[2] === 0 ? p.colorNull : color(scale(d[2]));
       });
 
       function addLegend(mode, g, data) {
@@ -276,7 +275,7 @@
         });
         // add
         add = sel.enter().append('path').attr('id', function (d) {
-          return 'map' + mode + d.replace(' ', '_');
+          return 'map' + p.id + mode + d.replace(' ', '_');
         }).attr('d', 'M0,0L0,0').style('pointer-events', 'none').style('opacity', 0);
         // update
         sel = add.merge(sel);
@@ -292,7 +291,7 @@
         sel.exit().transition(t1).style('opacity', 0).remove();
         // add
         add = sel.enter().append('text').attr('text-anchor', 'left').attr('dy', '0.5ex').style('pointer-events', 'none').style('opacity', 1).append('textPath').attr('xlink:href', function (d) {
-          return '#map' + mode + d.replace(' ', '_');
+          return '#map' + p.id + mode + d.replace(' ', '_');
         }).text(function (d) {
           return d;
         });

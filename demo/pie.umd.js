@@ -125,7 +125,7 @@
     p.dispatch = p.dispatch || chart.consumer;
 
     chart.init = function () {
-      console.log('chart init');
+      // console.log('chart init');
       // SVG
       var svg = d4.select('#' + p.div).append('svg').attr('id', p.id).attr('title', p.title).attr('width', p.width).attr('height', p.height);
 
@@ -151,12 +151,11 @@
     };
 
     chart.update = function () {
-      console.log('chart update');
+      // console.log('chart update');
       // Layout
       var root = d4.pie().value(function (d) {
         return d.size;
       })(p.data.serie);
-      console.log('pie layout', root);
 
       // center
       p.total = root.reduce(function (res, r) {

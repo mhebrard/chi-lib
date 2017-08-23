@@ -35,7 +35,7 @@ export default function Chart(p) {
   p.fontSize = p.fontSize || 14;
   // p.width // adjust according to series number
   p.height = p.height || 600;
-  p.margin = p.margin || {top: 30, bottom: 30, left: 50, right: 50};
+  p.margin = p.margin || {top: 30, bottom: 40, left: 50, right: 50};
   p.layouts = p.layouts || {violin: true, box: true, bar: false, beeswarm: false};
   p.ymin = p.ymin || null;
   p.ymax = p.ymax || null;
@@ -154,6 +154,11 @@ export default function Chart(p) {
       .attr('class', 'axis yIn')
       .attr('transform', `translate(${p.margin.left},0)`)
       .call(v.yAxisIn);
+
+    // Legend
+    const sel = v.svg.append('g').attr('class', 'legend');
+    sel.append('circle');
+    sel.append('text');
 
     // Options
     if (p.options) {
@@ -321,6 +326,15 @@ export default function Chart(p) {
         }
       });
       addLabel(g, k);
+
+      // Legend
+      if (p.layouts.beeswarm) {
+        v.svg.select('.legend')
+        .attr('transform', `translate(${v.width - 120}, ${p.height - (p.margin.bottom / 2)})`)
+        .style('opacity', 1);
+      } else {
+        v.svg.select('.legend').style('opacity', 0);
+      }
     });
 
     function addViolin(g, bins, k) {
@@ -447,6 +461,20 @@ export default function Chart(p) {
       if (valueByCircle === 0) {
         valueByCircle = 1;
       }
+
+      // Legend
+      v.svg.select('.legend').select('circle')
+        .attr('cx', radius + 2)
+        .attr('cy', radius + 2)
+        .attr('r', radius)
+        .style('fill', p.bg[0])
+        .style('stroke', '#000');
+      v.svg.select('.legend').select('text')
+        .attr('x', radius + 12)
+        .attr('y', radius + 2)
+        // .attr('text-anchor', 'middle')
+        .attr('dy', '0.5ex')
+        .text(() => valueByCircle === 1 ? '= 1' : `= 1 to ${valueByCircle}`);
 
       // Add plus
       sel = g.selectAll('g').data([k]);
@@ -585,7 +613,6 @@ export default function Chart(p) {
 
   function layoutChange() {
     d4.select(this).each(d => {
-      console.log(d, this.checked);
       p.layouts[d] = this.checked;
       chart.update();
     });
