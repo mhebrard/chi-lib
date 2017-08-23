@@ -547,7 +547,6 @@
       var _this = this;
 
       d4.select(this).each(function (d) {
-        console.log(d, _this.checked);
         p.layouts[d] = _this.checked;
         chart.update();
       });

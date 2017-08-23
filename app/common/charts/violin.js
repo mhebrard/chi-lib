@@ -613,7 +613,6 @@ export default function Chart(p) {
 
   function layoutChange() {
     d4.select(this).each(d => {
-      console.log(d, this.checked);
       p.layouts[d] = this.checked;
       chart.update();
     });

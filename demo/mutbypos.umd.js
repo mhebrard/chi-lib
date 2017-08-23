@@ -268,9 +268,11 @@
         return d;
       });
       // exit
-      sel.exit().transition(t1).attr('height', 0).remove();
+      sel.exit().transition(t1).attr('y', v.y(0)).attr('height', 0).remove();
       // update
-      sel.transition(t2).attr('y', function (d) {
+      sel.transition(t2).attr('x', function (d, i) {
+        return v.x(poss[i] - 0.5);
+      }).attr('y', function (d) {
         return v.y(d[1]);
       }).attr('height', function (d) {
         return v.y(d[0]) - v.y(d[1]);
@@ -289,7 +291,10 @@
       });
       // update
       sel = add.merge(sel);
-      sel.transition(t3).attr('y', function (d) {
+      sel.transition(t3).attr('x', function (d, i) {
+        return v.x(poss[i] - 0.5);
+      }) // Rect is centered on the tick
+      .attr('y', function (d) {
         return v.y(d[1]);
       }).attr('height', function (d) {
         return v.y(d[0]) - v.y(d[1]);
