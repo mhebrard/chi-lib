@@ -283,10 +283,12 @@ export default function Chart(p) {
     .data(d => d);
     // exit
     sel.exit().transition(t1)
+      .attr('y', v.y(0))
       .attr('height', 0)
       .remove();
     // update
     sel.transition(t2)
+      .attr('x', (d, i) => v.x(poss[i] - 0.5))
       .attr('y', d => v.y(d[1]))
       .attr('height', d => v.y(d[0]) - v.y(d[1]));
     // add
@@ -301,6 +303,7 @@ export default function Chart(p) {
     // update
     sel = add.merge(sel);
     sel.transition(t3)
+    .attr('x', (d, i) => v.x(poss[i] - 0.5)) // Rect is centered on the tick
     .attr('y', d => v.y(d[1]))
     .attr('height', d => v.y(d[0]) - v.y(d[1]));
   };
