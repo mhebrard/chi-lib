@@ -282,16 +282,16 @@
         return v.x(poss[i] - 0.5);
       }) // Rect is centered on the tick
       .attr('y', v.y(0)).attr('height', 0).attr('width', v.x(1) - v.x(0)) // Rect width is 1 unit
-      .on('mouseover', function (d, i) {
-        return tip('show', { pos: poss[i], value: d[1] - d[0] });
-      }).on('mousemove', function (d) {
+      .on('mousemove', function (d) {
         return tip('move', d);
       }).on('mouseout', function (d) {
         return tip('hide', d);
       });
       // update
       sel = add.merge(sel);
-      sel.transition(t3).attr('x', function (d, i) {
+      sel.on('mouseover', function (d, i) {
+        return tip('show', { pos: poss[i], value: d[1] - d[0] });
+      }).transition(t3).attr('x', function (d, i) {
         return v.x(poss[i] - 0.5);
       }) // Rect is centered on the tick
       .attr('y', function (d) {

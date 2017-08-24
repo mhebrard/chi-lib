@@ -297,12 +297,12 @@ export default function Chart(p) {
       .attr('y', v.y(0))
       .attr('height', 0)
       .attr('width', v.x(1) - v.x(0)) // Rect width is 1 unit
-      .on('mouseover', (d, i) => tip('show', {pos: poss[i], value: d[1] - d[0]}))
       .on('mousemove', d => tip('move', d))
       .on('mouseout', d => tip('hide', d));
     // update
     sel = add.merge(sel);
-    sel.transition(t3)
+    sel.on('mouseover', (d, i) => tip('show', {pos: poss[i], value: d[1] - d[0]}))
+    .transition(t3)
     .attr('x', (d, i) => v.x(poss[i] - 0.5)) // Rect is centered on the tick
     .attr('y', d => v.y(d[1]))
     .attr('height', d => v.y(d[0]) - v.y(d[1]));
