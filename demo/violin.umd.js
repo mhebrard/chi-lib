@@ -204,7 +204,7 @@
 
       // AXIS
       // update width
-      v.width = keys.length * (p.catWidth + p.catSpacing) + p.margin.left + p.margin.right;
+      v.width = p.catSpacing + keys.length * (p.catWidth + p.catSpacing) + p.margin.left + p.margin.right;
       d4.select('#' + p.div).select('svg').transition(t3).attr('width', v.width);
 
       // update y axis domain
@@ -278,7 +278,7 @@
       sel.exit().transition(t1).style('opacity', 0).remove();
       // update
       sel.transition(t2).attr('transform', function (d, i) {
-        return 'translate(' + (i * (p.catWidth + p.catSpacing) + p.margin.left) + ', 0)';
+        return 'translate(' + (p.catSpacing + i * (p.catWidth + p.catSpacing) + p.margin.left) + ', 0)';
       });
       // add
       add = sel.enter().append('g').attr('class', function (d, i) {
@@ -287,7 +287,7 @@
       // update
       sel = add.merge(sel);
       sel.transition(t3).attr('transform', function (k, i) {
-        return 'translate(' + (i * (p.catWidth + p.catSpacing) + p.margin.left) + ', 0)';
+        return 'translate(' + (p.catSpacing + i * (p.catWidth + p.catSpacing) + p.margin.left) + ', 0)';
       }).style('opacity', 1);
 
       keys.forEach(function (k, i) {
