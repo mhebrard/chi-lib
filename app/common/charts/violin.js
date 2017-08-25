@@ -203,7 +203,7 @@ export default function Chart(p) {
 
     // AXIS
     // update width
-    v.width = (keys.length * (p.catWidth + p.catSpacing)) + p.margin.left + p.margin.right;
+    v.width = p.catSpacing + (keys.length * (p.catWidth + p.catSpacing)) + p.margin.left + p.margin.right;
     d4.select(`#${p.div}`).select('svg')
       .transition(t3)
       .attr('width', v.width);
@@ -283,7 +283,7 @@ export default function Chart(p) {
       .remove();
     // update
     sel.transition(t2)
-      .attr('transform', (d, i) => `translate(${(i * (p.catWidth + p.catSpacing)) + p.margin.left}, 0)`);
+      .attr('transform', (d, i) => `translate(${p.catSpacing + (i * (p.catWidth + p.catSpacing)) + p.margin.left}, 0)`);
     // add
     add = sel.enter().append('g')
       .attr('class', (d, i) => `serie ${keys[i]}`)
@@ -291,7 +291,7 @@ export default function Chart(p) {
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-      .attr('transform', (k, i) => `translate(${(i * (p.catWidth + p.catSpacing)) + p.margin.left}, 0)`)
+      .attr('transform', (k, i) => `translate(${p.catSpacing + (i * (p.catWidth + p.catSpacing)) + p.margin.left}, 0)`)
       .style('opacity', 1);
 
     keys.forEach((k, i) => {
