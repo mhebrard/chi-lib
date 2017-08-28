@@ -146,14 +146,6 @@ export default function Chart(p) {
       p.gridWidth = (p.width - p.margin.left - p.legend.left - p.margin.right - p.legend.right) / p.labelX.length;
       p.gridHeight = (p.height - p.margin.top - p.legend.top - p.margin.bottom - p.legend.bottom) / p.labelY.length;
     }
-    // Adjust SVG
-    const svg = d4.select(`#${p.id}`)
-      .attr('width', p.width)
-      .attr('height', p.height);
-    svg.select('.legendBottom')
-      .attr('transform', `translate(${p.margin.left + p.legend.left}, ${p.height - p.margin.bottom - p.legend.bottom})`);
-    svg.select('.legendRight')
-      .attr('transform', `translate(${p.width - p.margin.right - p.legend.right}, ${p.margin.top + p.legend.top})`);
 
     // Update pattern
     let sel;
@@ -163,6 +155,17 @@ export default function Chart(p) {
     const t1 = d4.transition().duration(delay);
     const t2 = d4.transition().delay(delay).duration(delay);
     const t3 = d4.transition().delay(delay * 2).duration(delay);
+
+    // Adjust SVG
+    const svg = d4.select(`#${p.id}`)
+      .attr('width', p.width)
+      .attr('height', p.height);
+    svg.select('.legendBottom')
+      .transition(t2)
+      .attr('transform', `translate(${p.margin.left + p.legend.left}, ${p.height - p.margin.bottom - p.legend.bottom})`);
+    svg.select('.legendRight')
+      .transition(t2)
+      .attr('transform', `translate(${p.width - p.margin.right - p.legend.right}, ${p.margin.top + p.legend.top})`);
 
     // Legend
     // const svg = d4.select(`#${p.id}`);
@@ -184,24 +187,26 @@ export default function Chart(p) {
     .data(p.labelY.map(y => [y[0], p.heatmap[y[1]]]));
     // exit
     sel.exit().transition(t1)
-      .attr('transform', 'translate(0,0)')
+      .style('opacity', 0)
       .remove();
     // update
     sel.transition(t2)
       .attr('transform', (d, i) => `translate(0, ${i * p.gridHeight})`);
     // add
     add = sel.enter().append('g')
-      .attr('transform', 'translate(0,0)');
+      .attr('transform', (d, i) => `translate(0, ${i * p.gridHeight})`)
+      .style('opacity', 0);
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-    .attr('transform', (d, i) => `translate(0, ${i * p.gridHeight})`);
+    .style('opacity', 1);
 
     // Cells
     sel = d4.select(`#${p.id}`).select('.rows').selectAll('g').selectAll('rect')
-    .data(d => p.labelX.map(x => [d[0], x[0], d[1][x[1]] || 0]));
+    .data(d => p.labelX.map(x => [d[0], x[0], d[1][x[1]] || 0]), d => d[0] + d[1]);
     // exit
     sel.exit().transition(t1)
+      .style('opacity', 0)
       .remove();
     // update
     sel.transition(t2)
@@ -211,13 +216,13 @@ export default function Chart(p) {
     .style('fill', d => d[2] === 0 ? p.colorNull : color(scale(d[2])));
     // add
     add = sel.enter().append('rect')
-    .attr('x', 0)
+    .attr('x', (d, i) => (i * p.gridWidth) + p.margin.padding)
     .attr('y', p.margin.padding)
     .attr('width', 0)
     .attr('height', 0)
     .attr('rx', p.cornerRadius)
     .attr('ry', p.cornerRadius)
-    .style('opacity', 1)
+    .style('opacity', 0)
     .style('fill', '#fff')
     .style('fill-rule', 'evenodd')
     .style('stroke', '#000')
@@ -228,9 +233,9 @@ export default function Chart(p) {
     // update
     sel = add.merge(sel);
     sel.transition(t3)
-    .attr('x', (d, i) => (i * p.gridWidth) + p.margin.padding)
     .attr('width', p.gridWidth - (2 * p.margin.padding))
     .attr('height', p.gridHeight - (2 * p.margin.padding))
+    .style('opacity', 1)
     .style('fill', d => d[2] === 0 ? p.colorNull : color(scale(d[2])));
 
     function addLegend(mode, g, data) {
@@ -239,7 +244,6 @@ export default function Chart(p) {
         .data(data, d => d);
       // exit
       sel.exit().transition(t1)
-        .attr('d', 'M0,0L0,0')
         .remove();
       // update
       sel.transition(t2)
@@ -247,13 +251,13 @@ export default function Chart(p) {
       // add
       add = sel.enter().append('path')
         .attr('id', d => `map${p.id}${mode}${d.replace(' ', '_')}`)
-        .attr('d', 'M0,0L0,0')
+        .attr('d', (d, i) => path(mode, d, i))
         .style('pointer-events', 'none')
         .style('opacity', 0);
       // update
       sel = add.merge(sel);
       sel.transition(t3)
-      .attr('d', (d, i) => path(mode, d, i));
+        .attr('d', (d, i) => path(mode, d, i));
 
       // Text
       sel = g.selectAll('text')
@@ -267,10 +271,14 @@ export default function Chart(p) {
         .attr('text-anchor', 'left')
         .attr('dy', '0.5ex')
         .style('pointer-events', 'none')
-        .style('opacity', 1)
-        .append('textPath')
+        .style('opacity', 0);
+      add.append('textPath')
           .attr('xlink:href', d => `#map${p.id}${mode}${d.replace(' ', '_')}`)
           .text(d => d);
+      // update
+      sel = add.merge(sel);
+      sel.transition(t3)
+        .style('opacity', 1);
     }
   };
 
