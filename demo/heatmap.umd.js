@@ -177,10 +177,6 @@
         p.gridWidth = (p.width - p.margin.left - p.legend.left - p.margin.right - p.legend.right) / p.labelX.length;
         p.gridHeight = (p.height - p.margin.top - p.legend.top - p.margin.bottom - p.legend.bottom) / p.labelY.length;
       }
-      // Adjust SVG
-      var svg = d4.select('#' + p.id).attr('width', p.width).attr('height', p.height);
-      svg.select('.legendBottom').attr('transform', 'translate(' + (p.margin.left + p.legend.left) + ', ' + (p.height - p.margin.bottom - p.legend.bottom) + ')');
-      svg.select('.legendRight').attr('transform', 'translate(' + (p.width - p.margin.right - p.legend.right) + ', ' + (p.margin.top + p.legend.top) + ')');
 
       // Update pattern
       var sel = void 0;
@@ -190,6 +186,11 @@
       var t1 = d4.transition().duration(delay);
       var t2 = d4.transition().delay(delay).duration(delay);
       var t3 = d4.transition().delay(delay * 2).duration(delay);
+
+      // Adjust SVG
+      var svg = d4.select('#' + p.id).attr('width', p.width).attr('height', p.height);
+      svg.select('.legendBottom').transition(t2).attr('transform', 'translate(' + (p.margin.left + p.legend.left) + ', ' + (p.height - p.margin.bottom - p.legend.bottom) + ')');
+      svg.select('.legendRight').transition(t2).attr('transform', 'translate(' + (p.width - p.margin.right - p.legend.right) + ', ' + (p.margin.top + p.legend.top) + ')');
 
       // Legend
       // const svg = d4.select(`#${p.id}`);
@@ -219,27 +220,29 @@
         return [y[0], p.heatmap[y[1]]];
       }));
       // exit
-      sel.exit().transition(t1).attr('transform', 'translate(0,0)').remove();
+      sel.exit().transition(t1).style('opacity', 0).remove();
       // update
       sel.transition(t2).attr('transform', function (d, i) {
         return 'translate(0, ' + i * p.gridHeight + ')';
       });
       // add
-      add = sel.enter().append('g').attr('transform', 'translate(0,0)');
+      add = sel.enter().append('g').attr('transform', function (d, i) {
+        return 'translate(0, ' + i * p.gridHeight + ')';
+      }).style('opacity', 0);
       // update
       sel = add.merge(sel);
-      sel.transition(t3).attr('transform', function (d, i) {
-        return 'translate(0, ' + i * p.gridHeight + ')';
-      });
+      sel.transition(t3).style('opacity', 1);
 
       // Cells
       sel = d4.select('#' + p.id).select('.rows').selectAll('g').selectAll('rect').data(function (d) {
         return p.labelX.map(function (x) {
           return [d[0], x[0], d[1][x[1]] || 0];
         });
+      }, function (d) {
+        return d[0] + d[1];
       });
       // exit
-      sel.exit().transition(t1).remove();
+      sel.exit().transition(t1).style('opacity', 0).remove();
       // update
       sel.transition(t2).attr('x', function (d, i) {
         return i * p.gridWidth + p.margin.padding;
@@ -247,7 +250,9 @@
         return d[2] === 0 ? p.colorNull : color(scale(d[2]));
       });
       // add
-      add = sel.enter().append('rect').attr('x', 0).attr('y', p.margin.padding).attr('width', 0).attr('height', 0).attr('rx', p.cornerRadius).attr('ry', p.cornerRadius).style('opacity', 1).style('fill', '#fff').style('fill-rule', 'evenodd').style('stroke', '#000').style('cursor', 'pointer').on('mouseover', function (d) {
+      add = sel.enter().append('rect').attr('x', function (d, i) {
+        return i * p.gridWidth + p.margin.padding;
+      }).attr('y', p.margin.padding).attr('width', 0).attr('height', 0).attr('rx', p.cornerRadius).attr('ry', p.cornerRadius).style('opacity', 0).style('fill', '#fff').style('fill-rule', 'evenodd').style('stroke', '#000').style('cursor', 'pointer').on('mouseover', function (d) {
         return tip('show', { row: d[0], col: d[1], value: d[2] });
       }).on('mousemove', function (d) {
         return tip('move', d);
@@ -256,9 +261,7 @@
       });
       // update
       sel = add.merge(sel);
-      sel.transition(t3).attr('x', function (d, i) {
-        return i * p.gridWidth + p.margin.padding;
-      }).attr('width', p.gridWidth - 2 * p.margin.padding).attr('height', p.gridHeight - 2 * p.margin.padding).style('fill', function (d) {
+      sel.transition(t3).attr('width', p.gridWidth - 2 * p.margin.padding).attr('height', p.gridHeight - 2 * p.margin.padding).style('opacity', 1).style('fill', function (d) {
         return d[2] === 0 ? p.colorNull : color(scale(d[2]));
       });
 
@@ -268,7 +271,7 @@
           return d;
         });
         // exit
-        sel.exit().transition(t1).attr('d', 'M0,0L0,0').remove();
+        sel.exit().transition(t1).remove();
         // update
         sel.transition(t2).attr('d', function (d, i) {
           return path(mode, d, i);
@@ -276,7 +279,9 @@
         // add
         add = sel.enter().append('path').attr('id', function (d) {
           return 'map' + p.id + mode + d.replace(' ', '_');
-        }).attr('d', 'M0,0L0,0').style('pointer-events', 'none').style('opacity', 0);
+        }).attr('d', function (d, i) {
+          return path(mode, d, i);
+        }).style('pointer-events', 'none').style('opacity', 0);
         // update
         sel = add.merge(sel);
         sel.transition(t3).attr('d', function (d, i) {
@@ -290,11 +295,15 @@
         // exit
         sel.exit().transition(t1).style('opacity', 0).remove();
         // add
-        add = sel.enter().append('text').attr('text-anchor', 'left').attr('dy', '0.5ex').style('pointer-events', 'none').style('opacity', 1).append('textPath').attr('xlink:href', function (d) {
+        add = sel.enter().append('text').attr('text-anchor', 'left').attr('dy', '0.5ex').style('pointer-events', 'none').style('opacity', 0);
+        add.append('textPath').attr('xlink:href', function (d) {
           return '#map' + p.id + mode + d.replace(' ', '_');
         }).text(function (d) {
           return d;
         });
+        // update
+        sel = add.merge(sel);
+        sel.transition(t3).style('opacity', 1);
       }
     };
 
