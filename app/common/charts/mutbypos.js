@@ -106,6 +106,10 @@ export default function Chart(p) {
       .attr('y', p.margin.top)
       .attr('dy', '-0.5ex')
       .attr('text-anchor', 'middle')
+      .on('mousemove', d => tip('move', d))
+      .on('mouseout', d => tip('hide', d))
+      .on('mouseover', d => tip('frame', d))
+      .style('cursor', 'pointer')
       .text(d => d.label);
     sel.selectAll('rect')
       .data(d => [d])
@@ -315,6 +319,11 @@ export default function Chart(p) {
         .style('opacity', 1)
         .html(d => `Position: ${d.pos}<br/>\nValue: ${d.value}`);
       // highlight(d);
+    } else if (state === 'frame') {
+      d4.select('#tip')
+        .datum(d)
+        .style('opacity', 1)
+        .html(d => `Frame: ${d.label}<br/>\nStart: ${d.x1}<br/>\nStop: ${d.x2}`);
     } else if (state === 'hide') {
       d4.select('#tip').style('opacity', 0);
       // highlight();
