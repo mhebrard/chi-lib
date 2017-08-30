@@ -130,7 +130,13 @@
       var sel = v.svg.selectAll('.frame').data(p.frames).enter().append('g').attr('class', 'frame');
       sel.append('text').attr('x', function (d) {
         return v.x((d.x1 + d.x2) / 2);
-      }).attr('y', p.margin.top).attr('dy', '-0.5ex').attr('text-anchor', 'middle').text(function (d) {
+      }).attr('y', p.margin.top).attr('dy', '-0.5ex').attr('text-anchor', 'middle').on('mousemove', function (d) {
+        return tip('move', d);
+      }).on('mouseout', function (d) {
+        return tip('hide', d);
+      }).on('mouseover', function (d) {
+        return tip('frame', d);
+      }).style('cursor', 'pointer').text(function (d) {
         return d.label;
       });
       sel.selectAll('rect').data(function (d) {
@@ -307,6 +313,10 @@
           return 'Position: ' + d.pos + '<br/>\nValue: ' + d.value;
         });
         // highlight(d);
+      } else if (state === 'frame') {
+        d4.select('#tip').datum(d).style('opacity', 1).html(function (d) {
+          return 'Frame: ' + d.label + '<br/>\nStart: ' + d.x1 + '<br/>\nStop: ' + d.x2;
+        });
       } else if (state === 'hide') {
         d4.select('#tip').style('opacity', 0);
         // highlight();
