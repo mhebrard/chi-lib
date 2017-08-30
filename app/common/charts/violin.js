@@ -261,8 +261,11 @@ export default function Chart(p) {
     *//**/ // SHOULD BE lng: 19 - last: [10,10]: 10 // JsFiddle works, Here bug
 
     v.bins = sorted.map(s => {
-      return d4.histogram()
-      .thresholds(v.xV.ticks(p.resolution))(s);
+      if (s.length > 0) {
+        return d4.histogram()
+        .thresholds(v.xV.ticks(p.resolution))(s);
+      }
+      return [];
     });
 
     // Violin Y scale
@@ -295,45 +298,47 @@ export default function Chart(p) {
       .style('opacity', 1);
 
     keys.forEach((k, i) => {
-      const g = d4.select(`#${p.div}`).select('svg').select(`.${k}`);
-      // layouts order
-      const lay = ['violin', 'bar', 'beeswarm', 'box'];
-      lay.forEach(l => {
-        g.selectAll('.' + l).data([l])
-          .enter().append('g').attr('class', l);
+      if (v.bins[i].length > 0) { // Data not null
+        const g = d4.select(`#${p.div}`).select('svg').select(`.${k}`);
+        // layouts order
+        const lay = ['violin', 'bar', 'beeswarm', 'box'];
+        lay.forEach(l => {
+          g.selectAll('.' + l).data([l])
+            .enter().append('g').attr('class', l);
 
-        const sub = g.select('.' + l);
-        if (p.layouts[l]) {
-          sub.transition(t2).style('opacity', 1);
-          switch (l) {
-            case 'violin':
-              addViolin(sub, v.bins[i], k);
-              break;
-            case 'bar':
-              addBar(sub, v.bins[i], k);
-              break;
-            case 'beeswarm':
-              addCircle(sub, v.bins[i], k);
-              break;
-            case 'box':
-              addBoxPlot(sub, sorted[i], k, 0.10);
-              break;
-            default:
+          const sub = g.select('.' + l);
+          if (p.layouts[l]) {
+            sub.transition(t2).style('opacity', 1);
+            switch (l) {
+              case 'violin':
+                addViolin(sub, v.bins[i], k);
+                break;
+              case 'bar':
+                addBar(sub, v.bins[i], k);
+                break;
+              case 'beeswarm':
+                addCircle(sub, v.bins[i], k);
+                break;
+              case 'box':
+                addBoxPlot(sub, sorted[i], k, 0.10);
+                break;
+              default:
+            }
+          } else {
+            sub.transition(t1).style('opacity', 0)
+              .text(null);
           }
-        } else {
-          sub.transition(t1).style('opacity', 0)
-            .text(null);
-        }
-      });
-      addLabel(g, k);
+        });
+        addLabel(g, k);
 
-      // Legend
-      if (p.layouts.beeswarm) {
-        v.svg.select('.legend')
-        .attr('transform', `translate(${v.width - 120}, ${p.height - (p.margin.bottom / 2)})`)
-        .style('opacity', 1);
-      } else {
-        v.svg.select('.legend').style('opacity', 0);
+        // Legend
+        if (p.layouts.beeswarm) {
+          v.svg.select('.legend')
+          .attr('transform', `translate(${v.width - 120}, ${p.height - (p.margin.bottom / 2)})`)
+          .style('opacity', 1);
+        } else {
+          v.svg.select('.legend').style('opacity', 0);
+        }
       }
     });
 
@@ -396,6 +401,13 @@ export default function Chart(p) {
         v.yViolinMax = Math.max(...bins.map(vals => vals.length));
         v.yV.domain([0, v.yViolinMax]);
       }
+      // Scale data to bar
+      let width;
+      if (bins[0].x0 === bins[0].x1) {
+        width = 10;
+      } else {
+        width = (v.xV(bins[0].x0) - v.xV(bins[0].x1));
+      }
       // Add plus
       sel = g.selectAll('.plus').data([0]);
       add = sel.enter().append('g').attr('class', 'plus')
@@ -422,7 +434,7 @@ export default function Chart(p) {
       sel.transition(t3)
         .attr('x', d => v.xV(d.x0))
         .attr('y', d => v.yV(d.length))
-        .attr('width', d => v.xV(d.x0) - v.xV(d.x1))
+        .attr('width', width)
         .attr('height', d => v.yV(0) - v.yV(d.length));
       // Update minus
       sel = g.selectAll('.minus').selectAll('rect').data(bins);
@@ -442,7 +454,7 @@ export default function Chart(p) {
       sel.transition(t3)
         .attr('x', d => v.xV(d.x0))
         .attr('y', d => v.yV(d.length))
-        .attr('width', d => v.xV(d.x0) - v.xV(d.x1))
+        .attr('width', width)
         .attr('height', d => v.yV(0) - v.yV(d.length));
     }
 
@@ -454,7 +466,12 @@ export default function Chart(p) {
         v.yV.domain([0, v.yViolinMax]);
       }
       // Scale data to circles
-      const radius = (v.xV(bins[1].x0) - v.xV(bins[1].x1)) / 2;
+      let radius;
+      if (bins[0].x0 === bins[0].x1) {
+        radius = 5;
+      } else {
+        radius = (v.xV(bins[0].x0) - v.xV(bins[0].x1)) / 2;
+      }
       // v.yV[ymax, 0]
       const circleMax = Math.floor(v.yV(0) / radius);
       let valueByCircle = Math.floor(v.yViolinMax / circleMax);
@@ -476,7 +493,7 @@ export default function Chart(p) {
         .attr('dy', '0.5ex')
         .text(() => valueByCircle === 1 ? '= 1' : `= 1 to ${valueByCircle}`);
 
-      // Add plus
+      // Add graph
       sel = g.selectAll('g').data([k]);
       add = sel.enter().append('g')
         .attr('transform', `rotate(90,0,0)  translate(0,-${p.catWidth})`)
@@ -485,14 +502,19 @@ export default function Chart(p) {
       sel = add.merge(sel);
       // One groub by bin
       let sub = sel.selectAll('g').data(bins);
-      // exit // update
+      // exit
+      sub.exit()
+        .transition(t1)
+        .style('opacity', 0)
+        .remove();
+      // update
+      sub.transition(t3)
+        .attr('transform', d => `translate(${v.xV(d.x0)}, ${v.yV(0)})`);
       // add
       add = sub.enter().append('g')
         .attr('transform', d => `translate(${v.xV(d.x0)}, ${v.yV(0)})`);
       // update
       sub = add.merge(sub);
-      sub.transition(t3)
-        .attr('transform', d => `translate(${v.xV(d.x0)}, ${v.yV(0)})`);
 
       // Circles
       sel = sub.selectAll('circle').data(d => {

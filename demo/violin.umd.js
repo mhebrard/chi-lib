@@ -255,7 +255,10 @@
            */ /**/ // SHOULD BE lng: 19 - last: [10,10]: 10 // JsFiddle works, Here bug
 
       v.bins = sorted.map(function (s) {
-        return d4.histogram().thresholds(v.xV.ticks(p.resolution))(s);
+        if (s.length > 0) {
+          return d4.histogram().thresholds(v.xV.ticks(p.resolution))(s);
+        }
+        return [];
       });
 
       // Violin Y scale
@@ -291,41 +294,46 @@
       }).style('opacity', 1);
 
       keys.forEach(function (k, i) {
-        var g = d4.select('#' + p.div).select('svg').select('.' + k);
-        // layouts order
-        var lay = ['violin', 'bar', 'beeswarm', 'box'];
-        lay.forEach(function (l) {
-          g.selectAll('.' + l).data([l]).enter().append('g').attr('class', l);
+        if (v.bins[i].length > 0) {
+          (function () {
+            // Data not null
+            var g = d4.select('#' + p.div).select('svg').select('.' + k);
+            // layouts order
+            var lay = ['violin', 'bar', 'beeswarm', 'box'];
+            lay.forEach(function (l) {
+              g.selectAll('.' + l).data([l]).enter().append('g').attr('class', l);
 
-          var sub = g.select('.' + l);
-          if (p.layouts[l]) {
-            sub.transition(t2).style('opacity', 1);
-            switch (l) {
-              case 'violin':
-                addViolin(sub, v.bins[i], k);
-                break;
-              case 'bar':
-                addBar(sub, v.bins[i], k);
-                break;
-              case 'beeswarm':
-                addCircle(sub, v.bins[i], k);
-                break;
-              case 'box':
-                addBoxPlot(sub, sorted[i], k, 0.10);
-                break;
-              default:
+              var sub = g.select('.' + l);
+              if (p.layouts[l]) {
+                sub.transition(t2).style('opacity', 1);
+                switch (l) {
+                  case 'violin':
+                    addViolin(sub, v.bins[i], k);
+                    break;
+                  case 'bar':
+                    addBar(sub, v.bins[i], k);
+                    break;
+                  case 'beeswarm':
+                    addCircle(sub, v.bins[i], k);
+                    break;
+                  case 'box':
+                    addBoxPlot(sub, sorted[i], k, 0.10);
+                    break;
+                  default:
+                }
+              } else {
+                sub.transition(t1).style('opacity', 0).text(null);
+              }
+            });
+            addLabel(g, k);
+
+            // Legend
+            if (p.layouts.beeswarm) {
+              v.svg.select('.legend').attr('transform', 'translate(' + (v.width - 120) + ', ' + (p.height - p.margin.bottom / 2) + ')').style('opacity', 1);
+            } else {
+              v.svg.select('.legend').style('opacity', 0);
             }
-          } else {
-            sub.transition(t1).style('opacity', 0).text(null);
-          }
-        });
-        addLabel(g, k);
-
-        // Legend
-        if (p.layouts.beeswarm) {
-          v.svg.select('.legend').attr('transform', 'translate(' + (v.width - 120) + ', ' + (p.height - p.margin.bottom / 2) + ')').style('opacity', 1);
-        } else {
-          v.svg.select('.legend').style('opacity', 0);
+          })();
         }
       });
 
@@ -377,6 +385,13 @@
           })));
           v.yV.domain([0, v.yViolinMax]);
         }
+        // Scale data to bar
+        var width = void 0;
+        if (bins[0].x0 === bins[0].x1) {
+          width = 10;
+        } else {
+          width = v.xV(bins[0].x0) - v.xV(bins[0].x1);
+        }
         // Add plus
         sel = g.selectAll('.plus').data([0]);
         add = sel.enter().append('g').attr('class', 'plus').attr('transform', 'rotate(90,0,0)  translate(0,-' + p.catWidth + ')');
@@ -396,9 +411,7 @@
           return v.xV(d.x0);
         }).attr('y', function (d) {
           return v.yV(d.length);
-        }).attr('width', function (d) {
-          return v.xV(d.x0) - v.xV(d.x1);
-        }).attr('height', function (d) {
+        }).attr('width', width).attr('height', function (d) {
           return v.yV(0) - v.yV(d.length);
         });
         // Update minus
@@ -414,9 +427,7 @@
           return v.xV(d.x0);
         }).attr('y', function (d) {
           return v.yV(d.length);
-        }).attr('width', function (d) {
-          return v.xV(d.x0) - v.xV(d.x1);
-        }).attr('height', function (d) {
+        }).attr('width', width).attr('height', function (d) {
           return v.yV(0) - v.yV(d.length);
         });
       }
@@ -432,7 +443,12 @@
           v.yV.domain([0, v.yViolinMax]);
         }
         // Scale data to circles
-        var radius = (v.xV(bins[1].x0) - v.xV(bins[1].x1)) / 2;
+        var radius = void 0;
+        if (bins[0].x0 === bins[0].x1) {
+          radius = 5;
+        } else {
+          radius = (v.xV(bins[0].x0) - v.xV(bins[0].x1)) / 2;
+        }
         // v.yV[ymax, 0]
         var circleMax = Math.floor(v.yV(0) / radius);
         var valueByCircle = Math.floor(v.yViolinMax / circleMax);
@@ -448,22 +464,24 @@
           return valueByCircle === 1 ? '= 1' : '= 1 to ' + valueByCircle;
         });
 
-        // Add plus
+        // Add graph
         sel = g.selectAll('g').data([k]);
         add = sel.enter().append('g').attr('transform', 'rotate(90,0,0)  translate(0,-' + p.catWidth + ')').style('fill', p.bg[color(k)]).style('stroke', '#000');
         sel = add.merge(sel);
         // One groub by bin
         var sub = sel.selectAll('g').data(bins);
-        // exit // update
+        // exit
+        sub.exit().transition(t1).style('opacity', 0).remove();
+        // update
+        sub.transition(t3).attr('transform', function (d) {
+          return 'translate(' + v.xV(d.x0) + ', ' + v.yV(0) + ')';
+        });
         // add
         add = sub.enter().append('g').attr('transform', function (d) {
           return 'translate(' + v.xV(d.x0) + ', ' + v.yV(0) + ')';
         });
         // update
         sub = add.merge(sub);
-        sub.transition(t3).attr('transform', function (d) {
-          return 'translate(' + v.xV(d.x0) + ', ' + v.yV(0) + ')';
-        });
 
         // Circles
         sel = sub.selectAll('circle').data(function (d) {
