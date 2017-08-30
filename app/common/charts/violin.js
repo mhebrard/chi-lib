@@ -578,24 +578,24 @@ export default function Chart(p) {
         .transition(t3)
         .attr('x', v.x(left))
         .attr('width', v.x(right) - v.x(left))
-        .attr('y', probs[3])
-        .attr('height', -probs[3] + probs[1]);
+        .attr('y', probs[3] || 0)
+        .attr('height', -probs[3] + probs[1] || 0);
       g.selectAll('.ISH')
         .transition(t3)
         .attr('x1', v.x(left))
         .attr('x2', v.x(right))
-        .attr('y1', d => probs[d])
-        .attr('y2', d => probs[d]);
+        .attr('y1', d => probs[d] || 0)
+        .attr('y2', d => probs[d] || 0);
       g.selectAll('.ISV')
         .transition(t3)
         .attr('x1', v.x(0.5))
         .attr('x2', v.x(0.5))
-        .attr('y1', d => probs[d[0]])
-        .attr('y2', d => probs[d[1]]);
+        .attr('y1', d => probs[d[0]] || 0)
+        .attr('y2', d => probs[d[1]] || 0);
       g.selectAll('.mean')
         .transition(t3)
         .attr('cx', v.x(0.5))
-        .attr('cy', v.y(d4.mean(vals)));
+        .attr('cy', v.y(d4.mean(vals)) || 0);
     }
 
     function addLabel(g, label) {
