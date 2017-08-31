@@ -4,12 +4,12 @@ components/index/README.md	584
 ../component.js	1672
 ../dendrogram.js	5642
 ../chart.js	1301
-../violin.js	13094
+../violin.js	13274
 ../pie.js	5909
 ../heatmap.js	8149
 ../routes.js	3008
 ../template.html	824
-../mutbypos.js	7501
+../mutbypos.js	7833
 ../treemap.js	6200
 ../sunburst.js	5550
 ../clonal.js	7482
