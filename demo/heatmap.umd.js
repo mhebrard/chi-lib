@@ -171,8 +171,12 @@
       // If grid is defined, size accordingly
       // else size according to width / height
       if (p.grid) {
-        p.width = p.margin.left + p.legend.left + p.labelX.length * p.gridWidth + p.legend.right + p.margin.right;
-        p.height = p.margin.top + p.legend.top + p.labelY.length * p.gridHeight + p.legend.bottom + p.margin.bottom;
+        // calculate width and height according to data
+        var w = p.margin.left + p.legend.left + p.labelX.length * p.gridWidth + p.legend.right + p.margin.right;
+        var h = p.margin.top + p.legend.top + p.labelY.length * p.gridHeight + p.legend.bottom + p.margin.bottom;
+        // use params as minimal value
+        p.width = Math.max(p.width, w);
+        p.height = Math.max(p.height, h);
       } else {
         p.gridWidth = (p.width - p.margin.left - p.legend.left - p.margin.right - p.legend.right) / p.labelX.length;
         p.gridHeight = (p.height - p.margin.top - p.legend.top - p.margin.bottom - p.legend.bottom) / p.labelY.length;
