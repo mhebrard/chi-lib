@@ -44,7 +44,7 @@ export default function Chart(p) {
   p.strokeWidth = p.strokeWidth || 3;
   p.resolution = p.resolution || 10;
   p.interpolation = p.interpolation || 'catmull'; // catmull | basis | linear | step
-  p.xScale = p.xScale === 'common' ? 'common' : 'each'; // each | common
+  p.xScale = p.xScale === 'each' ? 'each' : 'common'; // each | common
   p.bg = p.bg || ['#F88', '#A8F', '#AF8', '#8FF', '#FA8', '#F8F', '#8F8', '#88F', '#FF8', '#F8A', '#8FA', '#8AF'];
   p.fg = p.fg || ['#900', '#609', '#690', '#099', '#960', '#909', '#090', '#009', '#990', '#906', '#096', '#069'];
 
@@ -267,7 +267,7 @@ export default function Chart(p) {
       }
       return [];
     });
-
+    // console.log('bins', v.bins);
     // Violin Y scale
     if (p.xScale === 'common') { // same y scale for all series
       // violin width
@@ -275,6 +275,42 @@ export default function Chart(p) {
         return Math.max(...b.map(vals => vals.length));
       }));
       v.yV.domain([0, v.yViolinMax]);
+      // BarWidth
+      v.barWidth = Math.max(...v.bins.map(b => {
+        if (b[1]) {
+          return v.xV(b[1].x0) - v.xV(b[1].x1);
+        }
+        return 10;
+      }));
+      // Scale data to circles
+      const radius = v.barWidth / 2;
+      const circleMax = Math.floor(v.yV(0) / radius);
+      v.valueByCircle = Math.floor(v.yViolinMax / circleMax);
+      if (v.valueByCircle === 0) {
+        v.valueByCircle = 1;
+      }
+      // Legend
+      if (p.layouts.beeswarm) {
+        sel = v.svg.select('.legend')
+          .attr('transform', `translate(${v.width - 120}, ${p.height - (p.margin.bottom / 2)})`)
+          .style('opacity', 1);
+        sel.select('circle')
+          .attr('cx', radius + 2)
+          .attr('cy', radius + 2)
+          .attr('r', radius)
+          .style('fill', '#000')
+          .style('stroke', '#000')
+          .style('opacity', 1);
+
+        sel.select('text')
+          .attr('x', radius + 12)
+          .attr('y', radius + 2)
+          .attr('dy', '0.5ex')
+          .text(() => v.valueByCircle === 1 ? '= 1' : `= 1 to ${v.valueByCircle}`)
+          .style('opacity', 1);
+      } else {
+        v.svg.select('.legend').style('opacity', 0);
+      }
     }
 
     // violin group
@@ -330,15 +366,6 @@ export default function Chart(p) {
           }
         });
         addLabel(g, k);
-
-        // Legend
-        if (p.layouts.beeswarm) {
-          v.svg.select('.legend')
-          .attr('transform', `translate(${v.width - 120}, ${p.height - (p.margin.bottom / 2)})`)
-          .style('opacity', 1);
-        } else {
-          v.svg.select('.legend').style('opacity', 0);
-        }
       }
     });
 
@@ -400,13 +427,12 @@ export default function Chart(p) {
         // violin width
         v.yViolinMax = Math.max(...bins.map(vals => vals.length));
         v.yV.domain([0, v.yViolinMax]);
-      }
-      // Scale data to bar
-      let width;
-      if (bins[0].x0 === bins[0].x1) {
-        width = 10;
-      } else {
-        width = (v.xV(bins[0].x0) - v.xV(bins[0].x1));
+        // barWidth
+        if (bins[1]) {
+          v.barWidth = v.xV(bins[1].x0) - v.xV(bins[1].x1);
+        } else {
+          v.barWidth = 5;
+        }
       }
       // Add plus
       sel = g.selectAll('.plus').data([0]);
@@ -434,7 +460,7 @@ export default function Chart(p) {
       sel.transition(t3)
         .attr('x', d => v.xV(d.x0))
         .attr('y', d => v.yV(d.length))
-        .attr('width', width)
+        .attr('width', v.barWidth)
         .attr('height', d => v.yV(0) - v.yV(d.length));
       // Update minus
       sel = g.selectAll('.minus').selectAll('rect').data(bins);
@@ -454,7 +480,7 @@ export default function Chart(p) {
       sel.transition(t3)
         .attr('x', d => v.xV(d.x0))
         .attr('y', d => v.yV(d.length))
-        .attr('width', width)
+        .attr('width', v.barWidth)
         .attr('height', d => v.yV(0) - v.yV(d.length));
     }
 
@@ -464,35 +490,40 @@ export default function Chart(p) {
         // violin width
         v.yViolinMax = Math.max(...bins.map(vals => vals.length));
         v.yV.domain([0, v.yViolinMax]);
-      }
-      // Scale data to circles
-      let radius;
-      if (bins[0].x0 === bins[0].x1) {
-        radius = 5;
-      } else {
-        radius = (v.xV(bins[0].x0) - v.xV(bins[0].x1)) / 2;
-      }
-      // v.yV[ymax, 0]
-      const circleMax = Math.floor(v.yV(0) / radius);
-      let valueByCircle = Math.floor(v.yViolinMax / circleMax);
-      if (valueByCircle === 0) {
-        valueByCircle = 1;
-      }
+        // barWidth
+        if (bins[1]) {
+          v.barWidth = v.xV(bins[1].x0) - v.xV(bins[1].x1);
+        } else {
+          v.barWidth = 10;
+        }
+        // Scale data to circles
+        const radius = v.barWidth / 2;
+        const circleMax = Math.floor(v.yV(0) / radius);
+        v.valueByCircle = Math.floor(v.yViolinMax / circleMax);
+        if (v.valueByCircle === 0) {
+          v.valueByCircle = 1;
+        }
+        // Legend
+        sel = g.selectAll(`.lc-${k}`).data([k]);
+        add = sel.enter().append('circle').attr('class', `.lc-${k}`);
+        sel = add.merge(sel);
+        sel.attr('cx', v.x(0.5) - radius - 10)
+          .attr('cy', p.height - (p.margin.bottom / 2) + (p.fontSize / 2))
+          .attr('r', radius)
+          .style('fill', p.bg[color(k)])
+          .style('stroke', '#000')
+          .style('opacity', 1);
 
-      // Legend
-      v.svg.select('.legend').select('circle')
-        .attr('cx', radius + 2)
-        .attr('cy', radius + 2)
-        .attr('r', radius)
-        .style('fill', p.bg[0])
-        .style('stroke', '#000');
-      v.svg.select('.legend').select('text')
-        .attr('x', radius + 12)
-        .attr('y', radius + 2)
-        // .attr('text-anchor', 'middle')
-        .attr('dy', '0.5ex')
-        .text(() => valueByCircle === 1 ? '= 1' : `= 1 to ${valueByCircle}`);
-
+        sel = g.selectAll(`.lt-${k}`).data([k]);
+        add = sel.enter().append('text').attr('class', `.lt-${k}`);
+        sel = add.merge(sel);
+        sel.attr('x', v.x(0.5) + radius - 8)
+          .attr('y', p.height - (p.margin.bottom / 2) + (p.fontSize / 2))
+          .attr('dy', '0.5ex')
+          .text(() => v.valueByCircle === 1 ? '= 1' : `= 1 to ${v.valueByCircle}`)
+          .style('opacity', 1);
+      }
+      const radius = v.barWidth / 2;
       // Add graph
       sel = g.selectAll('g').data([k]);
       add = sel.enter().append('g')
@@ -523,7 +554,7 @@ export default function Chart(p) {
         const draw = [];
         if (value > 0) { // value exist
           // nb circle
-          const c = Math.ceil(value / valueByCircle);
+          const c = Math.ceil(value / v.valueByCircle);
           // circle center
           let center = 0;
           if (c % 2 !== 0) { // nb of circle odd

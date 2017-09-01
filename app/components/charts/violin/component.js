@@ -13,7 +13,8 @@ function controller() {
     height: 300,
     catWidth: 100,
     catSpacing: 10,
-    resolution: 20
+    resolution: 20,
+    xScale: 'common'
   };
   const chart = new Chart(paramChart);
 
