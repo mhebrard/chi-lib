@@ -69,7 +69,7 @@
     p.strokeWidth = p.strokeWidth || 3;
     p.resolution = p.resolution || 10;
     p.interpolation = p.interpolation || 'catmull'; // catmull | basis | linear | step
-    p.xScale = p.xScale === 'common' ? 'common' : 'each'; // each | common
+    p.xScale = p.xScale === 'each' ? 'each' : 'common'; // each | common
     p.bg = p.bg || ['#F88', '#A8F', '#AF8', '#8FF', '#FA8', '#F8F', '#8F8', '#88F', '#FF8', '#F8A', '#8FA', '#8AF'];
     p.fg = p.fg || ['#900', '#609', '#690', '#099', '#960', '#909', '#090', '#009', '#990', '#906', '#096', '#069'];
 
@@ -260,7 +260,7 @@
         }
         return [];
       });
-
+      // console.log('bins', v.bins);
       // Violin Y scale
       if (p.xScale === 'common') {
         // same y scale for all series
@@ -271,6 +271,31 @@
           })));
         })));
         v.yV.domain([0, v.yViolinMax]);
+        // BarWidth
+        v.barWidth = Math.max.apply(Math, _toConsumableArray(v.bins.map(function (b) {
+          if (b[1]) {
+            return v.xV(b[1].x0) - v.xV(b[1].x1);
+          }
+          return 10;
+        })));
+        // Scale data to circles
+        var radius = v.barWidth / 2;
+        var circleMax = Math.floor(v.yV(0) / radius);
+        v.valueByCircle = Math.floor(v.yViolinMax / circleMax);
+        if (v.valueByCircle === 0) {
+          v.valueByCircle = 1;
+        }
+        // Legend
+        if (p.layouts.beeswarm) {
+          sel = v.svg.select('.legend').attr('transform', 'translate(' + (v.width - 120) + ', ' + (p.height - p.margin.bottom / 2) + ')').style('opacity', 1);
+          sel.select('circle').attr('cx', radius + 2).attr('cy', radius + 2).attr('r', radius).style('fill', '#000').style('stroke', '#000').style('opacity', 1);
+
+          sel.select('text').attr('x', radius + 12).attr('y', radius + 2).attr('dy', '0.5ex').text(function () {
+            return v.valueByCircle === 1 ? '= 1' : '= 1 to ' + v.valueByCircle;
+          }).style('opacity', 1);
+        } else {
+          v.svg.select('.legend').style('opacity', 0);
+        }
       }
 
       // violin group
@@ -326,13 +351,6 @@
               }
             });
             addLabel(g, k);
-
-            // Legend
-            if (p.layouts.beeswarm) {
-              v.svg.select('.legend').attr('transform', 'translate(' + (v.width - 120) + ', ' + (p.height - p.margin.bottom / 2) + ')').style('opacity', 1);
-            } else {
-              v.svg.select('.legend').style('opacity', 0);
-            }
           })();
         }
       });
@@ -384,13 +402,12 @@
             return vals.length;
           })));
           v.yV.domain([0, v.yViolinMax]);
-        }
-        // Scale data to bar
-        var width = void 0;
-        if (bins[0].x0 === bins[0].x1) {
-          width = 10;
-        } else {
-          width = v.xV(bins[0].x0) - v.xV(bins[0].x1);
+          // barWidth
+          if (bins[1]) {
+            v.barWidth = v.xV(bins[1].x0) - v.xV(bins[1].x1);
+          } else {
+            v.barWidth = 5;
+          }
         }
         // Add plus
         sel = g.selectAll('.plus').data([0]);
@@ -411,7 +428,7 @@
           return v.xV(d.x0);
         }).attr('y', function (d) {
           return v.yV(d.length);
-        }).attr('width', width).attr('height', function (d) {
+        }).attr('width', v.barWidth).attr('height', function (d) {
           return v.yV(0) - v.yV(d.length);
         });
         // Update minus
@@ -427,7 +444,7 @@
           return v.xV(d.x0);
         }).attr('y', function (d) {
           return v.yV(d.length);
-        }).attr('width', width).attr('height', function (d) {
+        }).attr('width', v.barWidth).attr('height', function (d) {
           return v.yV(0) - v.yV(d.length);
         });
       }
@@ -441,29 +458,33 @@
             return vals.length;
           })));
           v.yV.domain([0, v.yViolinMax]);
-        }
-        // Scale data to circles
-        var radius = void 0;
-        if (bins[0].x0 === bins[0].x1) {
-          radius = 5;
-        } else {
-          radius = (v.xV(bins[0].x0) - v.xV(bins[0].x1)) / 2;
-        }
-        // v.yV[ymax, 0]
-        var circleMax = Math.floor(v.yV(0) / radius);
-        var valueByCircle = Math.floor(v.yViolinMax / circleMax);
-        if (valueByCircle === 0) {
-          valueByCircle = 1;
-        }
+          // barWidth
+          if (bins[1]) {
+            v.barWidth = v.xV(bins[1].x0) - v.xV(bins[1].x1);
+          } else {
+            v.barWidth = 10;
+          }
+          // Scale data to circles
+          var _radius = v.barWidth / 2;
+          var _circleMax = Math.floor(v.yV(0) / _radius);
+          v.valueByCircle = Math.floor(v.yViolinMax / _circleMax);
+          if (v.valueByCircle === 0) {
+            v.valueByCircle = 1;
+          }
+          // Legend
+          sel = g.selectAll('.lc-' + k).data([k]);
+          add = sel.enter().append('circle').attr('class', '.lc-' + k);
+          sel = add.merge(sel);
+          sel.attr('cx', v.x(0.5) - _radius - 10).attr('cy', p.height - p.margin.bottom / 2 + p.fontSize / 2).attr('r', _radius).style('fill', p.bg[color(k)]).style('stroke', '#000').style('opacity', 1);
 
-        // Legend
-        v.svg.select('.legend').select('circle').attr('cx', radius + 2).attr('cy', radius + 2).attr('r', radius).style('fill', p.bg[0]).style('stroke', '#000');
-        v.svg.select('.legend').select('text').attr('x', radius + 12).attr('y', radius + 2)
-        // .attr('text-anchor', 'middle')
-        .attr('dy', '0.5ex').text(function () {
-          return valueByCircle === 1 ? '= 1' : '= 1 to ' + valueByCircle;
-        });
-
+          sel = g.selectAll('.lt-' + k).data([k]);
+          add = sel.enter().append('text').attr('class', '.lt-' + k);
+          sel = add.merge(sel);
+          sel.attr('x', v.x(0.5) + _radius - 8).attr('y', p.height - p.margin.bottom / 2 + p.fontSize / 2).attr('dy', '0.5ex').text(function () {
+            return v.valueByCircle === 1 ? '= 1' : '= 1 to ' + v.valueByCircle;
+          }).style('opacity', 1);
+        }
+        var radius = v.barWidth / 2;
         // Add graph
         sel = g.selectAll('g').data([k]);
         add = sel.enter().append('g').attr('transform', 'rotate(90,0,0)  translate(0,-' + p.catWidth + ')').style('fill', p.bg[color(k)]).style('stroke', '#000');
@@ -491,7 +512,7 @@
           if (value > 0) {
             // value exist
             // nb circle
-            var c = Math.ceil(value / valueByCircle);
+            var c = Math.ceil(value / v.valueByCircle);
             // circle center
             var center = 0;
             if (c % 2 !== 0) {
