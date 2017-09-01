@@ -271,17 +271,17 @@ export default function Chart(p) {
     // Violin Y scale
     if (p.xScale === 'common') { // same y scale for all series
       // violin width
-      v.yViolinMax = Math.max(...v.bins.map(b => {
+      v.yViolinMax = Math.max(1, Math.max(...v.bins.map(b => {
         return Math.max(...b.map(vals => vals.length));
-      }));
+      })));
       v.yV.domain([0, v.yViolinMax]);
       // BarWidth
-      v.barWidth = Math.max(...v.bins.map(b => {
+      v.barWidth = Math.max(2, Math.max(...v.bins.map(b => {
         if (b[1]) {
           return v.xV(b[1].x0) - v.xV(b[1].x1);
         }
         return 10;
-      }));
+      })));
       // Scale data to circles
       const radius = v.barWidth / 2;
       const circleMax = Math.floor(v.yV(0) / radius);
@@ -425,7 +425,7 @@ export default function Chart(p) {
       // Violin Y scale
       if (p.xScale === 'each') { // y scale for each series
         // violin width
-        v.yViolinMax = Math.max(...bins.map(vals => vals.length));
+        v.yViolinMax = Math.max(1, Math.max(...bins.map(vals => vals.length)));
         v.yV.domain([0, v.yViolinMax]);
         // barWidth
         if (bins[1]) {
@@ -497,7 +497,7 @@ export default function Chart(p) {
           v.barWidth = 10;
         }
         // Scale data to circles
-        const radius = v.barWidth / 2;
+        const radius = v.barWidth / 2 || 1;
         const circleMax = Math.floor(v.yV(0) / radius);
         v.valueByCircle = Math.floor(v.yViolinMax / circleMax);
         if (v.valueByCircle === 0) {
