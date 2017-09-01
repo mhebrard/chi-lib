@@ -265,19 +265,19 @@
       if (p.xScale === 'common') {
         // same y scale for all series
         // violin width
-        v.yViolinMax = Math.max.apply(Math, _toConsumableArray(v.bins.map(function (b) {
+        v.yViolinMax = Math.max(1, Math.max.apply(Math, _toConsumableArray(v.bins.map(function (b) {
           return Math.max.apply(Math, _toConsumableArray(b.map(function (vals) {
             return vals.length;
           })));
-        })));
+        }))));
         v.yV.domain([0, v.yViolinMax]);
         // BarWidth
-        v.barWidth = Math.max.apply(Math, _toConsumableArray(v.bins.map(function (b) {
+        v.barWidth = Math.max(2, Math.max.apply(Math, _toConsumableArray(v.bins.map(function (b) {
           if (b[1]) {
             return v.xV(b[1].x0) - v.xV(b[1].x1);
           }
           return 10;
-        })));
+        }))));
         // Scale data to circles
         var radius = v.barWidth / 2;
         var circleMax = Math.floor(v.yV(0) / radius);
@@ -398,9 +398,9 @@
         if (p.xScale === 'each') {
           // y scale for each series
           // violin width
-          v.yViolinMax = Math.max.apply(Math, _toConsumableArray(bins.map(function (vals) {
+          v.yViolinMax = Math.max(1, Math.max.apply(Math, _toConsumableArray(bins.map(function (vals) {
             return vals.length;
-          })));
+          }))));
           v.yV.domain([0, v.yViolinMax]);
           // barWidth
           if (bins[1]) {
@@ -465,7 +465,7 @@
             v.barWidth = 10;
           }
           // Scale data to circles
-          var _radius = v.barWidth / 2;
+          var _radius = v.barWidth / 2 || 1;
           var _circleMax = Math.floor(v.yV(0) / _radius);
           v.valueByCircle = Math.floor(v.yViolinMax / _circleMax);
           if (v.valueByCircle === 0) {
