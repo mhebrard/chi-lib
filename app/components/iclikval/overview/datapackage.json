@@ -1,0 +1,9 @@
+{
+	"name": "overview",
+	"title": "Content Overview",
+	"description": "This representation shows the content of iCLiKVAL database in a pack layout.",
+	"resources": [
+		"https://bl.ocks.org/mhebrard/8588a6c5e8fd060171551d227c27c377"
+	],
+	"image": "thumbnail.png"
+}
