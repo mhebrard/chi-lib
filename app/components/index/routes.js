@@ -3,8 +3,11 @@ import angular from 'angular';
 import chartsRoutes from '../charts/charts-index/routes';
 import chartsComponent from '../charts/charts-index/component';
 
-import projectsRoutes from '../projects/projects-index/routes';
-import projectsComponent from '../projects/projects-index/component';
+import ickRoutes from '../iclikval/iclikval-index/routes';
+import ickComponent from '../iclikval/iclikval-index/component';
+
+import genomicRoutes from '../genomic/genomic-index/routes';
+import genomicComponent from '../genomic/genomic-index/component';
 
 routeConfig.$inject = ['$routeProvider'];
 function routeConfig($routeProvider) {
@@ -13,15 +16,20 @@ function routeConfig($routeProvider) {
       template: '<charts data-package="$resolve.dataPackage"></charts>',
       datapackageUrl: 'components/charts/charts-index/datapackage.json'
     })
-    .when('/projects', {
-      template: '<projects data-package="$resolve.dataPackage"></projects>',
-      datapackageUrl: 'components/projects/projects-index/datapackage.json'
+    .when('/ick', {
+      template: '<ick data-package="$resolve.dataPackage"></ick>',
+      datapackageUrl: 'components/iclikval/iclikval-index/datapackage.json'
+    })
+    .when('/genomic', {
+      template: '<genomic data-package="$resolve.dataPackage"></genomic>',
+      datapackageUrl: 'components/genomic/genomic-index/datapackage.json'
     })
     .otherwise({redirectTo: '/'});
 }
 
 export default angular
-  .module('index-routes', ['projectX.dataService', chartsRoutes.name, projectsRoutes.name])
+  .module('index-routes', ['projectX.dataService', chartsRoutes.name, ickRoutes.name, genomicRoutes.name])
   .component('charts', chartsComponent)
-  .component('projects', projectsComponent)
+  .component('ick', ickComponent)
+  .component('genomic', genomicComponent)
   .config(routeConfig);

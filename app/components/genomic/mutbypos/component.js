@@ -49,7 +49,7 @@ function controller() {
 
 export default {
   controller,
-  templateUrl: 'components/projects/mutbypos/template.html',
+  templateUrl: 'components/genomic/mutbypos/template.html',
   bindings: {
     dataPackage: '<package'
   }

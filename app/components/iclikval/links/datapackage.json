@@ -1,0 +1,9 @@
+{
+	"name": "links",
+	"title": "Links",
+	"description": "This representation shows the content of iCLiKVAL database in a Force layout.",
+	"resources": [
+		"https://bl.ocks.org/mhebrard/7d91f5a63daa1ae9d5fae53985fd807e"
+	],
+	"image": "thumbnail.png"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "ick",
+  "title": "Iclikval Viz",
+  "description": "Charts displaying data extracted form <a href='https://iclikval.riken.jp/'>Iclikval</a>",
+  "resources": [
+    {
+      "path": "../overview/datapackage.json",
+      "link": "https://bl.ocks.org/mhebrard/8588a6c5e8fd060171551d227c27c377"
+    },
+    {
+      "path": "../links/datapackage.json",
+      "link": "https://bl.ocks.org/mhebrard/7d91f5a63daa1ae9d5fae53985fd807e"
+    }
+  ]
+}

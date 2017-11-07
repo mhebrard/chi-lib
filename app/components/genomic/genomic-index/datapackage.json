@@ -1,6 +1,6 @@
 {
-  "name": "projects",
-  "title": "Projects",
+  "name": "genomic",
+  "title": "Genomic",
   "description": "Projects that combine charts and biological datasets",
   "resources": [
     {
@@ -9,11 +9,11 @@
     },
     {
       "path": "../mutbypos/datapackage.json",
-      "link": "#/projects/mutbypos/"
+      "link": "#/genomic/mutbypos/"
     },
     {
       "path": "../taxonomy/datapackage.json",
-      "link": "#/projects/taxonomy/"
+      "link": "#/genomic/taxonomy/"
     }
   ]
 }
