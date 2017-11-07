@@ -8,8 +8,12 @@
       "link": "#/charts/"
     },
     {
-      "path": "../projects/projects-index/datapackage.json",
-      "link": "#/projects/"
+      "path": "../iclikval/iclikval-index/datapackage.json",
+      "link": "#/ick/"
+    },
+    {
+      "path": "../genomic/genomic-index/datapackage.json",
+      "link": "#/genomic/"
     }
   ]
 }

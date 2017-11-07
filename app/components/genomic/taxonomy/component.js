@@ -76,7 +76,7 @@ function controller($log, dataService) {
 
 export default {
   controller,
-  templateUrl: 'components/projects/taxonomy/taxonomy.html',
+  templateUrl: 'components/genomic/taxonomy/taxonomy.html',
   bindings: {
     dataPackage: '<package'
   }
