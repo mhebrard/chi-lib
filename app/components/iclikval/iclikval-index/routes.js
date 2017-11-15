@@ -13,6 +13,6 @@ function routeConfig($routeProvider) {
 }
 
 export default angular
-  .module('charts-index', ['projectX.dataService'])
+  .module('ick-index', ['projectX.dataService'])
   .component('ick-idx', ickComponent)
   .config(routeConfig);
