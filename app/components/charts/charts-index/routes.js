@@ -9,6 +9,7 @@ import clonalComponent from '../clonal/component';
 import violinComponent from '../violin/component';
 import pieComponent from '../pie/component';
 import heatmapComponent from '../heatmap/component';
+import barComponent from '../bar/component';
 
 routeConfig.$inject = ['$routeProvider'];
 function routeConfig($routeProvider) {
@@ -49,6 +50,10 @@ function routeConfig($routeProvider) {
       template: '<heatmap data-package="$resolve.dataPackage"></heatmap>',
       datapackageUrl: 'components/charts/heatmap/datapackage.json'
     })
+    .when('/charts/bar', {
+      template: '<bar data-package="$resolve.dataPackage"></bar>',
+      datapackageUrl: 'components/charts/bar/datapackage.json'
+    })
     .otherwise({redirectTo: '/'});
 }
 
@@ -63,4 +68,5 @@ export default angular
   .component('violin', violinComponent)
   .component('pie', pieComponent)
   .component('heatmap', heatmapComponent)
+  .component('bar', barComponent)
   .config(routeConfig);

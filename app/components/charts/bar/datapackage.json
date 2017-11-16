@@ -1,0 +1,10 @@
+{
+	"name": "bar",
+	"title": "Bar",
+	"description": "Display a serie of value as a bar chart",
+	"resources": [
+		"../../../data/percentage.json"
+	],
+	"image": "thumbnail.png",
+	"readme": "README.md"
+}
