@@ -4,6 +4,10 @@
   "description": "Demo of charts using generic datasets (not related to biology)",
   "resources": [
     {
+      "path": "../bar/datapackage.json",
+      "link": "#/charts/bar/"
+    },
+    {
       "path": "../clonal/datapackage.json",
       "link": "#/charts/clonal/"
     },
