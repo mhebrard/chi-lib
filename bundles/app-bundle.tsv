@@ -5,9 +5,9 @@ components/index/README.md	584
 ../dendrogram.js	5642
 ../chart.js	1301
 ../violin.js	14210
-../pie.js	5909
+../pie.js	6014
 ../heatmap.js	8203
-../bar.js	6610
+../bar.js	6606
 ../routes.js	4312
 ../mutbypos.js	7832
 ../treemap.js	6200
@@ -33,8 +33,8 @@ common/services/datapackage/datapackage.js	713
 ../growl.js	730
 ../resize.js	889
 ../active-path.js	1022
-../common.js	1059
-../footer.html	629
+../common.js	1017
+../footer.html	841
 ../header.html	1225
 ../app.component.js	857
 ../app.js	1351

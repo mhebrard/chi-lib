@@ -1,4 +1,4 @@
-# Pie Chart
+# Bar Chart
 Series of values represented as bar chart. A tooltip display bar title, size and percentage of each bar.
 
 **sources**
