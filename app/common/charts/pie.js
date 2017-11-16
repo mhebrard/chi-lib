@@ -40,6 +40,7 @@ export default function Chart(p) {
   p.cornerRadius = p.cornerRadius || 3;
   p.padAngle = p.padAngle || 0.01;
   p.aMin = p.aMin || 0.1;
+  p.cutoff = p.cutoff || null;
 
   p.radius = Math.min(p.width - p.margin.left - p.margin.right, p.height - p.margin.top - p.margin.bottom) / 2;
   p.total = 0;
@@ -162,9 +163,12 @@ export default function Chart(p) {
     const t2 = d4.transition().delay(delay).duration(delay);
     const t3 = d4.transition().delay(delay * 2).duration(delay);
 
+    // Filter
+    const filtered = root.filter(d => p.cutoff ? d.data.size > p.cutoff : true);
+
     // arcs
     sel = d4.select(`#${p.id}`).select('.arcs').selectAll('path')
-      .data(root, d => d.data.name);
+      .data(filtered, d => d.data.name);
     // exit
     sel.exit().transition(t1)
       .attr('d', 'M0,0A0,0Z')
@@ -192,7 +196,7 @@ export default function Chart(p) {
     .style('opacity', 1);
 
     // filter for labels
-    const labelled = root.filter(d => d.endAngle - d.startAngle > p.aMin);
+    const labelled = filtered.filter(d => d.endAngle - d.startAngle > p.aMin);
     // path
     sel = d4.select(`#${p.id}`).select('.labels').selectAll('path')
       .data(labelled, d => d.data.name);

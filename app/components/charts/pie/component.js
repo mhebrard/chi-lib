@@ -8,6 +8,7 @@ function controller() {
     div: 'charts',
     id: 'pie',
     title: 'Pie chart of "layout" node of flare package',
+    cutoff: 3000,
     dispatch
   };
   const chart = new Chart(paramChart);
