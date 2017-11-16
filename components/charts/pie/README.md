@@ -16,7 +16,7 @@ Series of values represented as pie chart. the sum of values is displayed at the
 * width = 800: figure width
 * height = 600: figure height
 * margin = {top: 30, bottom: 0, left: 0, right: 0}: margin in pixel
-* color = null: palette for violin fill color
+* color = [hex colors]: palette for arc fill color
 * inner = 70: radius of central (empty) circle in pixel
 * cornerRadius = 3: round corner for each slice
 * padAngle = 0.01: space between slices

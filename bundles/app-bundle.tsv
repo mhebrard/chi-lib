@@ -7,7 +7,8 @@ components/index/README.md	584
 ../violin.js	14210
 ../pie.js	5909
 ../heatmap.js	8203
-../routes.js	4072
+../bar.js	6610
+../routes.js	4312
 ../mutbypos.js	7832
 ../treemap.js	6200
 ../sunburst.js	5550
@@ -33,7 +34,7 @@ common/services/datapackage/datapackage.js	713
 ../resize.js	889
 ../active-path.js	1022
 ../common.js	1059
-../footer.html	841
+../footer.html	629
 ../header.html	1225
 ../app.component.js	857
 ../app.js	1351
