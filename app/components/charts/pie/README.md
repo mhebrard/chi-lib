@@ -21,3 +21,4 @@ Series of values represented as pie chart. the sum of values is displayed at the
 * cornerRadius = 3: round corner for each slice
 * padAngle = 0.01: space between slices
 * aMin = 0.1: minimal angle to display label in slice
+* cuttoff = 3000: minimal value to display a bar.

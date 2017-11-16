@@ -38,7 +38,7 @@ export default function Chart(p) {
   p.legend = p.legend || {inner: true, bottom: 100, left: 50, padding: 5};
   p.color = p.color || d4.schemeSet3;
   p.padding = p.padding || 0.1;
-  p.cuttoff = p.cuttoff || null;
+  p.cutoff = p.cutoff || null;
 
   const color = d4.scaleOrdinal(p.color);
   const v = {}; // Global variables
@@ -128,7 +128,7 @@ export default function Chart(p) {
     // C console.log('chart update');
     // Filter and sort data
     const filtered = p.data.serie
-    .filter(d => p.cuttoff ? d.size > p.cuttoff : true)
+    .filter(d => p.cutoff ? d.size > p.cutoff : true)
     .sort((a, b) => b.size - a.size);
 
     v.total = filtered.reduce((tot, r) => {
