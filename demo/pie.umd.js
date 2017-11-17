@@ -74,6 +74,7 @@
     p.cornerRadius = p.cornerRadius || 3;
     p.padAngle = p.padAngle || 0.01;
     p.aMin = p.aMin || 0.1;
+    p.cutoff = p.cutoff || null;
 
     p.radius = Math.min(p.width - p.margin.left - p.margin.right, p.height - p.margin.top - p.margin.bottom) / 2;
     p.total = 0;
@@ -114,6 +115,10 @@
           break;
         case 'update':
           p.data = action.data;
+          chart.update();
+          break;
+        case 'setCutoff':
+          p.cutoff = action.payload;
           chart.update();
           break;
         default:
@@ -174,8 +179,13 @@
       var t2 = d4.transition().delay(delay).duration(delay);
       var t3 = d4.transition().delay(delay * 2).duration(delay);
 
+      // Filter
+      var filtered = root.filter(function (d) {
+        return p.cutoff ? d.data.size > p.cutoff : true;
+      });
+
       // arcs
-      sel = d4.select('#' + p.id).select('.arcs').selectAll('path').data(root, function (d) {
+      sel = d4.select('#' + p.id).select('.arcs').selectAll('path').data(filtered, function (d) {
         return d.data.name;
       });
       // exit
@@ -203,7 +213,7 @@
       }).style('opacity', 1);
 
       // filter for labels
-      var labelled = root.filter(function (d) {
+      var labelled = filtered.filter(function (d) {
         return d.endAngle - d.startAngle > p.aMin;
       });
       // path

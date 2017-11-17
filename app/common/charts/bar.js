@@ -58,6 +58,10 @@ export default function Chart(p) {
         p.data = action.data;
         chart.update();
         break;
+      case 'setCutoff':
+        p.cutoff = action.payload;
+        chart.update();
+        break;
       default:
         // console.log('unknown event');
     }
