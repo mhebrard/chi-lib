@@ -39,6 +39,9 @@ export default function Chart(p) {
   p.color = p.color || d4.schemeSet3;
   p.padding = p.padding || 0.1;
   p.cutoff = p.cutoff || null;
+  if (p.sort === undefined) {
+    p.sort = (a, b) => b.size - a.size;
+  }
 
   const color = d4.scaleOrdinal(p.color);
   const v = {}; // Global variables
@@ -133,7 +136,7 @@ export default function Chart(p) {
     // Filter and sort data
     const filtered = p.data.serie
     .filter(d => p.cutoff ? d.size > p.cutoff : true)
-    .sort((a, b) => b.size - a.size);
+    .sort(p.sort);
 
     v.total = filtered.reduce((tot, r) => {
       tot += r.size;
