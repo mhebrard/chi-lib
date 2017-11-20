@@ -18,4 +18,5 @@ Series of values represented as bar chart. A tooltip display bar title, size and
 * legend = {inner: true, bottom: 0, left: 50, padding:5}: legend space in pixel
 * color = [hex colors]: palette for bar fill color
 * padding = 0.1: space between bars
-* cuttoff = 3000: minimal value to display a bar.
+* cuttoff = 3000: minimal value to display a bar.,
+* sort = (a, b) => b.size - a.size: sort function.

@@ -73,6 +73,11 @@
     p.color = p.color || d4.schemeSet3;
     p.padding = p.padding || 0.1;
     p.cutoff = p.cutoff || null;
+    if (p.sort === undefined) {
+      p.sort = function (a, b) {
+        return b.size - a.size;
+      };
+    }
 
     var color = d4.scaleOrdinal(p.color);
     var v = {}; // Global variables
@@ -147,9 +152,7 @@
       // Filter and sort data
       var filtered = p.data.serie.filter(function (d) {
         return p.cutoff ? d.size > p.cutoff : true;
-      }).sort(function (a, b) {
-        return b.size - a.size;
-      });
+      }).sort(p.sort);
 
       v.total = filtered.reduce(function (tot, r) {
         tot += r.size;
