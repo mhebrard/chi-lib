@@ -260,9 +260,9 @@ export default function Chart(p) {
     const x = v.x(d.name) + (v.x.bandwidth() / 2);
     if (mode === 'hide') {
       if (place === 'I') {
-        return `M${x}, ${v.y(0) - p.legend.padding} V0`;
+        return `M${x}, ${v.y(0) - p.legend.padding} V${v.y(0) - p.legend.padding - 1}`;
       } // Else place === 'B'
-      return `M${x}, ${v.y(0) + p.legend.padding} V0`;
+      return `M${x}, ${v.y(0) + p.legend.padding} V${v.y(0) + p.legend.padding + 1}`;
     } // Else mode === 'show'
     if (place === 'I') {
       return `M${x}, ${v.y(0) - p.legend.padding} V${v.y(d.size) + p.legend.padding}`;
