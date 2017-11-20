@@ -270,16 +270,17 @@
     };
 
     function path(mode, place, d) {
+      var x = v.x(d.name) + v.x.bandwidth() / 2;
       if (mode === 'hide') {
         if (place === 'I') {
-          return 'M' + (v.x(d.name) + v.x.bandwidth() / 2) + ', ' + (v.y(0) - p.legend.padding) + ' V0';
+          return 'M' + x + ', ' + (v.y(0) - p.legend.padding) + ' V0';
         } // Else place === 'B'
-        return 'M' + (v.x(d.name) + p.legend.padding) + ', ' + (v.y(0) + p.legend.padding) + ' l0, 0';
+        return 'M' + x + ', ' + (v.y(0) + p.legend.padding) + ' V0';
       } // Else mode === 'show'
       if (place === 'I') {
-        return 'M' + (v.x(d.name) + v.x.bandwidth() / 2) + ', ' + (v.y(0) - p.legend.padding) + ' V' + (v.y(d.size) + p.legend.padding);
+        return 'M' + x + ', ' + (v.y(0) - p.legend.padding) + ' V' + (v.y(d.size) + p.legend.padding);
       } // Else place === 'B'
-      return 'M' + (v.x(d.name) + p.legend.padding) + ', ' + (v.y(0) + p.legend.padding) + ' L' + (v.x(d.name) + v.x.bandwidth() - p.legend.padding) + ', ' + (v.y(0) + p.legend.bottom - p.legend.padding);
+      return 'M' + x + ', ' + (v.y(0) + p.legend.padding) + ' V' + (v.y(0) + p.legend.bottom - p.legend.padding);
     }
 
     function tip(state, d) {

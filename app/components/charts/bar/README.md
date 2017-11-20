@@ -15,7 +15,7 @@ Series of values represented as bar chart. A tooltip display bar title, size and
 * width = 800: figure width
 * height = 600: figure height
 * margin = {top: 30, bottom: 5, left: 5, right: 0}: margin in pixel
-* legend = {inner: true, bottom: 100, left: 50, padding:5}: legend space in pixel
+* legend = {inner: true, bottom: 0, left: 50, padding:5}: legend space in pixel
 * color = [hex colors]: palette for bar fill color
 * padding = 0.1: space between bars
 * cuttoff = 3000: minimal value to display a bar.
