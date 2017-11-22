@@ -22,7 +22,7 @@ if (d3 === 'undefined' || d3.version) {
 }
 
 export default function Chart(p) {
-  const chart = {version: 1.0};
+  const chart = {version: 2.0};
 
   // PARAMETERS
   p = p || {};
@@ -34,7 +34,7 @@ export default function Chart(p) {
   p.fontSize = p.fontSize || 14;
   p.width = p.width || 800;
   p.height = p.height || 600;
-  p.margin = p.margin || {top: 30, bottom: 5, left: 5, right: 0};
+  p.margin = p.margin || {top: 30, bottom: 5, left: 5, right: 5};
   p.color = p.color || d4.schemeSet3;
   p.inner = p.inner || 70;
   p.cornerRadius = p.cornerRadius || 3;
@@ -79,6 +79,7 @@ export default function Chart(p) {
 
   // consume action: mutate data and apply changes
   chart.consumer = function(action) {
+    // console.log('action', action);
     switch (action.type) {
       case 'init':
         chart.init();
@@ -91,8 +92,17 @@ export default function Chart(p) {
         p.cutoff = action.payload;
         chart.update();
         break;
+      case 'disable':
+        action.node.disabled = true;
+        chart.update();
+        break;
+      case 'enable': {
+        action.node.disabled = false;
+        chart.update();
+        break;
+      }
       default:
-        // console.log('unknown event');
+      //  console.log('unknown event');
     }
   };
 
@@ -146,6 +156,7 @@ export default function Chart(p) {
 
   chart.update = function() {
     // console.log('chart update');
+    // console.log(p.data.serie);
     // Layout
     const root = d4.pie().value(d => d.size)(p.data.serie);
 
@@ -179,6 +190,9 @@ export default function Chart(p) {
       .style('opacity', 0)
       .remove();
     // update
+    sel.transition(t1)
+      .style('fill', d => d.data.disabled ? '#eee' : color(d.data.name))
+      .style('stroke', d => d.data.disabled ? '#fff' : '#000');
     sel.transition(t2)
       .attr('d', d => arc(d));
     // add
@@ -186,10 +200,15 @@ export default function Chart(p) {
       .attr('class', d => 'v' + d.data.name)
       .attr('d', 'M0,0A0,0Z')
       .style('opacity', 0)
-      .style('fill', d => color(d.data.name))
       .style('fill-rule', 'evenodd')
-      .style('stroke', '#000')
       .style('cursor', 'pointer')
+      .on('click', d => {
+        if (d.data.disabled) {
+          p.dispatch({type: 'enable', node: d.data, chart: p.id});
+        } else {
+          p.dispatch({type: 'disable', node: d.data, chart: p.id});
+        }
+      })
       .on('mouseover', d => tip('show', d))
       .on('mousemove', d => tip('move', d))
       .on('mouseout', d => tip('hide', d));
@@ -197,6 +216,8 @@ export default function Chart(p) {
     sel = add.merge(sel);
     sel.transition(t3)
     .attr('d', d => arc(d))
+    .style('fill', d => d.data.disabled ? '#eee' : color(d.data.name))
+    .style('stroke', d => d.data.disabled ? '#fff' : '#000')
     .style('opacity', 1);
 
     // filter for labels
