@@ -1,9 +1,16 @@
 # Bar Chart
-Series of values represented as bar chart. A tooltip display bar title, size and percentage of each bar.
+Series of values represented as bar chart. A tooltip display bar title, size and percentage.
 
 **sources**
 * [D3.js v4.x](https://github.com/d3/d3/blob/master/API.md) (d3-axis, d3-scale, d3-scale-chromatic, d3-selection, d3-transition)
 * Input data is an array of objects: {name: '...', size: #}. This array is affected to the property 'serie' of an object to fit the json format.
+
+**actions:**
+* init: create an empty chart
+* update: inject the data in the chart
+* setCutoff: modify the cutoff (see parameters)
+* disable: click on a bar to gray it out
+* enable: click on a grayout bar to enable it again
 
 **parameters**
 * div = 'body': container id

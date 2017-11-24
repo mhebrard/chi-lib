@@ -56,7 +56,7 @@
   }
 
   function Chart(p) {
-    var chart = { version: 1.0 };
+    var chart = { version: 2.0 };
 
     // PARAMETERS
     p = p || {};
@@ -99,6 +99,14 @@
           break;
         case 'setCutoff':
           p.cutoff = action.payload;
+          chart.update();
+          break;
+        case 'disable':
+          action.node.disabled = true;
+          chart.update();
+          break;
+        case 'enable':
+          action.node.disabled = false;
           chart.update();
           break;
         default:
@@ -155,6 +163,9 @@
       }).sort(p.sort);
 
       v.total = filtered.reduce(function (tot, r) {
+        // Disabled category
+        r.disabled = r.name === 'disabled' ? true : r.disabled;
+        // Sum data
         tot += r.size;
         return tot;
       }, 0);
@@ -189,6 +200,11 @@
       // exit
       sel.exit().transition(t1).attr('y', v.y(0)).attr('height', 0).style('opacity', 0).remove();
       // update
+      sel.transition(t1).style('fill', function (d) {
+        return d.disabled ? '#eee' : color(d.name);
+      }).style('stroke', function (d) {
+        return d.disabled ? '#fff' : '#000';
+      });
       sel.transition(t2).attr('x', function (d) {
         return v.x(d.name);
       }).attr('y', function (d) {
@@ -201,9 +217,13 @@
         return 'v' + d.name;
       }).attr('x', function (d) {
         return v.x(d.name);
-      }).attr('y', v.y(0)).attr('width', v.x.bandwidth()).attr('height', 0).style('opacity', 0).style('fill', function (d) {
-        return color(d.name);
-      }).style('fill-rule', 'evenodd').style('stroke', '#000').style('cursor', 'pointer').on('mouseover', function (d) {
+      }).attr('y', v.y(0)).attr('width', v.x.bandwidth()).attr('height', 0).style('opacity', 0).style('fill-rule', 'evenodd').style('cursor', 'pointer').on('click', function (d) {
+        if (d.disabled) {
+          p.dispatch({ type: 'enable', node: d, chart: p.id });
+        } else {
+          p.dispatch({ type: 'disable', node: d, chart: p.id });
+        }
+      }).on('mouseover', function (d) {
         return tip('show', d);
       }).on('mousemove', function (d) {
         return tip('move', d);
@@ -216,6 +236,10 @@
         return v.y(d.size);
       }).attr('height', function (d) {
         return v.y(0) - v.y(d.size);
+      }).style('fill', function (d) {
+        return d.disabled ? '#eee' : color(d.name);
+      }).style('stroke', function (d) {
+        return d.disabled ? '#fff' : '#000';
       }).style('opacity', 1);
 
       // legend
