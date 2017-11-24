@@ -174,8 +174,11 @@
         return d.size;
       })(p.data.serie);
 
-      // center
+      // center + disabled
       p.total = root.reduce(function (res, r) {
+        // Disabled category
+        r.data.disabled = r.data.name === 'disabled' ? true : r.data.disabled;
+        // Sum data for center
         res += r.data.size;
         return res;
       }, 0);
