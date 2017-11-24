@@ -10,7 +10,7 @@ Series of values represented as pie chart. The sum of values is displayed at the
 * init: create an empty chart
 * update: inject the data in the chart
 * setCutoff: modify the cutoff (see parameters)
-* disable: click on a slice to grayout
+* disable: click on a slice to gray it out
 * enable: click on a grayout slice to enable it again
 
 **parameters**

@@ -127,11 +127,9 @@
           chart.update();
           break;
         case 'enable':
-          {
-            action.node.disabled = false;
-            chart.update();
-            break;
-          }
+          action.node.disabled = false;
+          chart.update();
+          break;
         default:
         //  console.log('unknown event');
       }

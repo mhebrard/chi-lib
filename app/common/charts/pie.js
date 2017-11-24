@@ -96,11 +96,10 @@ export default function Chart(p) {
         action.node.disabled = true;
         chart.update();
         break;
-      case 'enable': {
+      case 'enable':
         action.node.disabled = false;
         chart.update();
         break;
-      }
       default:
       //  console.log('unknown event');
     }
