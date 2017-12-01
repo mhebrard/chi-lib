@@ -56,7 +56,7 @@
   }
 
   function Chart(p) {
-    var chart = { version: 1.0 };
+    var chart = { version: 2.0 };
 
     // PARAMETERS
     p = p || {};
@@ -68,7 +68,7 @@
     p.fontSize = p.fontSize || 14;
     p.width = p.width || 800;
     p.height = p.height || 600;
-    p.margin = p.margin || { top: 30, bottom: 5, left: 5, right: 0 };
+    p.margin = p.margin || { top: 30, bottom: 5, left: 5, right: 5 };
     p.color = p.color || d4.schemeSet3;
     p.inner = p.inner || 70;
     p.cornerRadius = p.cornerRadius || 3;
@@ -109,6 +109,7 @@
 
     // consume action: mutate data and apply changes
     chart.consumer = function (action) {
+      // console.log('action', action);
       switch (action.type) {
         case 'init':
           chart.init();
@@ -121,8 +122,16 @@
           p.cutoff = action.payload;
           chart.update();
           break;
+        case 'disable':
+          action.node.disabled = true;
+          chart.update();
+          break;
+        case 'enable':
+          action.node.disabled = false;
+          chart.update();
+          break;
         default:
-        // console.log('unknown event');
+        //  console.log('unknown event');
       }
     };
 
@@ -157,13 +166,17 @@
 
     chart.update = function () {
       // console.log('chart update');
+      // console.log(p.data.serie);
       // Layout
       var root = d4.pie().value(function (d) {
         return d.size;
       })(p.data.serie);
 
-      // center
+      // center + disabled
       p.total = root.reduce(function (res, r) {
+        // Disabled category
+        r.data.disabled = r.data.name === 'disabled' ? true : r.data.disabled;
+        // Sum data for center
         res += r.data.size;
         return res;
       }, 0);
@@ -191,15 +204,24 @@
       // exit
       sel.exit().transition(t1).attr('d', 'M0,0A0,0Z').style('opacity', 0).remove();
       // update
+      sel.transition(t1).style('fill', function (d) {
+        return d.data.disabled ? '#eee' : color(d.data.name);
+      }).style('stroke', function (d) {
+        return d.data.disabled ? '#fff' : '#000';
+      });
       sel.transition(t2).attr('d', function (d) {
         return arc(d);
       });
       // add
       add = sel.enter().append('path').attr('class', function (d) {
         return 'v' + d.data.name;
-      }).attr('d', 'M0,0A0,0Z').style('opacity', 0).style('fill', function (d) {
-        return color(d.data.name);
-      }).style('fill-rule', 'evenodd').style('stroke', '#000').style('cursor', 'pointer').on('mouseover', function (d) {
+      }).attr('d', 'M0,0A0,0Z').style('opacity', 0).style('fill-rule', 'evenodd').style('cursor', 'pointer').on('click', function (d) {
+        if (d.data.disabled) {
+          p.dispatch({ type: 'enable', node: d.data, chart: p.id });
+        } else {
+          p.dispatch({ type: 'disable', node: d.data, chart: p.id });
+        }
+      }).on('mouseover', function (d) {
         return tip('show', d);
       }).on('mousemove', function (d) {
         return tip('move', d);
@@ -210,6 +232,10 @@
       sel = add.merge(sel);
       sel.transition(t3).attr('d', function (d) {
         return arc(d);
+      }).style('fill', function (d) {
+        return d.data.disabled ? '#eee' : color(d.data.name);
+      }).style('stroke', function (d) {
+        return d.data.disabled ? '#fff' : '#000';
       }).style('opacity', 1);
 
       // filter for labels

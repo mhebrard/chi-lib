@@ -1,4 +1,4 @@
-import {axisLeft, axisRight} from 'd3-axis';
+import {axisBottom, axisLeft, axisRight} from 'd3-axis';
 import {scaleBand, scaleLinear, scaleOrdinal} from 'd3-scale';
 import {schemeSet3} from 'd3-scale-chromatic';
 import {transition} from 'd3-transition';
@@ -10,7 +10,7 @@ import * as d3sel from 'd3-selection';
 let d4 = {};
 if (d3 === 'undefined' || d3.version) {
   d4 = {
-    axisLeft, axisRight,
+    axisBottom, axisLeft, axisRight,
     scaleBand, scaleLinear, scaleOrdinal,
     schemeSet3,
     select: d3sel.select,
@@ -22,7 +22,7 @@ if (d3 === 'undefined' || d3.version) {
 }
 
 export default function Chart(p) {
-  const chart = {version: 1.0};
+  const chart = {version: 2.1};
 
   // PARAMETERS
   p = p || {};
@@ -35,9 +35,10 @@ export default function Chart(p) {
   p.width = p.width || 800;
   p.height = p.height || 600;
   p.margin = p.margin || {top: 30, bottom: 5, left: 5, right: 0};
-  p.legend = p.legend || {inner: true, bottom: 100, left: 50, padding: 5};
+  p.legend = p.legend || {inner: true, padding: 5, bottom: 100, left: 50, right: 50};
   p.color = p.color || d4.schemeSet3;
-  p.padding = p.padding || 0.1;
+  p.barWidth = p.barWidth || 0;
+  p.barPadding = p.barPadding || 0.1;
   p.cutoff = p.cutoff || null;
   if (p.sort === undefined) {
     p.sort = (a, b) => b.size - a.size;
@@ -65,6 +66,14 @@ export default function Chart(p) {
         p.cutoff = action.payload;
         chart.update();
         break;
+      case 'disable':
+        action.node.disabled = true;
+        chart.update();
+        break;
+      case 'enable':
+        action.node.disabled = false;
+        chart.update();
+        break;
       default:
         // console.log('unknown event');
     }
@@ -76,24 +85,19 @@ export default function Chart(p) {
   chart.init = function() {
     // console.log('chart init');
     // Scale
-    v.x = d4.scaleBand().rangeRound([p.margin.left + p.legend.left, p.width - p.margin.left - p.legend.left - p.margin.right]).padding(p.padding);
-    v.y = d4.scaleLinear().rangeRound([p.height - p.margin.top - p.margin.bottom - p.legend.bottom, p.margin.top]);
+    v.x = d4.scaleBand();
+    v.y = d4.scaleLinear()
+    .rangeRound([p.height - p.margin.bottom - p.legend.bottom, p.margin.top]);
 
     // Axis
-    v.yAxisOut = d4.axisLeft(v.y)
-      .ticks(5)
-      .tickSize(5, 0);
-
-    v.yAxisIn = d4.axisRight(v.y)
-      .ticks(5)
-      .tickSize(p.width - p.margin.right - p.legend.left - p.margin.left, 0);
+    v.xAxisBottom = d4.axisBottom(v.x);
+    v.yAxisLeft = d4.axisLeft(v.y);
+    v.yAxisRight = d4.axisRight(v.y);
 
     // SVG
     v.svg = d4.select(`#${p.div}`).append('svg')
       .attr('id', p.id)
-      .attr('title', p.title)
-      .attr('width', p.width)
-      .attr('height', p.height);
+      .attr('title', p.title);
 
     // title
     v.svg.append('g').attr('class', 'title')
@@ -104,23 +108,19 @@ export default function Chart(p) {
       .style('font-size', `${p.titleSize}px`)
       .text(p.title);
 
-    // Axis
-    v.svg.append('g')
-      .attr('class', 'axis yOut')
-      .attr('transform', `translate(${p.margin.left + p.legend.left},0)`)
-      .call(v.yAxisOut);
-
-    v.svg.append('g')
-      .attr('class', 'axis yIn')
-      .attr('transform', `translate(${p.margin.left + p.legend.left},0)`)
-      .call(v.yAxisIn);
+    // group for legendRight need to be under visual elements
+    v.svg.append('g').classed('legendRight', true)
+    .attr('transform', `translate(${p.margin.left + p.legend.left}, 0)`);
 
     // group for visual elements
     v.svg.append('g').classed('bars', true);
 
     // group for legend
     v.svg.append('g').classed('legendInner', true);
-    v.svg.append('g').classed('legendBottom', true);
+    v.svg.append('g').classed('legendBottom', true)
+    .attr('transform', `translate(0, ${p.height - p.margin.bottom - p.legend.bottom})`);
+    v.svg.append('g').classed('legendLeft', true)
+    .attr('transform', `translate(${p.margin.left + p.legend.left}, 0)`);
   };
 
   // accessor
@@ -139,19 +139,33 @@ export default function Chart(p) {
     .sort(p.sort);
 
     v.total = filtered.reduce((tot, r) => {
+      // Disabled category
+      r.disabled = r.name === 'disabled' ? true : r.disabled;
+      // Sum data
       tot += r.size;
       return tot;
     }, 0);
-    // Scale domains
-    v.x.domain(filtered.map(d => d.name));
+
+    // Bar width (grid)
+    // If barWidth is defined, size accordingly
+    // else size according to width / height
+    if (p.barWidth > 0) {
+      // calculate width according to data
+      p.width = p.margin.left + p.legend.left + (filtered.length * p.barWidth) + p.legend.right + p.margin.right;
+    }
+
+    // Scale
+    v.x.domain(filtered.map(d => d.name))
+    .rangeRound([p.margin.left + p.legend.left, p.width - p.margin.right - p.legend.right])
+    .padding(p.barPadding);
+
     v.y.domain([0, d3.max(filtered, d => d.size)]);
+
     // Axis
-    v.yAxisOut = d4.axisLeft(v.y)
-      .ticks(5)
-      .tickSize(5, 0);
-    v.yAxisIn = d4.axisRight(v.y)
-      .ticks(5)
-      .tickSize(p.width - p.margin.right - p.legend.left - p.margin.left, 0);
+    v.xAxisBottom = d4.axisBottom(v.x);
+    v.yAxisLeft = d4.axisLeft(v.y);
+    v.yAxisRight = d4.axisRight(v.y)
+    .tickSize(p.width - p.margin.left - p.legend.left - p.margin.right - p.legend.right, 0);
 
     // Update pattern
     let sel;
@@ -162,13 +176,31 @@ export default function Chart(p) {
     const t2 = d4.transition().delay(delay).duration(delay);
     const t3 = d4.transition().delay(delay * 2).duration(delay);
 
+    // Adjust SVG
+    v.svg.attr('width', p.width)
+      .attr('height', p.height);
+
     // Update axis
-    v.svg.select('.yOut')
-      .transition(t3)
-      .call(v.yAxisOut);
-    v.svg.select('.yIn')
-      .transition(t3)
-      .call(v.yAxisIn);
+    if (p.legend.bottom > 0) {
+      v.svg.select('.legendBottom')
+        .transition(t2)
+        .call(v.xAxisBottom)
+        .selectAll('text')
+        .attr('transform', 'rotate(-30)')
+        .style('text-anchor', 'end')
+        .attr('dx', '-1ex')
+        .attr('dy', '1ex');
+    }
+    if (p.legend.left > 0) {
+      v.svg.select('.legendLeft')
+        .transition(t2)
+        .call(v.yAxisLeft);
+    }
+    if (p.legend.right > 0) {
+      v.svg.select('.legendRight')
+        .transition(t2)
+        .call(v.yAxisRight);
+    }
 
     // Update bars
     sel = d4.select(`#${p.id}`).select('.bars').selectAll('rect')
@@ -180,6 +212,9 @@ export default function Chart(p) {
       .style('opacity', 0)
       .remove();
     // update
+    sel.transition(t1)
+      .style('fill', d => d.disabled ? '#eee' : color(d.name))
+      .style('stroke', d => d.disabled ? '#fff' : '#000');
     sel.transition(t2)
       .attr('x', d => v.x(d.name))
       .attr('y', d => v.y(d.size))
@@ -193,10 +228,15 @@ export default function Chart(p) {
       .attr('width', v.x.bandwidth())
       .attr('height', 0)
       .style('opacity', 0)
-      .style('fill', d => color(d.name))
       .style('fill-rule', 'evenodd')
-      .style('stroke', '#000')
       .style('cursor', 'pointer')
+      .on('click', d => {
+        if (d.disabled) {
+          p.dispatch({type: 'enable', node: d, chart: p.id});
+        } else {
+          p.dispatch({type: 'disable', node: d, chart: p.id});
+        }
+      })
       .on('mouseover', d => tip('show', d))
       .on('mousemove', d => tip('move', d))
       .on('mouseout', d => tip('hide', d));
@@ -205,41 +245,37 @@ export default function Chart(p) {
     sel.transition(t3)
     .attr('y', d => v.y(d.size))
     .attr('height', d => v.y(0) - v.y(d.size))
+    .style('fill', d => d.disabled ? '#eee' : color(d.name))
+    .style('stroke', d => d.disabled ? '#fff' : '#000')
     .style('opacity', 1);
 
     // legend
     if (p.legend.inner) {
-      addLegend('I', v.svg.select('.legendInner'), filtered);
-    }
-    if (p.legend.bottom > 2 * p.legend.padding) {
-      addLegend('B', v.svg.select('.legendBottom'), filtered);
-    }
-
-    function addLegend(place, g, data) {
+      const g = v.svg.select('.legendInner');
       // Update path
       sel = g.selectAll('path')
-        .data(data, d => d.name);
+        .data(filtered, d => d.name);
       // exit
       sel.exit().transition(t1)
-        .attr('d', d => path('hide', place, d))
+        .attr('d', d => path('hide', d))
         .remove();
       // update
       sel.transition(t2)
-        .attr('d', d => path('show', place, d));
+        .attr('d', d => path('show', d));
       // add
       add = sel.enter().append('path')
-        .attr('id', d => `map${p.id}${place}${d.name.replace(' ', '_')}`)
-        .attr('d', d => path('hide', place, d))
+        .attr('id', d => `map${p.id}${d.name.replace(' ', '_')}`)
+        .attr('d', d => path('hide', d))
         .style('pointer-events', 'none')
         .style('opacity', 0);
       // update
       sel = add.merge(sel);
       sel.transition(t3)
-      .attr('d', d => path('show', place, d));
+      .attr('d', d => path('show', d));
 
       // Update labels
       sel = g.selectAll('text')
-        .data(data, d => d.name);
+        .data(filtered, d => d.name);
       // exit
       sel.exit().transition(t1)
         .style('opacity', 0)
@@ -254,23 +290,17 @@ export default function Chart(p) {
       .data(d => [d]);
       // add
       add = sel.enter().append('textPath')
-        .attr('xlink:href', d => `#map${p.id}${place}${d.name.replace(' ', '_')}`)
+        .attr('xlink:href', d => `#map${p.id}${d.name.replace(' ', '_')}`)
         .text(d => d.name);
     }
   };
 
-  function path(mode, place, d) {
+  function path(mode, d) {
     const x = v.x(d.name) + (v.x.bandwidth() / 2);
     if (mode === 'hide') {
-      if (place === 'I') {
-        return `M${x}, ${v.y(0) - p.legend.padding} V${v.y(0) - p.legend.padding - 1}`;
-      } // Else place === 'B'
-      return `M${x}, ${v.y(0) + p.legend.padding} V${v.y(0) + p.legend.padding + 1}`;
+      return `M${x}, ${v.y(0) - p.legend.padding} V${v.y(0) - p.legend.padding - 1}`;
     } // Else mode === 'show'
-    if (place === 'I') {
-      return `M${x}, ${v.y(0) - p.legend.padding} V${v.y(d.size) + p.legend.padding}`;
-    } // Else place === 'B'
-    return `M${x}, ${v.y(0) + p.legend.padding} V${v.y(0) + p.legend.bottom - p.legend.padding}`;
+    return `M${x}, ${v.y(0) - p.legend.padding} V${v.y(d.size) + p.legend.padding}`;
   }
 
   function tip(state, d) {
