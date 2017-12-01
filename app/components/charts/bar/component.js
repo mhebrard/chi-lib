@@ -8,7 +8,6 @@ function controller() {
     div: 'charts',
     id: 'bar',
     title: 'Bar chart of "layout" node of flare package',
-    legend: {inner: true, bottom: 0, left: 40, padding: 5},
     cutoff: 3000,
     dispatch
   };
