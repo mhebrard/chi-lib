@@ -8,6 +8,9 @@ function controller() {
     div: 'charts',
     id: 'heatmapSVG',
     title: 'Heatmap derived from "layout" node of flare package',
+    grid: true,
+    gridWidth: 50,
+    gridHeight: 50,
     dispatch
   };
   const chart = new Chart(paramChart);

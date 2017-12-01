@@ -22,7 +22,7 @@ if (d3 === 'undefined' || d3.version) {
 }
 
 export default function Chart(p) {
-  const chart = {version: 1.0};
+  const chart = {version: 2.0};
 
   // PARAMETERS
   p = p || {};
@@ -63,6 +63,14 @@ export default function Chart(p) {
         break;
       case 'setCutoff':
         p.cutoff = action.payload;
+        chart.update();
+        break;
+      case 'disable':
+        action.node.disabled = true;
+        chart.update();
+        break;
+      case 'enable':
+        action.node.disabled = false;
         chart.update();
         break;
       default:
@@ -139,6 +147,9 @@ export default function Chart(p) {
     .sort(p.sort);
 
     v.total = filtered.reduce((tot, r) => {
+      // Disabled category
+      r.disabled = r.name === 'disabled' ? true : r.disabled;
+      // Sum data
       tot += r.size;
       return tot;
     }, 0);
@@ -180,6 +191,9 @@ export default function Chart(p) {
       .style('opacity', 0)
       .remove();
     // update
+    sel.transition(t1)
+      .style('fill', d => d.disabled ? '#eee' : color(d.name))
+      .style('stroke', d => d.disabled ? '#fff' : '#000');
     sel.transition(t2)
       .attr('x', d => v.x(d.name))
       .attr('y', d => v.y(d.size))
@@ -193,10 +207,15 @@ export default function Chart(p) {
       .attr('width', v.x.bandwidth())
       .attr('height', 0)
       .style('opacity', 0)
-      .style('fill', d => color(d.name))
       .style('fill-rule', 'evenodd')
-      .style('stroke', '#000')
       .style('cursor', 'pointer')
+      .on('click', d => {
+        if (d.disabled) {
+          p.dispatch({type: 'enable', node: d, chart: p.id});
+        } else {
+          p.dispatch({type: 'disable', node: d, chart: p.id});
+        }
+      })
       .on('mouseover', d => tip('show', d))
       .on('mousemove', d => tip('move', d))
       .on('mouseout', d => tip('hide', d));
@@ -205,6 +224,8 @@ export default function Chart(p) {
     sel.transition(t3)
     .attr('y', d => v.y(d.size))
     .attr('height', d => v.y(0) - v.y(d.size))
+    .style('fill', d => d.disabled ? '#eee' : color(d.name))
+    .style('stroke', d => d.disabled ? '#fff' : '#000')
     .style('opacity', 1);
 
     // legend
