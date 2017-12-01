@@ -82,6 +82,10 @@ export default function Chart(p) {
   chart.init = function() {
     // console.log('chart init');
 
+    // labels
+    v.labelx = {};
+    v.labely = {};
+
     // Scale
     v.x = d4.scaleBand();
     v.y = d4.scaleBand();
@@ -133,24 +137,47 @@ export default function Chart(p) {
     // console.log('chart update');
 
     // Labels
-    v.labelX = d4.set(p.data.serie.map(m => m.x)).values().sort();
-    v.labelY = d4.set(p.data.serie.map(m => m.y)).values().sort();
+    // Delete old labels
+    Object.keys(v.labelx).forEach(k => {
+      v.labelx[k].keep = false;
+    });
+    Object.keys(v.labely).forEach(k => {
+      v.labely[k].keep = false;
+    });
+    // Keep current labels
+    d4.set(p.data.serie.map(m => m.x)).values()
+    .forEach(l => {
+      if (v.labelx[l] === undefined) {
+        v.labelx[l] = {label: l, disabled: false};
+      }
+      v.labelx[l].keep = true;
+    });
+    d4.set(p.data.serie.map(m => m.y)).values()
+    .forEach(l => {
+      if (v.labely[l] === undefined) {
+        v.labely[l] = {label: l, disabled: false};
+      }
+      v.labely[l].keep = true;
+    });
+    // Filter + sort
+    const lx = Object.keys(v.labelx).filter(k => v.labelx[k].keep).sort();
+    const ly = Object.keys(v.labely).filter(k => v.labely[k].keep).sort();
 
     // Grid
     // If grid is defined, size accordingly
     // else size according to width / height
     if (p.grid === true) {
       // calculate width and height according to data
-      p.width = p.margin.left + p.legend.left + (v.labelX.length * p.gridWidth) + p.legend.right + p.margin.right;
-      p.height = p.margin.top + p.legend.top + (v.labelY.length * p.gridHeight) + p.legend.bottom + p.margin.bottom;
+      p.width = p.margin.left + p.legend.left + (lx.length * p.gridWidth) + p.legend.right + p.margin.right;
+      p.height = p.margin.top + p.legend.top + (ly.length * p.gridHeight) + p.legend.bottom + p.margin.bottom;
     }
 
     // Scale
-    v.x.domain(v.labelX)
+    v.x.domain(lx)
     .rangeRound([p.margin.left + p.legend.left, p.width - p.margin.right - p.legend.right])
     .padding(p.padding);
 
-    v.y.domain(v.labelY)
+    v.y.domain(ly)
     .rangeRound([p.margin.top + p.legend.top, p.height - p.margin.bottom - p.legend.bottom])
     .padding(p.padding);
 
@@ -184,33 +211,45 @@ export default function Chart(p) {
     // Update axis
     if (p.legend.top > 0) {
       v.svg.select('.legendTop')
-        .transition(t3)
+        .transition(t2)
         .call(v.xAxisTop)
         .selectAll('text')
         .attr('transform', 'rotate(-30)')
-        .style('text-anchor', 'start')
         .attr('dx', '1ex')
-        .attr('dy', '1ex');
+        .attr('dy', '1ex')
+        .style('text-anchor', 'start')
+        .style('cursor', 'pointer');
+      v.svg.select('.legendTop').selectAll('text')
+        .on('click', d => labelClick('x', d));
     }
     if (p.legend.bottom > 0) {
       v.svg.select('.legendBottom')
-        .transition(t3)
+        .transition(t2)
         .call(v.xAxisBottom)
         .selectAll('text')
         .attr('transform', 'rotate(-30)')
         .style('text-anchor', 'end')
         .attr('dx', '-1ex')
-        .attr('dy', '1ex');
+        .attr('dy', '1ex')
+        .style('cursor', 'pointer');
+      v.svg.select('.legendBottom').selectAll('text')
+        .on('click', d => labelClick('x', d));
     }
     if (p.legend.left > 0) {
       v.svg.select('.legendLeft')
-        .transition(t3)
-        .call(v.yAxisLeft);
+        .transition(t2)
+        .call(v.yAxisLeft)
+        .style('cursor', 'pointer');
+      v.svg.select('.legendLeft').selectAll('text')
+        .on('click', d => labelClick('y', d));
     }
     if (p.legend.right > 0) {
       v.svg.select('.legendRight')
-        .transition(t3)
-        .call(v.yAxisRight);
+        .transition(t2)
+        .call(v.yAxisRight)
+        .style('cursor', 'pointer');
+      v.svg.select('.legendRight').selectAll('text')
+        .on('click', d => labelClick('y', d));
     }
 
     // Cells
@@ -222,8 +261,8 @@ export default function Chart(p) {
       .remove();
     // update
     sel.transition(t1)
-      .style('fill', d => color(scale(d.size)))
-      .style('stroke', '#000');
+      .style('fill', d => d.disabled ? '#eee' : color(scale(d.size)))
+      .style('stroke', d => d.disabled ? '#fff' : '#000');
     sel.transition(t2)
     .attr('x', d => v.x(d.x))
     .attr('y', d => v.y(d.y))
@@ -249,9 +288,23 @@ export default function Chart(p) {
     .attr('width', v.x.bandwidth())
     .attr('height', v.y.bandwidth())
     .style('opacity', 1)
-    .style('fill', d => color(scale(d.size)))
-    .style('stroke', '#000');
+    .style('fill', d => d.disabled ? '#eee' : color(scale(d.size)))
+    .style('stroke', d => d.disabled ? '#fff' : '#000');
   };
+
+  function labelClick(key, label) {
+    const l = v['label' + key][label];
+    if (l.disabled === true) {
+      p.data.serie.filter(n => n[key] === label).forEach(n => {
+        p.dispatch({type: 'enable', node: n, chart: p.id});
+      });
+    } else {
+      p.data.serie.filter(n => n[key] === label).forEach(n => {
+        p.dispatch({type: 'disable', node: n, chart: p.id});
+      });
+    }
+    l.disabled = !l.disabled;
+  }
 
   function tip(state, d) {
     if (state === 'show') {
