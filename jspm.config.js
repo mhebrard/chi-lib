@@ -119,12 +119,13 @@ SystemJS.config({
     "d3": "npm:d3@3.5.17",
     "d3-array": "npm:d3-array@1.0.1",
     "d3-axis": "npm:d3-axis@1.0.3",
+    "d3-collection": "npm:d3-collection@1.0.4",
     "d3-color": "npm:d3-color@1.0.3",
     "d3-dispatch": "npm:d3-dispatch@1.0.1",
     "d3-drag": "npm:d3-drag@1.0.1",
     "d3-force": "npm:d3-force@1.0.3",
     "d3-hierarchy": "npm:d3-hierarchy@1.0.2",
-    "d3-interpolate": "npm:d3-interpolate@1.1.5",
+    "d3-interpolate": "npm:d3-interpolate@1.1.6",
     "d3-plugins": "github:d3/d3-plugins@master",
     "d3-scale": "npm:d3-scale@1.0.3",
     "d3-scale-chromatic": "npm:d3-scale-chromatic@1.0.2",
@@ -142,7 +143,7 @@ SystemJS.config({
     "font-awesome": "npm:font-awesome@4.7.0",
     "fs": "npm:jspm-nodelibs-fs@0.2.0",
     "html": "github:Hypercubed/systemjs-plugin-html@0.0.8",
-    "http": "github:jspm/nodelibs-http@0.2.0-alpha",
+    "http": "npm:jspm-nodelibs-http@0.2.0",
     "https": "npm:jspm-nodelibs-https@0.2.0",
     "inlet": "github:enjalot/Inlet@0.1.1",
     "intro.js": "npm:intro.js@2.3.0",
@@ -172,7 +173,7 @@ SystemJS.config({
     "pivottable": "npm:pivottable@2.1.0",
     "plugin-babel": "npm:systemjs-plugin-babel@0.0.12",
     "polymer": "github:Polymer/polymer@1.7.0",
-    "process": "github:jspm/nodelibs-process@0.2.0-alpha",
+    "process": "npm:jspm-nodelibs-process@0.2.1",
     "punycode": "npm:jspm-nodelibs-punycode@0.2.0",
     "q": "npm:q@1.4.1",
     "querystring": "npm:jspm-nodelibs-querystring@0.2.0",
@@ -196,7 +197,7 @@ SystemJS.config({
     "venn.js": "npm:venn.js@0.2.13",
     "vm": "npm:jspm-nodelibs-vm@0.2.0",
     "webcomponentsjs": "github:webcomponents/webcomponentsjs@0.7.22",
-    "webtreemap": "github:martine/webtreemap@gh-pages",
+    "webtreemap": "github:evmar/webtreemap@v1",
     "zlib": "npm:jspm-nodelibs-zlib@0.2.0"
   },
   packages: {
@@ -667,7 +668,11 @@ SystemJS.config({
         "tv4": "npm:tv4@1.2.7",
         "stream-transform": "npm:stream-transform@0.1.1",
         "csv-parse": "npm:csv-parse@1.1.7",
-        "babel-polyfill": "npm:babel-polyfill@6.23.0"
+        "regenerator-runtime": "npm:regenerator-runtime@0.11.0",
+        "es6-error": "npm:es6-error@4.0.2",
+        "stream-to-async-iterator": "npm:stream-to-async-iterator@0.2.0",
+        "csv": "npm:csv@1.2.1",
+        "axios": "npm:axios@0.16.2"
       }
     },
     "npm:isomorphic-fetch@2.2.1": {
@@ -1061,6 +1066,11 @@ SystemJS.config({
         "string_decoder-browserify": "npm:string_decoder@0.10.31"
       }
     },
+    "npm:jspm-nodelibs-http@0.2.0": {
+      "map": {
+        "http-browserify": "npm:stream-http@2.5.0"
+      }
+    },
     "npm:jspm-nodelibs-os@0.2.0": {
       "map": {
         "os-browserify": "npm:os-browserify@0.2.1"
@@ -1240,27 +1250,38 @@ SystemJS.config({
         "inherits": "npm:inherits@2.0.3"
       }
     },
-    "npm:d3-interpolate@1.1.5": {
+    "npm:csv@1.2.1": {
+      "map": {
+        "csv-parse": "npm:csv-parse@1.3.3",
+        "csv-generate": "npm:csv-generate@1.1.2",
+        "stream-transform": "npm:stream-transform@0.2.2",
+        "csv-stringify": "npm:csv-stringify@1.1.2"
+      }
+    },
+    "npm:axios@0.16.2": {
+      "map": {
+        "is-buffer": "npm:is-buffer@1.1.6",
+        "follow-redirects": "npm:follow-redirects@1.2.6"
+      }
+    },
+    "npm:follow-redirects@1.2.6": {
+      "map": {
+        "debug": "npm:debug@3.1.0"
+      }
+    },
+    "npm:csv-stringify@1.1.2": {
+      "map": {
+        "lodash.get": "npm:lodash.get@4.4.2"
+      }
+    },
+    "npm:debug@3.1.0": {
+      "map": {
+        "ms": "npm:ms@2.0.0"
+      }
+    },
+    "npm:d3-interpolate@1.1.6": {
       "map": {
         "d3-color": "npm:d3-color@1.0.3"
-      }
-    },
-    "npm:babel-polyfill@6.23.0": {
-      "map": {
-        "babel-runtime": "npm:babel-runtime@6.23.0",
-        "core-js": "npm:core-js@2.4.1",
-        "regenerator-runtime": "npm:regenerator-runtime@0.10.5"
-      }
-    },
-    "npm:babel-runtime@6.23.0": {
-      "map": {
-        "core-js": "npm:core-js@2.4.1",
-        "regenerator-runtime": "npm:regenerator-runtime@0.10.5"
-      }
-    },
-    "github:jspm/nodelibs-http@0.2.0-alpha": {
-      "map": {
-        "http-browserify": "npm:stream-http@2.5.0"
       }
     }
   }
