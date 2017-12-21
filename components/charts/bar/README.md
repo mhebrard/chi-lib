@@ -9,8 +9,9 @@ Series of values represented as bar chart. A tooltip display bar title, size and
 * init: create an empty chart
 * update: inject the data in the chart
 * setCutoff: modify the cutoff (see parameters)
-* disable: click on a bar to gray it out
-* enable: click on a grayout bar to enable it again
+* enableSingle: click on a bar to disable all but this one.
+* enableSwitch: Shift+click or Ctrl+clik to switch a bar between disabled and enabled stage.
+* enableAll: left click to enable all bars.
 
 **parameters**
 * div = 'body': container id

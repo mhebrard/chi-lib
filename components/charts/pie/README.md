@@ -10,8 +10,9 @@ Series of values represented as pie chart. The sum of values is displayed at the
 * init: create an empty chart
 * update: inject the data in the chart
 * setCutoff: modify the cutoff (see parameters)
-* disable: click on a slice to gray it out
-* enable: click on a grayout slice to enable it again
+* enableSingle: click on a slice to disable all but this one.
+* enableSwitch: Shift+click or Ctrl+clik to switch a slice between disabled and enabled stage.
+* enableAll: left click to enable all slices.
 
 **parameters**
 * div = 'body': container id
