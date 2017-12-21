@@ -26,7 +26,7 @@ if (d3 === 'undefined' || d3.version) {
 }
 
 export default function Chart(p) {
-  const chart = {version: 2.0};
+  const chart = {version: 2.1};
 
   // PARAMETERS
   p = p || {};
@@ -63,12 +63,19 @@ export default function Chart(p) {
         p.data = action.data;
         chart.update();
         break;
-      case 'disable':
-        action.node.disabled = true;
+      case 'enableGroup':
+        action.payload.enable.forEach(n => {
+          n.disabled = false;
+        });
+        action.payload.disable.forEach(n => {
+          n.disabled = true;
+        });
         chart.update();
         break;
-      case 'enable':
-        action.node.disabled = false;
+      case 'enableAll':
+        p.data.serie.forEach(n => {
+          n.disabled = false;
+        });
         chart.update();
         break;
       default:
@@ -220,7 +227,8 @@ export default function Chart(p) {
         .style('text-anchor', 'start')
         .style('cursor', 'pointer');
       v.svg.select('.legendTop').selectAll('text')
-        .on('click', d => labelClick('x', d));
+        .on('click', d => labelClick('x', d))
+        .on('contextmenu', d => labelLeftClick(d));
     }
     if (p.legend.bottom > 0) {
       v.svg.select('.legendBottom')
@@ -233,7 +241,8 @@ export default function Chart(p) {
         .attr('dy', '1ex')
         .style('cursor', 'pointer');
       v.svg.select('.legendBottom').selectAll('text')
-        .on('click', d => labelClick('x', d));
+        .on('click', d => labelClick('x', d))
+        .on('contextmenu', d => labelLeftClick(d));
     }
     if (p.legend.left > 0) {
       v.svg.select('.legendLeft')
@@ -241,7 +250,8 @@ export default function Chart(p) {
         .call(v.yAxisLeft)
         .style('cursor', 'pointer');
       v.svg.select('.legendLeft').selectAll('text')
-        .on('click', d => labelClick('y', d));
+        .on('click', d => labelClick('y', d))
+        .on('contextmenu', d => labelLeftClick(d));
     }
     if (p.legend.right > 0) {
       v.svg.select('.legendRight')
@@ -249,7 +259,8 @@ export default function Chart(p) {
         .call(v.yAxisRight)
         .style('cursor', 'pointer');
       v.svg.select('.legendRight').selectAll('text')
-        .on('click', d => labelClick('y', d));
+        .on('click', d => labelClick('y', d))
+        .on('contextmenu', d => labelLeftClick(d));
     }
 
     // Cells
@@ -293,17 +304,55 @@ export default function Chart(p) {
   };
 
   function labelClick(key, label) {
-    const l = v['label' + key][label];
-    if (l.disabled === true) {
-      p.data.serie.filter(n => n[key] === label).forEach(n => {
-        p.dispatch({type: 'enable', node: n, chart: p.id});
-      });
+    const enable = [];
+    const disable = [];
+    if (d3sel.event.shiftKey || d3sel.event.ctrlKey) {
+      // Shift + Click or Ctrl + Click = enableSwitch
+      const l = v['label' + key][label];
+      if (l.disabled === true) {
+        p.data.serie.filter(n => n[key] === label).forEach(n => {
+          enable.push(n);
+        });
+      } else {
+        p.data.serie.filter(n => n[key] === label).forEach(n => {
+          disable.push(n);
+        });
+      }
+      l.disabled = !l.disabled;
     } else {
-      p.data.serie.filter(n => n[key] === label).forEach(n => {
-        p.dispatch({type: 'disable', node: n, chart: p.id});
+      // Click = Deselect all and select only clicked node
+      p.data.serie.forEach(n => {
+        if (n[key] === label) {
+          enable.push(n);
+        } else {
+          disable.push(n);
+        }
       });
+      let ls = v.labelx;
+      Object.keys(ls).forEach(l => {
+        ls[l].disabled = true;
+      });
+      ls = v.labely;
+      Object.keys(ls).forEach(l => {
+        ls[l].disabled = true;
+      });
+      v['label' + key][label].disabled = false;
     }
-    l.disabled = !l.disabled;
+    p.dispatch({type: 'enableGroup', payload: {enable, disable, chart: p.id}});
+  }
+
+  function labelLeftClick() {
+    d3sel.event.preventDefault();
+    // Left Click = select all
+    let ls = v.labelx;
+    Object.keys(ls).forEach(l => {
+      ls[l].disabled = false;
+    });
+    ls = v.labely;
+    Object.keys(ls).forEach(l => {
+      ls[l].disabled = false;
+    });
+    p.dispatch({type: 'enableAll', payload: {chart: p.id}});
   }
 
   function tip(state, d) {

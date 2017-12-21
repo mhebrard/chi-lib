@@ -331,17 +331,17 @@
     function clickHandler(d) {
       if (d3sel.event.shiftKey || d3sel.event.ctrlKey) {
         // Shift + Click or Ctrl + Click = enableSwitch
-        p.dispatch({ type: 'enableSwitch', payload: { node: d, chart: d.id } });
+        p.dispatch({ type: 'enableSwitch', payload: { node: d, chart: p.id } });
       } else {
         // Click = Deselect all and select only clicked node
-        p.dispatch({ type: 'enableSingle', payload: { node: d, chart: d.id } });
+        p.dispatch({ type: 'enableSingle', payload: { node: d, chart: p.id } });
       }
     }
 
-    function leftClickHandler(d) {
+    function leftClickHandler() {
       d3sel.event.preventDefault();
       // Left Click = select all
-      p.dispatch({ type: 'enableAll', payload: { node: d, chart: d.id } });
+      p.dispatch({ type: 'enableAll', payload: { chart: p.id } });
     }
 
     function tip(state, d) {

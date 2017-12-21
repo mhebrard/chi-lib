@@ -9,8 +9,8 @@ Two dimensions table of values represented as heatmap. The value is mapped to a 
 **actions:**
 * init: create an empty chart
 * update: inject the data in the chart
-* disable: click on a label to gray it out
-* enable: click on a grayout label to enable it again
+* enableGroup: click on a label to disable all but this category. Shift+click or Ctrl+click on a label to switch the category between disabled and enabled stage.
+* enableAll: left click to enable all the category.
 
 **parameters**
 * div = 'body': container id
