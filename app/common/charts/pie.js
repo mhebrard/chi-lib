@@ -22,7 +22,7 @@ if (d3 === 'undefined' || d3.version) {
 }
 
 export default function Chart(p) {
-  const chart = {version: 2.0};
+  const chart = {version: 2.1};
 
   // PARAMETERS
   p = p || {};
@@ -92,12 +92,24 @@ export default function Chart(p) {
         p.cutoff = action.payload;
         chart.update();
         break;
-      case 'disable':
-        action.node.disabled = true;
+      case 'enableSwitch':
+        action.payload.node.disabled = !action.payload.node.disabled;
         chart.update();
         break;
-      case 'enable':
-        action.node.disabled = false;
+      case 'enableSingle':
+        // Disable all nodes
+        p.data.serie.forEach(d => {
+          d.disabled = true;
+        });
+        // enable clicked node
+        action.payload.node.disabled = false;
+        chart.update();
+        break;
+      case 'enableAll':
+        // Enable all nodes
+        p.data.serie.forEach(d => {
+          d.disabled = false;
+        });
         chart.update();
         break;
       default:
@@ -159,10 +171,8 @@ export default function Chart(p) {
     // Layout
     const root = d4.pie().value(d => d.size)(p.data.serie);
 
-    // center + disabled
+    // center
     p.total = root.reduce((res, r) => {
-      // Disabled category
-      r.data.disabled = r.data.name === 'disabled' ? true : r.data.disabled;
       // Sum data for center
       res += r.data.size;
       return res;
@@ -204,13 +214,8 @@ export default function Chart(p) {
       .style('opacity', 0)
       .style('fill-rule', 'evenodd')
       .style('cursor', 'pointer')
-      .on('click', d => {
-        if (d.data.disabled) {
-          p.dispatch({type: 'enable', node: d.data, chart: p.id});
-        } else {
-          p.dispatch({type: 'disable', node: d.data, chart: p.id});
-        }
-      })
+      .on('click', d => clickHandler(d))
+      .on('contextmenu', d => leftClickHandler(d))
       .on('mouseover', d => tip('show', d))
       .on('mousemove', d => tip('move', d))
       .on('mouseout', d => tip('hide', d));
@@ -280,6 +285,22 @@ export default function Chart(p) {
     sel.transition(t3)
       .attr('startOffset', d => align(d) ? '100%' : '0%');
   };
+
+  function clickHandler(d) {
+    if (d3sel.event.shiftKey || d3sel.event.ctrlKey) {
+      // Shift + Click or Ctrl + Click = enableSwitch
+      p.dispatch({type: 'enableSwitch', payload: {node: d.data, chart: d.id}});
+    } else {
+      // Click = Deselect all and select only clicked node
+      p.dispatch({type: 'enableSingle', payload: {node: d.data, chart: d.id}});
+    }
+  }
+
+  function leftClickHandler(d) {
+    d3sel.event.preventDefault();
+    // Left CLick = select all
+    p.dispatch({type: 'enableAll', payload: {node: d.data, chart: d.id}});
+  }
 
   function tip(state, d) {
     if (state === 'show') {
