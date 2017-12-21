@@ -298,7 +298,7 @@ export default function Chart(p) {
 
   function leftClickHandler(d) {
     d3sel.event.preventDefault();
-    // Left CLick = select all
+    // Left Click = select all
     p.dispatch({type: 'enableAll', payload: {node: d.data, chart: d.id}});
   }
 

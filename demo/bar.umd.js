@@ -56,7 +56,7 @@
   }
 
   function Chart(p) {
-    var chart = { version: 2.1 };
+    var chart = { version: 2.2 };
 
     // PARAMETERS
     p = p || {};
@@ -102,12 +102,24 @@
           p.cutoff = action.payload;
           chart.update();
           break;
-        case 'disable':
-          action.node.disabled = true;
+        case 'enableSwitch':
+          action.payload.node.disabled = !action.payload.node.disabled;
           chart.update();
           break;
-        case 'enable':
-          action.node.disabled = false;
+        case 'enableSingle':
+          // Disable all nodes
+          p.data.serie.forEach(function (d) {
+            d.disabled = true;
+          });
+          // enable clicked node
+          action.payload.node.disabled = false;
+          chart.update();
+          break;
+        case 'enableAll':
+          // Enable all nodes
+          p.data.serie.forEach(function (d) {
+            d.disabled = false;
+          });
           chart.update();
           break;
         default:
@@ -163,8 +175,6 @@
       }).sort(p.sort);
 
       v.total = filtered.reduce(function (tot, r) {
-        // Disabled category
-        r.disabled = r.name === 'disabled' ? true : r.disabled;
         // Sum data
         tot += r.size;
         return tot;
@@ -240,11 +250,9 @@
       }).attr('x', function (d) {
         return v.x(d.name);
       }).attr('y', v.y(0)).attr('width', v.x.bandwidth()).attr('height', 0).style('opacity', 0).style('fill-rule', 'evenodd').style('cursor', 'pointer').on('click', function (d) {
-        if (d.disabled) {
-          p.dispatch({ type: 'enable', node: d, chart: p.id });
-        } else {
-          p.dispatch({ type: 'disable', node: d, chart: p.id });
-        }
+        return clickHandler(d);
+      }).on('contextmenu', function (d) {
+        return leftClickHandler(d);
       }).on('mouseover', function (d) {
         return tip('show', d);
       }).on('mousemove', function (d) {
@@ -318,6 +326,22 @@
         return 'M' + x + ', ' + (v.y(0) - p.legend.padding) + ' V' + (v.y(0) - p.legend.padding - 1);
       } // Else mode === 'show'
       return 'M' + x + ', ' + (v.y(0) - p.legend.padding) + ' V' + (v.y(d.size) + p.legend.padding);
+    }
+
+    function clickHandler(d) {
+      if (d3sel.event.shiftKey || d3sel.event.ctrlKey) {
+        // Shift + Click or Ctrl + Click = enableSwitch
+        p.dispatch({ type: 'enableSwitch', payload: { node: d, chart: d.id } });
+      } else {
+        // Click = Deselect all and select only clicked node
+        p.dispatch({ type: 'enableSingle', payload: { node: d, chart: d.id } });
+      }
+    }
+
+    function leftClickHandler(d) {
+      d3sel.event.preventDefault();
+      // Left Click = select all
+      p.dispatch({ type: 'enableAll', payload: { node: d, chart: d.id } });
     }
 
     function tip(state, d) {
