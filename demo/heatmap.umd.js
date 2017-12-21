@@ -58,7 +58,7 @@
   }
 
   function Chart(p) {
-    var chart = { version: 2.0 };
+    var chart = { version: 2.1 };
 
     // PARAMETERS
     p = p || {};
@@ -97,12 +97,19 @@
           p.data = action.data;
           chart.update();
           break;
-        case 'disable':
-          action.node.disabled = true;
+        case 'enableGroup':
+          action.payload.enable.forEach(function (n) {
+            n.disabled = false;
+          });
+          action.payload.disable.forEach(function (n) {
+            n.disabled = true;
+          });
           chart.update();
           break;
-        case 'enable':
-          action.node.disabled = false;
+        case 'enableAll':
+          p.data.serie.forEach(function (n) {
+            n.disabled = false;
+          });
           chart.update();
           break;
         default:
@@ -233,24 +240,32 @@
         v.svg.select('.legendTop').transition(t2).call(v.xAxisTop).selectAll('text').attr('transform', 'rotate(-30)').attr('dx', '1ex').attr('dy', '1ex').style('text-anchor', 'start').style('cursor', 'pointer');
         v.svg.select('.legendTop').selectAll('text').on('click', function (d) {
           return labelClick('x', d);
+        }).on('contextmenu', function (d) {
+          return labelLeftClick(d);
         });
       }
       if (p.legend.bottom > 0) {
         v.svg.select('.legendBottom').transition(t2).call(v.xAxisBottom).selectAll('text').attr('transform', 'rotate(-30)').style('text-anchor', 'end').attr('dx', '-1ex').attr('dy', '1ex').style('cursor', 'pointer');
         v.svg.select('.legendBottom').selectAll('text').on('click', function (d) {
           return labelClick('x', d);
+        }).on('contextmenu', function (d) {
+          return labelLeftClick(d);
         });
       }
       if (p.legend.left > 0) {
         v.svg.select('.legendLeft').transition(t2).call(v.yAxisLeft).style('cursor', 'pointer');
         v.svg.select('.legendLeft').selectAll('text').on('click', function (d) {
           return labelClick('y', d);
+        }).on('contextmenu', function (d) {
+          return labelLeftClick(d);
         });
       }
       if (p.legend.right > 0) {
         v.svg.select('.legendRight').transition(t2).call(v.yAxisRight).style('cursor', 'pointer');
         v.svg.select('.legendRight').selectAll('text').on('click', function (d) {
           return labelClick('y', d);
+        }).on('contextmenu', function (d) {
+          return labelLeftClick(d);
         });
       }
 
@@ -293,21 +308,61 @@
     };
 
     function labelClick(key, label) {
-      var l = v['label' + key][label];
-      if (l.disabled === true) {
-        p.data.serie.filter(function (n) {
-          return n[key] === label;
-        }).forEach(function (n) {
-          p.dispatch({ type: 'enable', node: n, chart: p.id });
-        });
+      var enable = [];
+      var disable = [];
+      if (d3sel.event.shiftKey || d3sel.event.ctrlKey) {
+        // Shift + Click or Ctrl + Click = enableSwitch
+        var l = v['label' + key][label];
+        if (l.disabled === true) {
+          p.data.serie.filter(function (n) {
+            return n[key] === label;
+          }).forEach(function (n) {
+            enable.push(n);
+          });
+        } else {
+          p.data.serie.filter(function (n) {
+            return n[key] === label;
+          }).forEach(function (n) {
+            disable.push(n);
+          });
+        }
+        l.disabled = !l.disabled;
       } else {
-        p.data.serie.filter(function (n) {
-          return n[key] === label;
-        }).forEach(function (n) {
-          p.dispatch({ type: 'disable', node: n, chart: p.id });
-        });
+        (function () {
+          // Click = Deselect all and select only clicked node
+          p.data.serie.forEach(function (n) {
+            if (n[key] === label) {
+              enable.push(n);
+            } else {
+              disable.push(n);
+            }
+          });
+          var ls = v.labelx;
+          Object.keys(ls).forEach(function (l) {
+            ls[l].disabled = true;
+          });
+          ls = v.labely;
+          Object.keys(ls).forEach(function (l) {
+            ls[l].disabled = true;
+          });
+          v['label' + key][label].disabled = false;
+        })();
       }
-      l.disabled = !l.disabled;
+      p.dispatch({ type: 'enableGroup', payload: { enable: enable, disable: disable, chart: p.id } });
+    }
+
+    function labelLeftClick() {
+      d3sel.event.preventDefault();
+      // Left Click = select all
+      var ls = v.labelx;
+      Object.keys(ls).forEach(function (l) {
+        ls[l].disabled = false;
+      });
+      ls = v.labely;
+      Object.keys(ls).forEach(function (l) {
+        ls[l].disabled = false;
+      });
+      p.dispatch({ type: 'enableAll', payload: { chart: p.id } });
     }
 
     function tip(state, d) {

@@ -56,7 +56,7 @@
   }
 
   function Chart(p) {
-    var chart = { version: 2.0 };
+    var chart = { version: 2.1 };
 
     // PARAMETERS
     p = p || {};
@@ -122,12 +122,24 @@
           p.cutoff = action.payload;
           chart.update();
           break;
-        case 'disable':
-          action.node.disabled = true;
+        case 'enableSwitch':
+          action.payload.node.disabled = !action.payload.node.disabled;
           chart.update();
           break;
-        case 'enable':
-          action.node.disabled = false;
+        case 'enableSingle':
+          // Disable all nodes
+          p.data.serie.forEach(function (d) {
+            d.disabled = true;
+          });
+          // enable clicked node
+          action.payload.node.disabled = false;
+          chart.update();
+          break;
+        case 'enableAll':
+          // Enable all nodes
+          p.data.serie.forEach(function (d) {
+            d.disabled = false;
+          });
           chart.update();
           break;
         default:
@@ -172,10 +184,8 @@
         return d.size;
       })(p.data.serie);
 
-      // center + disabled
+      // center
       p.total = root.reduce(function (res, r) {
-        // Disabled category
-        r.data.disabled = r.data.name === 'disabled' ? true : r.data.disabled;
         // Sum data for center
         res += r.data.size;
         return res;
@@ -216,11 +226,9 @@
       add = sel.enter().append('path').attr('class', function (d) {
         return 'v' + d.data.name;
       }).attr('d', 'M0,0A0,0Z').style('opacity', 0).style('fill-rule', 'evenodd').style('cursor', 'pointer').on('click', function (d) {
-        if (d.data.disabled) {
-          p.dispatch({ type: 'enable', node: d.data, chart: p.id });
-        } else {
-          p.dispatch({ type: 'disable', node: d.data, chart: p.id });
-        }
+        return clickHandler(d);
+      }).on('contextmenu', function (d) {
+        return leftClickHandler(d);
       }).on('mouseover', function (d) {
         return tip('show', d);
       }).on('mousemove', function (d) {
@@ -300,6 +308,22 @@
         return align(d) ? '100%' : '0%';
       });
     };
+
+    function clickHandler(d) {
+      if (d3sel.event.shiftKey || d3sel.event.ctrlKey) {
+        // Shift + Click or Ctrl + Click = enableSwitch
+        p.dispatch({ type: 'enableSwitch', payload: { node: d.data, chart: p.id } });
+      } else {
+        // Click = Deselect all and select only clicked node
+        p.dispatch({ type: 'enableSingle', payload: { node: d.data, chart: p.id } });
+      }
+    }
+
+    function leftClickHandler() {
+      d3sel.event.preventDefault();
+      // Left Click = select all
+      p.dispatch({ type: 'enableAll', payload: { chart: p.id } });
+    }
 
     function tip(state, d) {
       if (state === 'show') {
