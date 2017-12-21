@@ -22,7 +22,7 @@ if (d3 === 'undefined' || d3.version) {
 }
 
 export default function Chart(p) {
-  const chart = {version: 2.1};
+  const chart = {version: 2.2};
 
   // PARAMETERS
   p = p || {};
@@ -66,12 +66,24 @@ export default function Chart(p) {
         p.cutoff = action.payload;
         chart.update();
         break;
-      case 'disable':
-        action.node.disabled = true;
+      case 'enableSwitch':
+        action.payload.node.disabled = !action.payload.node.disabled;
         chart.update();
         break;
-      case 'enable':
-        action.node.disabled = false;
+      case 'enableSingle':
+        // Disable all nodes
+        p.data.serie.forEach(d => {
+          d.disabled = true;
+        });
+        // enable clicked node
+        action.payload.node.disabled = false;
+        chart.update();
+        break;
+      case 'enableAll':
+        // Enable all nodes
+        p.data.serie.forEach(d => {
+          d.disabled = false;
+        });
         chart.update();
         break;
       default:
@@ -139,8 +151,6 @@ export default function Chart(p) {
     .sort(p.sort);
 
     v.total = filtered.reduce((tot, r) => {
-      // Disabled category
-      r.disabled = r.name === 'disabled' ? true : r.disabled;
       // Sum data
       tot += r.size;
       return tot;
@@ -230,13 +240,8 @@ export default function Chart(p) {
       .style('opacity', 0)
       .style('fill-rule', 'evenodd')
       .style('cursor', 'pointer')
-      .on('click', d => {
-        if (d.disabled) {
-          p.dispatch({type: 'enable', node: d, chart: p.id});
-        } else {
-          p.dispatch({type: 'disable', node: d, chart: p.id});
-        }
-      })
+      .on('click', d => clickHandler(d))
+      .on('contextmenu', d => leftClickHandler(d))
       .on('mouseover', d => tip('show', d))
       .on('mousemove', d => tip('move', d))
       .on('mouseout', d => tip('hide', d));
@@ -301,6 +306,22 @@ export default function Chart(p) {
       return `M${x}, ${v.y(0) - p.legend.padding} V${v.y(0) - p.legend.padding - 1}`;
     } // Else mode === 'show'
     return `M${x}, ${v.y(0) - p.legend.padding} V${v.y(d.size) + p.legend.padding}`;
+  }
+
+  function clickHandler(d) {
+    if (d3sel.event.shiftKey || d3sel.event.ctrlKey) {
+      // Shift + Click or Ctrl + Click = enableSwitch
+      p.dispatch({type: 'enableSwitch', payload: {node: d, chart: p.id}});
+    } else {
+      // Click = Deselect all and select only clicked node
+      p.dispatch({type: 'enableSingle', payload: {node: d, chart: p.id}});
+    }
+  }
+
+  function leftClickHandler() {
+    d3sel.event.preventDefault();
+    // Left Click = select all
+    p.dispatch({type: 'enableAll', payload: {chart: p.id}});
   }
 
   function tip(state, d) {
