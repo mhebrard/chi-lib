@@ -22,7 +22,7 @@ if (d3 === 'undefined' || d3.version) {
 }
 
 export default function Chart(p) {
-  const chart = {version: '2.2.1'};
+  const chart = {version: '2.3.0'};
 
   // PARAMETERS
   p = p || {};
@@ -39,6 +39,7 @@ export default function Chart(p) {
   p.color = p.color || d4.schemeSet3;
   p.barWidth = p.barWidth || 0;
   p.barPadding = p.barPadding || 0.1;
+  p.minWidth = p.minWidth || 100;
   p.cutoff = p.cutoff || null;
   if (p.sort === undefined) {
     p.sort = (a, b) => b.size - a.size;
@@ -158,11 +159,13 @@ export default function Chart(p) {
 
     // Bar width (grid)
     // If barWidth is defined, size accordingly
-    // else size according to width / height
+    // Else size according to width / height
     if (p.barWidth > 0) {
-      // calculate width according to data
+      // Calculate width according to data
       p.width = p.margin.left + p.legend.left + (filtered.length * p.barWidth) + p.legend.right + p.margin.right;
     }
+    // Width of the SVG
+    p.maxWith = p.width < p.minWidth ? p.minWidth : p.width;
 
     // Scale
     v.x.domain(filtered.map(d => d.name))
@@ -175,7 +178,7 @@ export default function Chart(p) {
     v.xAxisBottom = d4.axisBottom(v.x);
     v.yAxisLeft = d4.axisLeft(v.y);
     v.yAxisRight = d4.axisRight(v.y)
-    .tickSize(p.width - p.margin.left - p.legend.left - p.margin.right - p.legend.right, 0);
+    .tickSize(p.maxWith - p.margin.left - p.legend.left - p.margin.right - p.legend.right, 0);
 
     // Update pattern
     let sel;
@@ -187,7 +190,7 @@ export default function Chart(p) {
     const t3 = d4.transition().delay(delay * 2).duration(delay);
 
     // Adjust SVG
-    v.svg.attr('width', p.width)
+    v.svg.attr('width', p.maxWith)
       .attr('height', p.height);
 
     // Update axis

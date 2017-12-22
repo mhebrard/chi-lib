@@ -27,5 +27,6 @@ Series of values represented as bar chart. A tooltip display bar title, size and
 * color = [hex colors]: palette for bar fill color
 * barWidth = 0; if positive, use barWidth to set the figure size. Else, use width to set the figure size
 * barPadding = 0.1: ration of the width used as bar padding
+* minWidth = 100: minimal width of the chart (overwrite width parameter);
 * cuttoff = 3000: minimal value to display a bar.,
 * sort = (a, b) => b.size - a.size: sort function.
