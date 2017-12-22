@@ -56,7 +56,7 @@
   }
 
   function Chart(p) {
-    var chart = { version: 2.2 };
+    var chart = { version: '2.2.1' };
 
     // PARAMETERS
     p = p || {};
@@ -329,7 +329,8 @@
     }
 
     function clickHandler(d) {
-      if (d3sel.event.shiftKey || d3sel.event.ctrlKey) {
+      var e = d3sel.event ? d3sel.event : d3.event;
+      if (e.shiftKey || e.ctrlKey) {
         // Shift + Click or Ctrl + Click = enableSwitch
         p.dispatch({ type: 'enableSwitch', payload: { node: d, chart: p.id } });
       } else {
@@ -339,7 +340,8 @@
     }
 
     function leftClickHandler() {
-      d3sel.event.preventDefault();
+      var e = d3sel.event ? d3sel.event : d3.event;
+      e.preventDefault();
       // Left Click = select all
       p.dispatch({ type: 'enableAll', payload: { chart: p.id } });
     }
@@ -357,13 +359,9 @@
         // move
         var x = 0;
         var y = 0;
-        if (d3sel.event) {
-          y = d3sel.event.pageY;
-          x = d3sel.event.pageX;
-        } else {
-          y = d3.event.layerY;
-          x = d3.event.layerX;
-        }
+        var e = d3sel.event ? d3sel.event : d3.event;
+        y = e.pageY;
+        x = e.pageX;
         d4.select('#tip').style('top', y - 10 + 'px').style('left', x + 10 + 'px');
       }
     }
