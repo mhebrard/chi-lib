@@ -56,7 +56,7 @@
   }
 
   function Chart(p) {
-    var chart = { version: 2.2 };
+    var chart = { version: '2.3.0' };
 
     // PARAMETERS
     p = p || {};
@@ -73,6 +73,7 @@
     p.color = p.color || d4.schemeSet3;
     p.barWidth = p.barWidth || 0;
     p.barPadding = p.barPadding || 0.1;
+    p.minWidth = p.minWidth || 100;
     p.cutoff = p.cutoff || null;
     if (p.sort === undefined) {
       p.sort = function (a, b) {
@@ -182,11 +183,13 @@
 
       // Bar width (grid)
       // If barWidth is defined, size accordingly
-      // else size according to width / height
+      // Else size according to width / height
       if (p.barWidth > 0) {
-        // calculate width according to data
+        // Calculate width according to data
         p.width = p.margin.left + p.legend.left + filtered.length * p.barWidth + p.legend.right + p.margin.right;
       }
+      // Width of the SVG
+      p.maxWith = p.width < p.minWidth ? p.minWidth : p.width;
 
       // Scale
       v.x.domain(filtered.map(function (d) {
@@ -200,7 +203,7 @@
       // Axis
       v.xAxisBottom = d4.axisBottom(v.x);
       v.yAxisLeft = d4.axisLeft(v.y);
-      v.yAxisRight = d4.axisRight(v.y).tickSize(p.width - p.margin.left - p.legend.left - p.margin.right - p.legend.right, 0);
+      v.yAxisRight = d4.axisRight(v.y).tickSize(p.maxWith - p.margin.left - p.legend.left - p.margin.right - p.legend.right, 0);
 
       // Update pattern
       var sel = void 0;
@@ -212,7 +215,7 @@
       var t3 = d4.transition().delay(delay * 2).duration(delay);
 
       // Adjust SVG
-      v.svg.attr('width', p.width).attr('height', p.height);
+      v.svg.attr('width', p.maxWith).attr('height', p.height);
 
       // Update axis
       if (p.legend.bottom > 0) {
@@ -329,7 +332,8 @@
     }
 
     function clickHandler(d) {
-      if (d3sel.event.shiftKey || d3sel.event.ctrlKey) {
+      var e = d3sel.event ? d3sel.event : d3.event;
+      if (e.shiftKey || e.ctrlKey) {
         // Shift + Click or Ctrl + Click = enableSwitch
         p.dispatch({ type: 'enableSwitch', payload: { node: d, chart: p.id } });
       } else {
@@ -339,7 +343,8 @@
     }
 
     function leftClickHandler() {
-      d3sel.event.preventDefault();
+      var e = d3sel.event ? d3sel.event : d3.event;
+      e.preventDefault();
       // Left Click = select all
       p.dispatch({ type: 'enableAll', payload: { chart: p.id } });
     }
@@ -357,13 +362,9 @@
         // move
         var x = 0;
         var y = 0;
-        if (d3sel.event) {
-          y = d3sel.event.pageY;
-          x = d3sel.event.pageX;
-        } else {
-          y = d3.event.layerY;
-          x = d3.event.layerX;
-        }
+        var e = d3sel.event ? d3sel.event : d3.event;
+        y = e.pageY;
+        x = e.pageX;
         d4.select('#tip').style('top', y - 10 + 'px').style('left', x + 10 + 'px');
       }
     }

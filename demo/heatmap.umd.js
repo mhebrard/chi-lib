@@ -58,7 +58,7 @@
   }
 
   function Chart(p) {
-    var chart = { version: 2.1 };
+    var chart = { version: '2.1.1' };
 
     // PARAMETERS
     p = p || {};
@@ -310,7 +310,8 @@
     function labelClick(key, label) {
       var enable = [];
       var disable = [];
-      if (d3sel.event.shiftKey || d3sel.event.ctrlKey) {
+      var e = d3sel.event ? d3sel.event : d3.event;
+      if (e.shiftKey || e.ctrlKey) {
         // Shift + Click or Ctrl + Click = enableSwitch
         var l = v['label' + key][label];
         if (l.disabled === true) {
@@ -352,7 +353,8 @@
     }
 
     function labelLeftClick() {
-      d3sel.event.preventDefault();
+      var e = d3sel.event ? d3sel.event : d3.event;
+      e.preventDefault();
       // Left Click = select all
       var ls = v.labelx;
       Object.keys(ls).forEach(function (l) {
@@ -378,13 +380,9 @@
         // move
         var x = 0;
         var y = 0;
-        if (d3sel.event) {
-          y = d3sel.event.pageY;
-          x = d3sel.event.pageX;
-        } else {
-          y = d3.event.layerY;
-          x = d3.event.layerX;
-        }
+        var e = d3sel.event ? d3sel.event : d3.event;
+        y = e.pageY;
+        x = e.pageX;
         d4.select('#tip').style('top', y - 10 + 'px').style('left', x + 10 + 'px');
       }
     }

@@ -22,7 +22,7 @@ if (d3 === 'undefined' || d3.version) {
 }
 
 export default function Chart(p) {
-  const chart = {version: 2.1};
+  const chart = {version: '2.1.1'};
 
   // PARAMETERS
   p = p || {};
@@ -287,7 +287,8 @@ export default function Chart(p) {
   };
 
   function clickHandler(d) {
-    if (d3sel.event.shiftKey || d3sel.event.ctrlKey) {
+    const e = d3sel.event ? d3sel.event : d3.event;
+    if (e.shiftKey || e.ctrlKey) {
       // Shift + Click or Ctrl + Click = enableSwitch
       p.dispatch({type: 'enableSwitch', payload: {node: d.data, chart: p.id}});
     } else {
@@ -297,7 +298,8 @@ export default function Chart(p) {
   }
 
   function leftClickHandler() {
-    d3sel.event.preventDefault();
+    const e = d3sel.event ? d3sel.event : d3.event;
+    e.preventDefault();
     // Left Click = select all
     p.dispatch({type: 'enableAll', payload: {chart: p.id}});
   }
@@ -318,13 +320,9 @@ export default function Chart(p) {
     } else { // move
       let x = 0;
       let y = 0;
-      if (d3sel.event) {
-        y = d3sel.event.pageY;
-        x = d3sel.event.pageX;
-      } else {
-        y = d3.event.layerY;
-        x = d3.event.layerX;
-      }
+      const e = d3sel.event ? d3sel.event : d3.event;
+      y = e.pageY;
+      x = e.pageX;
       d4.select('#tip')
         .style('top', `${y - 10}px`)
         .style('left', `${x + 10}px`);
