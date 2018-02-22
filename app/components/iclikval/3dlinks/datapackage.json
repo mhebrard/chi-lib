@@ -1,0 +1,9 @@
+{
+	"name": "3dlinks",
+	"title": "3D Links",
+	"description": "This representation shows the content of iCLiKVAL database in a 3D Force layout.",
+	"resources": [
+		"https://bl.ocks.org/mhebrard/7e4dda210943c2c7f00c87fed7dbe33f"
+	],
+	"image": "thumbnail.png"
+}

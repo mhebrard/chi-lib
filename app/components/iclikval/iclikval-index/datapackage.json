@@ -10,6 +10,10 @@
     {
       "path": "../links/datapackage.json",
       "link": "https://bl.ocks.org/mhebrard/7d91f5a63daa1ae9d5fae53985fd807e"
+    },
+    {
+      "path": "../3dlinks/datapackage.json",
+      "link": "https://bl.ocks.org/mhebrard/7e4dda210943c2c7f00c87fed7dbe33f"
     }
   ]
 }
